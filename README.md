@@ -6,7 +6,7 @@
 
 > 作者：Yuze（[Hickey-Yuze](https://github.com/Hickey-Yuze)） · 版本 0.4.0 · License: MIT
 
-![Yuze-agent · AI 助手（功能讲解）](docs/overview.png)
+![Yuze-agent · AI 助手（功能讲解）](docs/overview.jpg)
 
 ## 功能一览
 
@@ -23,7 +23,7 @@
 
 ## 架构
 
-![Yuze-agent 架构图](docs/architecture.png)
+![Yuze-agent 架构图](docs/architecture.jpg)
 
 文字版：
 
