@@ -122,6 +122,10 @@ node server.mjs      # 保持运行
 
 ## 项目结构
 
+![Yuze-agent 项目结构](docs/structure.jpg)
+
+文字版：
+
 ```
 chrome-agent/
 ├── extension/          # Chrome MV3 扩展本体
