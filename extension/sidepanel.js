@@ -3601,29 +3601,53 @@ function runSkillNow(s, text) {
   inpMsg.focus();
 }
 
+function setRunBtn(state, text, ms) {
+  const b = $('btnSkillRun');
+  if (!b) return;
+  if (!b._orig) b._orig = b.textContent;
+  clearTimeout(b._timer);
+  b.classList.remove('busy', 'ok', 'err');
+  b.disabled = false;
+  if (state === 'busy') {
+    b.classList.add('busy');
+    b.textContent = text || '运行中…';
+    b.disabled = true;
+    return;
+  }
+  if (state === 'ok') { b.classList.add('ok'); b.textContent = text || '✓ 运行成功'; }
+  else if (state === 'err') { b.classList.add('err'); b.textContent = text || '✗ 运行失败'; }
+  else { b.textContent = b._orig || '▶ 运行脚本'; return; }
+  b._timer = setTimeout(() => {
+    b.classList.remove('ok', 'err');
+    b.textContent = b._orig || '▶ 运行脚本';
+  }, ms || 2400);
+}
+
 $('btnSkillRun')?.addEventListener('click', async () => {
   if (!mzCurrent || !mzCurrent.codeFile) return;
+  setRunBtn('busy');
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab || !tab.id) { setStatus('\u6ca1\u6709\u6d3b\u52a8\u6807\u7b7e\u9875'); return; }
+    if (!tab || !tab.id) throw new Error('没有活动标签页');
     const ov = (scriptOverrides || {})[mzCurrent.id];
     if (ov != null) {
-      // \u5df2\u7f16\u8f91\u4fdd\u5b58\u7684\u811a\u672c\uff1a\u7528 debugger \u6ce8\u5165\u6700\u65b0\u4ee3\u7801\uff08\u4e0d\u53d7\u9875\u9762 CSP \u9650\u5236\uff09
       await cdp('Runtime.evaluate', { expression: ov, userGesture: true });
-      setStatus('\u5df2\u8fd0\u884c\uff08\u7f16\u8f91\u7248\uff09\uff1a' + mzCurrent.name);
-      setTimeout(() => setStatus(''), 2500);
-      return;
+      setRunBtn('ok', '✓ 已运行（编辑版）', 2500);
+      setStatus('已运行（编辑版）：' + mzCurrent.name);
+    } else {
+      if (attachedTabId !== null) {
+        try { await chrome.debugger.detach({ tabId: attachedTabId }); } catch (_) {}
+        attachedTabId = null;
+      }
+      await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: [mzCurrent.codeFile] });
+      setRunBtn('ok', '✓ 已运行', 2500);
+      setStatus('已运行：' + mzCurrent.name);
     }
-    // 先释放 debugger（agent 的浏览器工具会占用该页，导致脚本注入被阻塞）
-    if (attachedTabId !== null) {
-      try { await chrome.debugger.detach({ tabId: attachedTabId }); } catch (_) {}
-      attachedTabId = null;
-    }
-    await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: [mzCurrent.codeFile] });
-    setStatus('\u5df2\u8fd0\u884c\uff1a' + mzCurrent.name);
     setTimeout(() => setStatus(''), 2500);
   } catch (e) {
-    setStatus('\u8fd0\u884c\u5931\u8d25\uff1a' + ((e && e.message) || e));
+    const msg = (e && e.message) || String(e);
+    setRunBtn('err', '✗ 运行失败', 3000);
+    setStatus('运行失败：' + msg);
     setTimeout(() => setStatus(''), 4000);
   }
 });
