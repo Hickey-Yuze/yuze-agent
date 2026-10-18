@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yuze-agent</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+
+  <section id="settings" class="settings hidden">
+    <div class="field">
+      <label>提供商</label>
+      <div id="provList" class="prov-list"></div>
+      <button id="btnProvAdd" class="ghost-btn wide">+ 添加提供商</button>
+    </div>
+    <div class="field">
+      <label>MCP 服务器</label>
+      <button id="btnMcpManage" class="ghost-btn wide">管理 MCP 服务器…</button>
+    </div>
+    <button id="btnSave" class="btn">保存并校验</button>
+  </section>
+
+  <div class="top-hint">
+    <button id="btnHistory" class="chip chip-ico" title="历史对话" data-label="历史对话" aria-label="历史对话">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+    </button>
+  </div>
+
+  <main id="chat" class="chat"></main>
+  <div id="statusLine" class="status"></div>
+
+  <footer class="composer">
+    <div class="composer-inner">
+      <div id="quoteBar" class="quote-bar hidden"></div>
+      <textarea id="inpMsg" rows="1" placeholder="描述需要完成的任务，让 agent 替你执行…" spellcheck="false"></textarea>
+      <div class="composer-bar">
+        <div class="tools-row">
+          <button id="btnNew" class="chip chip-ico" title="新对话" data-label="新对话" aria-label="新对话">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+          <button id="btnQuote" class="chip" title="引用当前页面或选中的文字" data-label="引用">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 7h4v4H7zM13 7h4v4h-4zM7 13h4v4H7zM13 13h4v4h-4z"/></svg>
+            引用
+          </button>
+          <button id="btnShot" class="chip" title="截取当前页面发给模型" data-label="截图">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="6" width="18" height="13" rx="2"/><circle cx="12" cy="12.5" r="3"/><path d="M8 6l1.5-2h5L16 6"/></svg>
+            截图
+          </button>
+          <button id="btnSkill" class="chip" title="用预设技能" data-label="技能">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l2.4 5.6L20 11l-5.6 2.4L12 19l-2.4-5.6L4 11l5.6-2.4z"/></svg>
+            技能
+          </button>
+          <button id="btnMcp" class="chip" title="MCP 工具状态" data-label="MCP">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 3v6M15 3v6M6 9h12v4a6 6 0 0 1-12 0z"/><path d="M12 19v2"/></svg>
+            MCP
+          </button>
+        </div>
+        <div class="bar-right">
+          <span class="dot idle" id="statusDot"></span>
+          <button id="modelTag" class="model-btn" title="切换模型">—</button>
+          <button id="btnSettings" class="chip chip-ico" title="设置" data-label="设置" aria-label="设置">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.6 1.6 0 0 0 .32 1.77l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.6 1.6 0 0 0-1.77-.32 1.6 1.6 0 0 0-1 1.47V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.47 1.6 1.6 0 0 0-1.77.32l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.6 1.6 0 0 0 .32-1.77 1.6 1.6 0 0 0-1.47-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.47-1 1.6 1.6 0 0 0-.32-1.77l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.6 1.6 0 0 0 1.77.32h.08a1.6 1.6 0 0 0 1-1.47V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.47 1.6 1.6 0 0 0 1.77-.32l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.6 1.6 0 0 0-.32 1.77v.08a1.6 1.6 0 0 0 1.47 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.47 1z"/></svg>
+          </button>
+          <button id="btnSend" class="send" title="发送" aria-label="发送">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 19V5M5 12l7-7 7 7"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="hint">Enter 发送 · Shift+Enter 换行</div>
+  </footer>
+
+  <div id="scrim" class="scrim hidden"></div>
+  <aside id="drawer" class="drawer hidden">
+    <div class="drawer-head">
+      <input id="inpSearch" type="text" placeholder="搜索对话…" spellcheck="false">
+      <button id="btnCloseDrawer" class="icon-btn" aria-label="关闭">×</button>
+    </div>
+    <div id="sessionList" class="sessions"></div>
+  </aside>
+
+
+  <!-- MCP 配置面板 -->
+  <section id="mcpPanel" class="sheet hidden" aria-label="MCP 配置">
+    <div class="sheet-head">
+      <div class="sheet-title">MCP 配置</div>
+      <button id="btnMcpClose" class="icon-btn" aria-label="关闭">×</button>
+    </div>
+    <div class="sheet-bar">
+      <div class="mcp-tabs">
+        <button class="mcp-tab active" data-tab="all">全部 <span id="mcpCountAll">0</span></button>
+        <button class="mcp-tab" data-tab="rec">推荐 <span id="mcpCountRec">0</span></button>
+        <button class="mcp-tab" data-tab="own">自定义 <span id="mcpCountOwn">0</span></button>
+      </div>
+      <div class="sheet-actions">
+        <button id="btnMcpTest" class="ghost-btn">测试连接</button>
+        <button id="btnMcpAdd" class="primary-btn">+ 新增</button>
+      </div>
+    </div>
+    <div id="mcpList" class="sheet-list"></div>
+    <div class="sheet-tip">支持 Streamable HTTP（JSON-RPC）传输的 MCP 服务器。请求头用于鉴权，例如 <code>Authorization: Bearer YOUR_KEY</code>。</div>
+  </section>
+
+  <!-- MCP 新增/编辑弹窗 -->
+  <div id="mcpModal" class="modal-mask hidden">
+    <div class="modal" role="dialog" aria-label="MCP 服务器">
+      <div class="modal-head">
+        <span id="mcpModalTitle">新增 MCP</span>
+        <button id="btnMcpCancelX" class="icon-btn" aria-label="关闭">×</button>
+      </div>
+      <div class="modal-tabs">
+        <button class="mtab active" data-mtab="form">表单填写</button>
+        <button class="mtab" data-mtab="json">JSON 导入</button>
+      </div>
+      <div id="mcpForm" class="modal-body">
+        <label class="field">
+          <span>名称</span>
+          <input id="mcpName" type="text" placeholder="例如：智谱开源仓库 MCP" spellcheck="false">
+        </label>
+        <label class="field">
+          <span>Server URL</span>
+          <input id="mcpUrl" type="text" placeholder="https://…/mcp" spellcheck="false">
+        </label>
+        <div class="field">
+          <span>请求头（Headers）</span>
+          <div id="mcpHeaders" class="hdr-list"></div>
+          <button id="btnMcpHeaderAdd" class="ghost-btn small">+ 添加 Header</button>
+        </div>
+      </div>
+      <div id="mcpJson" class="modal-body hidden">
+        <textarea id="mcpJsonText" rows="9" placeholder='{"name":"…","url":"https://…/mcp","headers":[{"key":"Authorization","value":"Bearer …"}]}' spellcheck="false"></textarea>
+      </div>
+      <div class="modal-foot">
+        <a class="modal-link" href="https://modelcontextprotocol.io/docs" target="_blank" rel="noreferrer">MCP 说明文档</a>
+        <div class="foot-btns">
+          <button id="btnMcpCancel" class="ghost-btn">取消</button>
+          <button id="btnMcpSave" class="primary-btn">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="quoteMenu" class="pop quote-pop hidden">
+    <div class="qm-search"><input id="quoteSearch" type="text" placeholder="搜索…" spellcheck="false" autocomplete="off"></div>
+    <div id="quoteList" class="qm-list"></div>
+  </div>
+  <input type="file" id="fileInput" multiple hidden>
+  <input type="file" id="dirInput" webkitdirectory multiple hidden>
+
+  <div id="modelMenu" class="pop hidden"></div>
+  <div id="skillMenu" class="pop hidden"></div>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>

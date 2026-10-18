@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yuze-agent</title>
+  <link rel="stylesheet" href="sidepanel.css?v=11">
+  <style>
+    /* 详情页 SKILL.md 区：内联一份，避免外部 CSS 缓存导致不生效 */
+    .sd-sec {
+      display: flex; align-items: center; gap: 10px;
+      margin: 24px 0 10px; font-size: 12.5px; font-weight: 600;
+      color: #1d1d1f;
+    }
+    .sd-sec::after {
+      content: ''; flex: 1 1 auto; height: 1px;
+      background: rgba(0, 0, 0, .08);
+    }
+    .sd-md { padding: 14px 16px !important; }
+    .sd-md ul, .sd-md ol { padding-left: 24px !important; margin: 8px 0 !important; }
+    .sd-md li { margin: 4px 0; }
+    .sd-md li::marker { color: #a1a1a6; }
+    .sd-md-body { margin-top: 10px; }
+    .sd-md-body h1, .sd-md-body h2, .sd-md-body h3 {
+      font-size: 13.5px; font-weight: 600; color: #1d1d1f;
+      margin: 16px 0 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <section id="settings" class="settings hidden">
+    <div class="set-card">
+      <div class="set-head">
+        <div class="set-title">设置</div>
+        <button id="btnSettingsClose" class="set-x" aria-label="关闭设置">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="set-label">提供商</div>
+      <div id="provList" class="prov-list"></div>
+      <button id="btnProvAdd" class="set-add">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        添加提供商
+      </button>
+      <div class="set-group">
+        <button id="btnSkillsManage" class="set-row" type="button">
+          <span class="set-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.4 5.4 1.8-5.4 1.8L12 17.4l-1.8-5.4L4.8 10.2l5.4-1.8z"/></svg></span>
+          <span class="set-row-txt"><b>妙招</b><i>管理快捷指令与自动化</i></span>
+          <svg class="set-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <button id="btnMcpManage" class="set-row" type="button">
+          <span class="set-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6V3M15 6V3M7 6h10v5a5 5 0 0 1-10 0zM12 16v5"/></svg></span>
+          <span class="set-row-txt"><b>MCP 服务器</b><i>连接外部工具与数据源</i></span>
+          <svg class="set-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+      <div class="set-foot">
+        <span class="set-note">更改将在保存后生效</span>
+        <button id="btnSave" class="btn">保存并验证</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="top-hint">
+    <div class="top-right">
+      <button id="btnHistory" class="chip chip-ico" title="历史对话" data-label="历史对话" aria-label="历史对话">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+      </button>
+      <button id="btnFind" class="chip chip-ico" title="搜索对话内容" data-label="搜索" aria-label="搜索对话内容">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg>
+      </button>
+      <button id="btnSettings" class="chip chip-ico" title="设置" data-label="设置" aria-label="设置">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.6 1.6 0 0 0 .32 1.77l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.6 1.6 0 0 0-1.77-.32 1.6 1.6 0 0 0-1 1.47V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.47 1.6 1.6 0 0 0-1.77.32l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.6 1.6 0 0 0 .32-1.77 1.6 1.6 0 0 0-1.47-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.47-1 1.6 1.6 0 0 0-.32-1.77l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.6 1.6 0 0 0 1.77.32h.08a1.6 1.6 0 0 0 1-1.47V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.47 1.6 1.6 0 0 0 1.77-.32l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.6 1.6 0 0 0-.32 1.77v.08a1.6 1.6 0 0 0 1.47 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.47 1z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="findBar" class="find-bar hidden">
+    <input id="inpFind" type="text" placeholder="搜索当前对话正文" spellcheck="false" autocomplete="off">
+    <span id="findCount" class="find-count">0/0</span>
+    <button id="btnFindPrev" class="find-btn" title="上一处" aria-label="上一处">↑</button>
+    <button id="btnFindNext" class="find-btn" title="下一处" aria-label="下一处">↓</button>
+    <button id="btnFindClose" class="find-btn" title="关闭" aria-label="关闭">×</button>
+  </div>
+
+  <main id="chat" class="chat"></main>
+  <div id="statusLine" class="status"></div>
+
+  <div id="quoteWrap" class="quote-wrap hidden">
+      <div id="quoteBar" class="quote-bar"></div>
+      <button id="btnQuoteAuto" class="quote-switch" title="自动引用当前标签页（随标签页切换）" aria-label="自动引用">
+        <span class="qs-track"><span class="qs-knob"></span></span>
+      </button>
+    </div>
+  <footer class="composer">
+    <div class="composer-inner">
+      <div id="skillBar" class="skill-bar hidden"></div>
+      <textarea id="inpMsg" rows="1" placeholder="描述需要完成的任务，让 agent 替你执行…" spellcheck="false"></textarea>
+      <div class="composer-bar">
+        <div class="tools-row">
+          <button id="btnNew" class="chip chip-ico" title="新对话" data-label="新对话" aria-label="新对话">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+          <button id="btnQuote" class="chip" title="引用当前页面或选中的文字" data-label="引用">
+            <span class="at-ic">@</span>
+            引用
+          </button>
+          <button id="btnShot" class="chip" title="截取当前页面发给模型" data-label="截图">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="6" width="18" height="13" rx="2"/><circle cx="12" cy="12.5" r="3"/><path d="M8 6l1.5-2h5L16 6"/></svg>
+            截图
+          </button>
+          <button id="btnSkill" class="chip" title="用预设技能" data-label="技能">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l2.4 5.6L20 11l-5.6 2.4L12 19l-2.4-5.6L4 11l5.6-2.4z"/></svg>
+            技能
+          </button>
+          <button id="btnMcp" class="chip" title="MCP 工具状态" data-label="MCP">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 3v6M15 3v6M6 9h12v4a6 6 0 0 1-12 0z"/><path d="M12 19v2"/></svg>
+            MCP
+          </button>
+        </div>
+        <div class="bar-right">
+          <span class="dot idle" id="statusDot"></span>
+          <button id="modelTag" class="model-btn" title="切换模型">—</button>
+          <button id="btnSend" class="send" title="发送" aria-label="发送">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 19V5M5 12l7-7 7 7"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="hint">Enter 发送 · Shift+Enter 换行</div>
+  </footer>
+
+  <div id="scrim" class="scrim hidden"></div>
+  <aside id="drawer" class="drawer hidden">
+    <div class="drawer-head">
+      <input id="inpSearch" type="text" placeholder="搜索对话…" spellcheck="false">
+      <button id="btnCloseDrawer" class="icon-btn" aria-label="关闭">×</button>
+    </div>
+    <div id="sessionList" class="sessions"></div>
+  </aside>
+
+
+  <!-- MCP 配置面板 -->
+  <section id="mcpPanel" class="sheet hidden" aria-label="MCP 配置">
+    <div class="sheet-head">
+      <div class="sheet-title">MCP 配置</div>
+      <button id="btnMcpClose" class="icon-btn" aria-label="关闭">×</button>
+    </div>
+    <div class="sheet-bar">
+      <div class="mcp-tabs">
+        <button class="mcp-tab active" data-tab="all">全部 <span id="mcpCountAll">0</span></button>
+        <button class="mcp-tab" data-tab="rec">推荐 <span id="mcpCountRec">0</span></button>
+        <button class="mcp-tab" data-tab="own">自定义 <span id="mcpCountOwn">0</span></button>
+      </div>
+      <div class="sheet-actions">
+        <button id="btnMcpTest" class="ghost-btn">测试连接</button>
+        <button id="btnMcpAdd" class="primary-btn">+ 新增</button>
+      </div>
+    </div>
+    <div id="mcpList" class="sheet-list"></div>
+    <div class="sheet-tip">支持 Streamable HTTP（JSON-RPC）传输的 MCP 服务器。请求头用于鉴权，例如 <code>Authorization: Bearer YOUR_KEY</code>。</div>
+  </section>
+
+  <!-- MCP 新增/编辑弹窗 -->
+  <div id="mcpModal" class="modal-mask hidden">
+    <div class="modal" role="dialog" aria-label="MCP 服务器">
+      <div class="modal-head">
+        <span id="mcpModalTitle">新增 MCP</span>
+        <button id="btnMcpCancelX" class="icon-btn" aria-label="关闭">×</button>
+      </div>
+      <div class="modal-tabs">
+        <button class="mtab active" data-mtab="form">表单填写</button>
+        <button class="mtab" data-mtab="json">JSON 导入</button>
+      </div>
+      <div id="mcpForm" class="modal-body">
+        <label class="field">
+          <span>名称</span>
+          <input id="mcpName" type="text" placeholder="例如：智谱开源仓库 MCP" spellcheck="false">
+        </label>
+        <label class="field">
+          <span>Server URL</span>
+          <input id="mcpUrl" type="text" placeholder="https://…/mcp" spellcheck="false">
+        </label>
+        <div class="field">
+          <span>请求头（Headers）</span>
+          <div id="mcpHeaders" class="hdr-list"></div>
+          <button id="btnMcpHeaderAdd" class="ghost-btn small">+ 添加 Header</button>
+        </div>
+      </div>
+      <div id="mcpJson" class="modal-body hidden">
+        <textarea id="mcpJsonText" rows="9" placeholder='{"name":"…","url":"https://…/mcp","headers":[{"key":"Authorization","value":"Bearer …"}]}' spellcheck="false"></textarea>
+      </div>
+      <div class="modal-foot">
+        <a class="modal-link" href="https://modelcontextprotocol.io/docs" target="_blank" rel="noreferrer">MCP 说明文档</a>
+        <div class="foot-btns">
+          <button id="btnMcpCancel" class="ghost-btn">取消</button>
+          <button id="btnMcpSave" class="primary-btn">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- 妙招面板 -->
+  <section id="skillPanel" class="sheet hidden">
+    <div class="sheet-head">
+      <div class="sheet-title">妙招</div>
+      <button id="btnSkillClose" class="icon-btn" aria-label="关闭">×</button>
+    </div>
+    <div class="sk-wrap">
+      <aside class="sk-side">
+        <div class="sk-side-title">妙招库</div>
+        <nav class="sk-nav">
+          <button class="sk-src active" data-src="all">全部<em id="nAll">0</em></button>
+          <button class="sk-src" data-src="official">官方妙招<em id="nOfficial">0</em></button>
+          <button class="sk-src" data-src="installed">已安装妙招<em id="nInstalled">0</em></button>
+          <button class="sk-src" data-src="custom">自定义妙招<em id="nCustom">0</em></button>
+        </nav>
+        <button id="btnSkillNew" class="sk-create">+ 创建妙招</button>
+        <button id="btnSkillDiscover" class="sk-discover">发现妙招 ↗</button>
+      </aside>
+      <main class="sk-main">
+        <div class="sk-main-head">
+          <div id="skMainTitle" class="sk-main-title">全部</div>
+          <div id="skMainSub" class="sk-main-sub">管理官方妙招、已安装妙招和你创建的妙招</div>
+        </div>
+        <div class="sk-toolbar">
+          <div class="sk-search"><input id="skillSearch" type="search" placeholder="搜索妙招…" spellcheck="false"></div>
+          <button id="btnSkillNewTop" class="ghost-btn">+ 创建妙招</button>
+          <button id="btnSkillDiscoverTop" class="primary-btn">发现妙招</button>
+        </div>
+        <div class="sk-tabs">
+          <button class="sk-tab active" data-cat="all">全部</button>
+          <button class="sk-tab" data-cat="prompt">提示词</button>
+          <button class="sk-tab" data-cat="script">网页脚本</button>
+          <button class="sk-tab" data-cat="task">任务</button>
+        </div>
+        <div class="sk-group-title" id="skGroupTitle">官方妙招 <em>0</em></div>
+        <div id="skillGrid" class="skill-grid"></div>
+      </main>
+    </div>
+  </section>
+
+  <!-- 妙招详情 -->
+  <section id="skillDetail" class="sheet hidden">
+    <div class="sd-top">
+      <button id="btnSkillBack" class="sd-back">← 返回妙招管理</button>
+      <button id="btnSkillDetailClose" class="icon-btn" aria-label="关闭">×</button>
+    </div>
+    <div class="sd-scroll">
+      <div class="sd-hero">
+        <div id="sdIcon" class="sd-ico"></div>
+        <div id="sdName" class="sd-name">生成 PDF</div>
+        <button id="btnSkillRun" class="sd-try" style="display:none">▶ 运行脚本</button>
+      </div>
+      <div id="sdMeta" class="sd-meta"></div>
+      <div class="sd-label">简介</div>
+      <div id="sdIntro" class="sd-intro"></div>
+      <div class="sd-label">试试这样问</div>
+      <div id="sdExamples" class="sd-examples"></div>
+      <div class="sd-label">适用网站</div>
+      <div class="sd-site"><span id="sdSiteText">🌐 全部网站</span><button type="button" id="btnEditSite" class="sd-site-edit">编辑</button></div>
+      <div class="sd-label">运行方式</div>
+      <div class="sd-runmode">
+        <button type="button" class="sd-mode active" data-mode="manual">手动运行</button>
+        <button type="button" class="sd-mode" data-mode="auto">自动运行</button>
+      </div>
+      <div class="sd-label">妙招内容</div>
+      <div class="sd-sub">描述</div>
+      <div id="sdSkillDesc" class="sd-block" style="padding:12px 14px;"></div>
+      <div class="sd-sec" style="display:flex;align-items:center;gap:10px;margin:28px 0 12px;font-size:12.5px;font-weight:600;color:#1d1d1f;"><span>SKILL.md</span><span style="flex:1 1 auto;height:1px;background:rgba(0,0,0,.08);"></span></div>
+      <div id="sdMd" class="sd-md" style="padding:14px 16px;"></div>
+      <div class="sd-sec" style="display:flex;align-items:center;gap:10px;margin:24px 0 10px;font-size:12.5px;font-weight:600;color:#1d1d1f;"><span>脚本代码</span><span style="flex:1 1 auto;height:1px;background:rgba(0,0,0,.08);"></span></div>
+      <pre id="sdCode" class="sd-code"></pre>
+    </div>
+  </section>
+
+  <!-- 创建妙招：类型选择 -->
+  <div id="skillTypeModal" class="modal-mask hidden">
+    <div class="modal sm-modal" role="dialog" aria-label="创建妙招">
+      <div class="modal-head">
+        <span>创建妙招</span>
+        <button id="btnSkillTypeClose" class="icon-btn" aria-label="关闭">×</button>
+      </div>
+      <p class="sm-sub">选择类型后进入对应的空白编辑表单。</p>
+      <div class="sm-types">
+        <button class="sm-type" type="button" data-type="prompt">
+          <span class="sm-ico">📄</span>
+          <span class="sm-body">
+            <b>提示词妙招</b>
+            <em>创建可复用的提示词、变量和一键发送配置。</em>
+          </span>
+          <span class="sm-go">›</span>
+        </button>
+        <button class="sm-type" type="button" data-type="script">
+          <span class="sm-ico">&lt;/&gt;</span>
+          <span class="sm-body">
+            <b>网页脚本妙招</b>
+            <em>编写 JavaScript，并配置适用网站和运行方式。</em>
+          </span>
+          <span class="sm-go">›</span>
+        </button>
+        <button class="sm-type" type="button" data-type="task">
+          <span class="sm-ico">🧰</span>
+          <span class="sm-body">
+            <b>任务</b>
+            <em>通过描述和 SKILL.md 定义可被模型调用的任务。</em>
+          </span>
+          <span class="sm-go">›</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 妙招编辑器 -->
+  <section id="skillEdit" class="sheet hidden">
+    <div class="se-top">
+      <button id="btnSkillEditBack" class="sd-back">← 返回自定义妙招</button>
+      <div class="se-acts">
+        <button id="btnSkillEditCancel" class="ghost-btn">取消</button>
+        <button id="btnSkillEditSave" class="primary-btn se-save">保存</button>
+      </div>
+    </div>
+    <div class="se-scroll">
+      <div class="se-head">
+        <div id="seIcon" class="se-ico">💡</div>
+        <input id="seName" class="se-name" placeholder="未命名妙招" spellcheck="false">
+      </div>
+      <div id="seMeta" class="se-meta"></div>
+
+      <div class="se-group" data-for="prompt">
+        <div class="se-label">一键发送</div>
+        <div class="se-seg" id="seOneClick">
+          <button class="seg on" type="button" data-v="0">关闭</button>
+          <button class="seg" type="button" data-v="1">开启</button>
+        </div>
+        <div class="se-hint">选择妙招后填入输入框，由用户确认发送</div>
+      </div>
+
+      <div class="se-group" data-for="script">
+        <div class="se-label">运行方式</div>
+        <div class="se-seg" id="seRunMode">
+          <button class="seg on" type="button" data-v="manual">手动运行</button>
+          <button class="seg" type="button" data-v="auto">自动运行</button>
+        </div>
+        <div class="se-hint" id="seRunHint">需要用户主动点击运行，脚本才会注入当前页面</div>
+      </div>
+
+      <div class="se-group" data-for="script task">
+        <div class="se-label">适用网站</div>
+        <div id="seSites" class="se-sites"></div>
+        <button id="btnSeAddSite" class="se-add" type="button">+ 添加网站</button>
+        <div class="se-hint">支持通配符 * 匹配任意字符，例如 https://example.com/*</div>
+      </div>
+
+      <div class="se-group" data-for="prompt">
+        <div class="se-label">妙招内容</div>
+        <div class="se-sub">提示词内容</div>
+        <textarea id="sePrompt" rows="9" placeholder="输入调用妙招时使用的提示词，可通过 {{变量名}} 引用变量。" spellcheck="false"></textarea>
+      </div>
+
+      <div class="se-group" data-for="task">
+        <div class="se-label">妙招内容</div>
+        <div class="se-sub">描述 <span id="seDescCount" class="se-count">0/1000</span></div>
+        <textarea id="seDesc" rows="4" maxlength="1000" placeholder="描述模型应在什么情况下调用这个任务妙招" spellcheck="false"></textarea>
+        <div class="se-sub">SKILL.md</div>
+        <textarea id="seMd" rows="9" class="se-md" placeholder="---&#10;name: custom-skill&#10;description: &quot;...&quot;&#10;---" spellcheck="false"></textarea>
+        <div class="se-hint">请填写完整的 SKILL.md 内容；名称和描述不会自动改写该字段</div>
+      </div>
+
+      <div class="se-group" data-for="script">
+        <div class="se-label">妙招内容</div>
+        <div class="se-sub">脚本代码</div>
+        <textarea id="seCode" rows="12" class="se-md" placeholder="输入将在网页中执行的脚本代码" spellcheck="false"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <div id="quoteMenu" class="pop quote-pop hidden">
+    <div class="qm-search"><input id="quoteSearch" type="text" placeholder="搜索…" spellcheck="false" autocomplete="off"></div>
+    <div id="quoteList" class="qm-list"></div>
+  </div>
+  <input type="file" id="fileInput" multiple hidden>
+  <input type="file" id="dirInput" webkitdirectory multiple hidden>
+
+  <div id="modelMenu" class="pop hidden"></div>
+  <div id="skillMenu" class="pop hidden"></div>
+
+  <script src="sidepanel.js?v=11"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "b15": {
+    "title": "打工人便利贴",
+    "file": "scripts/b15.user.js",
+    "size": 10560
+  },
+  "b16": {
+    "title": "智能工作流引擎",
+    "file": "scripts/b16.user.js",
+    "size": 18097
+  },
+  "b17": {
+    "title": "便签",
+    "file": "scripts/b17.user.js",
+    "size": 19780
+  },
+  "b18": {
+    "title": "待办事项",
+    "file": "scripts/b18.user.js",
+    "size": 40648
+  },
+  "b19": {
+    "title": "奇点标签",
+    "file": "scripts/b19.user.js",
+    "size": 49804
+  }
+}
