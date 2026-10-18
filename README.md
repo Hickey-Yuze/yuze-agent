@@ -6,6 +6,8 @@
 
 > 作者：Yuze（[Hickey-Yuze](https://github.com/Hickey-Yuze)） · 版本 0.4.0 · License: MIT
 
+![Yuze-agent · AI 助手（功能讲解）](docs/overview.png)
+
 ## 功能一览
 
 - **问答 / 任务两种模式**：问答直连 LLM；任务模式启用工具调用循环（最多 300 轮兜底，连续无新进展自动停止）。
@@ -20,6 +22,10 @@
 - **历史与搜索**：按当前页面分组的会话抽屉、会话删除、全文搜索。
 
 ## 架构
+
+![Yuze-agent 架构图](docs/architecture.png)
+
+文字版：
 
 ```
 侧边栏 UI (sidepanel.js)
