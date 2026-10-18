@@ -1610,13 +1610,44 @@ body {
 .settings .prov-del { padding: 6px 10px; }
 .settings .prov-body { padding: 2px 14px 13px; }
 
-/* 引用条（对照图二：通宽白底 bar，chip 为文字式，开关在右端） */
+/* 引用条（规格版：吸附输入框顶部，共用圆角容器，浅灰 #F1F2F4） */
 .quote-top { display: contents; }
-.quote-wrap { display: flex; align-items: stretch; gap: 10px; margin: 0; padding: 0 12px 0 16px; background: #fff; border-top: 1px solid var(--line); }
+.quote-wrap { display: flex; align-items: center; gap: 10px; margin: 0 0 6px; padding: 0 12px; min-height: 44px; background: #F1F2F4; border-radius: 12px; flex: none; }
 .quote-wrap.hidden { display: none; }
-.quote-wrap .quote-bar { flex: 1; min-width: 0; margin: 0; padding: 9px 0; flex-wrap: nowrap; overflow-x: auto; }
+.quote-wrap.q-disabled { opacity: .6; }
+.quote-wrap .quote-bar { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; padding: 8px 0; overflow-x: auto; scrollbar-width: none; }
 .quote-wrap .quote-bar::-webkit-scrollbar { display: none; }
 .quote-wrap .quote-switch { flex: none; }
+.quote-chip { display: inline-flex; align-items: center; gap: 8px; min-width: 0; background: transparent; border: 0; border-radius: 0; padding: 0; font-size: 13px; color: #1A1D21; }
+.qc-ic { font-size: 15px; line-height: 1; flex: none; display: inline-flex; align-items: center; color: #5C6470; }
+.qc-ic svg { width: 16px; height: 16px; }
+.qc-tx { font-weight: 600; font-size: 13px; color: #1A1D21; max-width: 44%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.qc-tx:hover { text-decoration: underline; }
+.qc-url { font-size: 12px; color: #8A9099; max-width: 30%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qc-link { border: 0; background: none; color: #5C6470; cursor: pointer; display: inline-flex; padding: 2px; flex: none; }
+.qc-link:hover { color: #1B6EFF; }
+.qc-more { flex: none; border: 0; background: rgba(0,0,0,.06); color: #5C6470; font-size: 11px; border-radius: 8px; padding: 2px 7px; cursor: pointer; }
+.qc-more:hover { background: rgba(0,0,0,.1); }
+.qc-off { flex: none; font-size: 11px; color: #8A9099; background: rgba(0,0,0,.07); padding: 1px 6px; border-radius: 6px; }
+.quote-switch { background: none; border: none; padding: 0; margin: 0 2px; cursor: pointer; display: inline-flex; align-items: center; }
+.qs-track { width: 36px; height: 20px; border-radius: 999px; background: #d9d9de; position: relative; transition: background .16s; }
+.qs-knob { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.2); transition: left .16s; }
+.quote-switch.on .qs-track { background: #1B6EFF; }
+.quote-switch.on .qs-knob { left: 18px; }
+
+/* 引用详情 / 列表弹层 + 移除 toast */
+.quote-pop { position: absolute; left: 10px; right: 10px; bottom: calc(100% + 8px); background: #fff; border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,.16), 0 2px 8px rgba(0,0,0,.08); padding: 13px 16px; z-index: 60; max-height: 230px; overflow-y: auto; }
+.quote-pop.hidden { display: none; }
+.quote-pop > b { display: block; font-size: 13.5px; color: #1A1D21; }
+.qp-url { display: block; font-size: 12px; color: #8A9099; margin-top: 4px; word-break: break-all; }
+.qp-sum { font-size: 12.5px; color: #5C6470; line-height: 1.6; margin: 8px 0 0; white-space: pre-wrap; }
+.qp-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid #EBEEF2; }
+.qp-row:first-of-type { border-top: 0; }
+.qp-t { flex: 1; min-width: 0; font-size: 13px; color: #1A1D21; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.quote-toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 110px; background: rgba(28,30,34,.94); color: #fff; border-radius: 999px; padding: 7px 7px 7px 16px; display: flex; align-items: center; gap: 12px; z-index: 2000; font-size: 13px; box-shadow: 0 8px 30px rgba(0,0,0,.28); }
+.quote-toast.hidden { display: none; }
+.qt-undo { border: 0; background: rgba(255,255,255,.18); color: #fff; border-radius: 999px; padding: 4px 12px; font-size: 12.5px; cursor: pointer; }
+.qt-undo:hover { background: rgba(255,255,255,.3); }
 
 /* 提供商卡两行布局 + 状态（对照设计稿） */
 .settings .prov-main { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }

@@ -2491,52 +2491,48 @@ function renderQuoteBar() {
   if (!bar) return;
   bar.innerHTML = '';
   const wrap = document.getElementById('quoteWrap');
-  if (wrap) wrap.classList.toggle('hidden', quoteRefs.length === 0 && !pendingShot);
-  if (pendingShot) {
-    const chip = document.createElement('span');
-    chip.className = 'quote-chip shot';
-    const im = document.createElement('img');
-    im.className = 'qc-img';
-    im.src = pendingShot;
-    im.alt = '截图';
-    const tx = document.createElement('span');
-    tx.className = 'qc-tx';
-    tx.textContent = '截图';
-    const x = document.createElement('button');
-    x.type = 'button';
-    x.className = 'qc-x';
-    x.textContent = '×';
-    x.title = '移除截图';
-    x.addEventListener('click', () => { pendingShot = null; renderQuoteBar(); });
-    chip.append(im, tx, x);
-    bar.appendChild(chip);
+  if (wrap) {
+    wrap.classList.toggle('hidden', quoteRefs.length === 0 && !pendingShot);
+    wrap.classList.toggle('q-disabled', quoteRefs.length > 0 && !quoteAuto);
   }
 
   const FILE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/></svg>';
+  const LINK_SVG = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
   const kindOf = (q) => (q.meta || {}).kind;
-  const tabs = quoteRefs.filter((q) => kindOf(q) === 'tab');
-  const files = quoteRefs.filter((q) => kindOf(q) === 'file' || kindOf(q) === 'dir');
-  const skills = quoteRefs.filter((q) => kindOf(q) === 'skill');
-  const others = quoteRefs.filter((q) => !['tab', 'file', 'dir', 'skill'].includes(kindOf(q)));
 
   function mkX(q) {
     const x = document.createElement('button');
     x.type = 'button';
     x.className = 'qc-x';
-    x.textContent = '×';
+    x.textContent = '\u00d7';
     x.title = '移除引用';
     x.addEventListener('click', (e) => {
       e.stopPropagation();
+      if (q.__shot) { pendingShot = null; renderQuoteBar(); return; }
       const i = quoteRefs.indexOf(q);
-      if (i >= 0) quoteRefs.splice(i, 1);
-      renderQuoteBar();
+      if (i >= 0) {
+        lastRemoved = { index: i, item: q };
+        quoteRefs.splice(i, 1);
+        hideQuotePop();
+        renderQuoteBar();
+        showQuoteToast('已移除「' + String(q.label || '').slice(0, 14) + '」');
+      }
     });
     return x;
+  }
+
+  function kindIcon(k) {
+    if (k === 'tab') return '\ud83d\udca1';
+    if (k === 'dir') return '\ud83d\udcc1';
+    if (k === 'skill') return '\u2726';
+    if (k === 'file') return FILE_SVG;
+    return '\u25c7';
   }
 
   const skBar = $('skillBar');
   if (skBar) {
     skBar.innerHTML = '';
+    const skills = quoteRefs.filter((q) => kindOf(q) === 'skill');
     skBar.classList.toggle('hidden', skills.length === 0);
     skills.forEach((q) => {
       const chip = document.createElement('span');
@@ -2552,65 +2548,129 @@ function renderQuoteBar() {
     });
   }
 
-  if (tabs.length || files.length) {
-    const card = document.createElement('div');
-    card.className = 'quote-card';
-    tabs.forEach((q) => {
-      const head = document.createElement('div');
-      head.className = 'qc-head';
-      const ic = document.createElement('span');
-      ic.className = 'qc-hic';
-      ic.textContent = '💡';
-      const b = document.createElement('b');
-      b.textContent = q.label;
-      const u = document.createElement('span');
-      u.className = 'qc-url';
-      u.textContent = String((q.meta || {}).url || '').replace(/^https?:\/\//, '');
-      const lk = document.createElement('span');
-      lk.className = 'qc-link';
-      lk.textContent = '🔗';
-      head.append(ic, b, u, lk, mkX(q));
-      card.appendChild(head);
-    });
-    if (files.length) {
-      const body = document.createElement('div');
-      body.className = 'qc-body';
-      files.forEach((q) => {
-        const chip = document.createElement('span');
-        chip.className = 'qc-fchip';
-        const name = (q.meta || {}).name || q.label;
-        const ic = document.createElement('span');
-        ic.className = 'qc-fic';
-        if (kindOf(q) === 'dir') {
-          ic.textContent = '📁';
-        } else {
-          ic.innerHTML = FILE_SVG;
-        }
-        const t = document.createElement('span');
-        t.className = 'qc-ftx';
-        t.textContent = name;
-        chip.append(ic, t, mkX(q));
-        body.appendChild(chip);
-      });
-      card.appendChild(body);
-    }
-    bar.appendChild(card);
-  }
-
-  others.forEach((q) => {
+  if (pendingShot) {
     const chip = document.createElement('span');
-    chip.className = 'quote-chip';
-    const ic = document.createElement('span');
-    ic.className = 'qc-ic';
-    ic.textContent = '◇';
+    chip.className = 'quote-chip shot';
+    const im = document.createElement('img');
+    im.className = 'qc-img';
+    im.src = pendingShot;
+    im.alt = '截图';
     const tx = document.createElement('span');
     tx.className = 'qc-tx';
-    tx.textContent = q.label;
-    tx.title = q.label;
-    chip.append(ic, tx, mkX(q));
+    tx.textContent = '截图';
+    tx.style.maxWidth = '60px';
+    tx.style.cursor = 'default';
+    chip.append(im, tx, mkX({ __shot: true }));
     bar.appendChild(chip);
-  });
+  }
+
+  const first = quoteRefs[0];
+  if (first) {
+    const row = document.createElement('div');
+    row.className = 'quote-chip qc-main';
+    const ic = document.createElement('span');
+    ic.className = 'qc-ic';
+    ic.innerHTML = kindIcon(kindOf(first));
+    const tx = document.createElement('span');
+    tx.className = 'qc-tx';
+    tx.textContent = first.label;
+    tx.title = first.label;
+    tx.addEventListener('click', () => openQuotePop('detail', first));
+    row.append(ic);
+    if (!quoteAuto) {
+      const off = document.createElement('span');
+      off.className = 'qc-off';
+      off.textContent = '已停用';
+      row.append(off);
+    }
+    row.append(tx);
+    const url = String((first.meta || {}).url || '').replace(/^https?:\/\//, '');
+    if (url) {
+      const u = document.createElement('span');
+      u.className = 'qc-url';
+      u.textContent = url;
+      u.title = url;
+      row.append(u);
+      const lk = document.createElement('button');
+      lk.type = 'button';
+      lk.className = 'qc-link';
+      lk.title = '在新标签页打开';
+      lk.innerHTML = LINK_SVG;
+      lk.addEventListener('click', () => { try { chrome.tabs.create({ url: (first.meta || {}).url }); } catch (_) {} });
+      row.append(lk);
+    }
+    row.append(mkX(first));
+    const extra = quoteRefs.length - 1;
+    if (extra > 0) {
+      const more = document.createElement('button');
+      more.type = 'button';
+      more.className = 'qc-more';
+      more.textContent = '+' + extra;
+      more.title = '查看全部引用';
+      more.addEventListener('click', (e) => { e.stopPropagation(); openQuotePop('list'); });
+      row.append(more);
+    }
+    bar.appendChild(row);
+  }
 }
+
+let lastRemoved = null;
+let toastTimer = null;
+function showQuoteToast(msg) {
+  const t = document.getElementById('quoteToast');
+  if (!t) return;
+  t.querySelector('.qt-msg').textContent = msg;
+  t.classList.remove('hidden');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.add('hidden'), 3000);
+}
+function hideQuotePop() {
+  const p = document.getElementById('quotePop');
+  if (p) p.classList.add('hidden');
+}
+function openQuotePop(mode, q) {
+  const p = document.getElementById('quotePop');
+  if (!p) return;
+  p.innerHTML = '';
+  if (mode === 'detail') {
+    const h = document.createElement('b');
+    h.textContent = q.label || '';
+    p.append(h);
+    const url = String((q.meta || {}).url || '').replace(/^https?:\/\//, '');
+    if (url) {
+      const u = document.createElement('span');
+      u.className = 'qp-url';
+      u.textContent = url;
+      p.append(u);
+    }
+    const s = document.createElement('p');
+    s.className = 'qp-sum';
+    const raw = String(q.content || '').replace(/^\u3010[^\u3011]*\u3011\n?/, '');
+    s.textContent = raw.slice(0, 300) || '（无摘要）';
+    p.append(s);
+  } else {
+    const h = document.createElement('b');
+    h.textContent = '全部引用（' + quoteRefs.length + '）';
+    p.append(h);
+    quoteRefs.forEach((q2) => {
+      const r = document.createElement('div');
+      r.className = 'qp-row';
+      const t = document.createElement('span');
+      t.className = 'qp-t';
+      t.textContent = q2.label || '';
+      t.title = q2.label || '';
+      r.append(t, mkX(q2));
+      p.append(r);
+    });
+  }
+  p.classList.remove('hidden');
+}
+document.addEventListener('click', (e) => {
+  const p = document.getElementById('quotePop');
+  if (!p || p.classList.contains('hidden')) return;
+  if (p.contains(e.target) || (e.target.closest && e.target.closest('#quoteWrap'))) return;
+  hideQuotePop();
+});
 
 $('fileInput').addEventListener('change', async (e) => {
   const files = [...(e.target.files || [])];
@@ -2875,6 +2935,15 @@ async function syncAutoQuote() {
   } catch (_) {}
 }
 
+$('qtUndo')?.addEventListener('click', () => {
+  const t = document.getElementById('quoteToast');
+  if (lastRemoved) {
+    quoteRefs.splice(Math.min(lastRemoved.index, quoteRefs.length), 0, lastRemoved.item);
+    lastRemoved = null;
+    renderQuoteBar();
+  }
+  if (t) t.classList.add('hidden');
+});
 $('btnQuoteAuto')?.addEventListener('click', async () => {
   quoteAuto = !quoteAuto;
   $('btnQuoteAuto')?.classList.toggle('on', quoteAuto);

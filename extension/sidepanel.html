@@ -87,14 +87,14 @@
   <main id="chat" class="chat"></main>
   <div id="statusLine" class="status"></div>
 
-  <div id="quoteWrap" class="quote-wrap hidden">
-      <div id="quoteBar" class="quote-bar"></div>
-      <button id="btnQuoteAuto" class="quote-switch" title="自动引用当前标签页（随标签页切换）" aria-label="自动引用">
-        <span class="qs-track"><span class="qs-knob"></span></span>
-      </button>
-    </div>
   <footer class="composer">
     <div class="composer-inner">
+        <div id="quoteWrap" class="quote-wrap hidden">
+          <div id="quoteBar" class="quote-bar"></div>
+          <button id="btnQuoteAuto" class="quote-switch" title="自动引用当前标签页（随标签页切换）" aria-label="自动引用">
+            <span class="qs-track"><span class="qs-knob"></span></span>
+          </button>
+        </div>
       <div id="skillBar" class="skill-bar hidden"></div>
       <textarea id="inpMsg" rows="1" placeholder="描述需要完成的任务，让 agent 替你执行…" spellcheck="false"></textarea>
       <div class="composer-bar">
@@ -132,6 +132,12 @@
     </div>
     <div class="hint">Enter 发送 · Shift+Enter 换行</div>
   </footer>
+
+  <div id="quotePop" class="quote-pop hidden"></div>
+  <div id="quoteToast" class="quote-toast hidden">
+    <span class="qt-msg"></span>
+    <button id="qtUndo" type="button" class="qt-undo">撤销</button>
+  </div>
 
   <div id="scrim" class="scrim hidden"></div>
   <aside id="drawer" class="drawer hidden">
