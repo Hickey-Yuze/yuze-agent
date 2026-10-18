@@ -1612,7 +1612,7 @@ body {
 
 /* 引用条（规格版：吸附输入框顶部，共用圆角容器，浅灰 #F1F2F4） */
 .quote-top { display: contents; }
-.quote-wrap { display: flex; align-items: center; gap: 10px; margin: 0 0 6px; padding: 0 12px; min-height: 44px; background: #F1F2F4; border-radius: 12px; flex: none; }
+.quote-wrap { display: flex; align-items: center; gap: 10px; margin: -10px -10px 6px; padding: 0 14px; min-height: 44px; background: #F1F2F4; border-radius: 12px; flex: none; }
 .quote-wrap.hidden { display: none; }
 .quote-wrap.q-disabled { opacity: .6; }
 .quote-wrap .quote-bar { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; padding: 8px 0; overflow-x: auto; scrollbar-width: none; }
