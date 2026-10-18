@@ -627,3 +627,1048 @@
       placeholder: "32 位十六进制字符串，留空自动创建" });
     ghGidField.appendChild(ghGid);
     ghCred.appendChild(ghGidField);
+
+    const ghFnameField = el("div", { cls: "wp-field" });
+    ghFnameField.appendChild(el("label", { cls: "wp-label" }, "\u6587\u4EF6\u540D"));
+    const ghFname = el("input", { cls: "wp-input", type: "text", placeholder: "todo.json" });
+    ghFnameField.appendChild(ghFname);
+    ghCred.appendChild(ghFnameField);
+
+    const wpBtns = el("div", { cls: "wp-btns" });
+    const wpSyncNow = el("button", { type: "button", cls: "wp-sync-now" }, "立即同步");
+    const wpSave = el("button", { type: "button", cls: "wp-save" }, "保存");
+    wpBtns.appendChild(wpSyncNow);
+    wpBtns.appendChild(wpSave);
+    const dv = el("div", { id: WEBDAV_PANEL_ID }, wpTitle, wpToggleRow, wpAutoRow, wpTabs, wpCredGroup, ghCred, wpBtns);
+
+    const imEditBtn = el("button", { type: "button", cls: "imi", "data-iact": "edit" }, "\u270E  \u7F16\u8F91");
+    const imRemindBtn = el("button", { type: "button", cls: "imi", "data-iact": "remind" }, "\u23F0  \u63D0\u9192");
+    const im = el("div", { id: "tab-todo-imenu" }, imEditBtn, imRemindBtn);
+
+    const root = document.documentElement;
+    root.appendChild(t);
+    root.appendChild(w);
+    root.appendChild(m);
+    root.appendChild(rp);
+    root.appendChild(sp);
+    root.appendChild(dv);
+    root.appendChild(im);
+    root.appendChild(fileInp);
+
+    return {
+      t, w, m, rp, sp, dv, im, fileInp,
+      inp, addBtn, fm, list, emp, cnt, xBtn, clrBtn,
+      bs: [fbAll, fbActive, fbDone],
+      rpDt, rpSave, rpDel, rpClose,
+      spClose, spList,
+      sizeSlider, sizeVal,
+      wpUrl, wpRemotePath, wpUser, wpPass, wpSwitch, wpAutoSwitch, wpAutoRow, wpSave, wpSyncNow, wpClose, wpCredGroup,
+      wpTabs, wpTabWdv, wpTabGh, ghCred, ghTok, ghGid, ghFname,
+    };
+  }
+
+  function setupSPAGuard() {
+    ["yt-navigate-finish", "yt-page-data-updated"].forEach(evt => {
+      window.addEventListener(evt, () => { if (!document.getElementById(S)) css(); });
+    });
+    const _push = history.pushState.bind(history);
+    const _replace = history.replaceState.bind(history);
+    const onNav = () => { if (!document.getElementById(S)) css(); };
+    history.pushState = (...args) => { _push(...args); onNav(); };
+    history.replaceState = (...args) => { _replace(...args); onNav(); };
+    window.addEventListener("popstate", onNav);
+  }
+
+  function requestNotifyPerm(cb) {
+    if (!("Notification" in window)) return cb(false);
+    if (Notification.permission === "granted") return cb(true);
+    if (Notification.permission === "denied") return cb(false);
+    Notification.requestPermission().then(p => cb(p === "granted"));
+  }
+
+  function fireRemind(item) {
+    playSound(currentSound);
+    requestNotifyPerm(ok => {
+      if (ok) {
+        try {
+          new Notification("⏰ 待办提醒", {
+            body: item.text,
+            icon: "https://icons.getbootstrap.com/assets/icons/check-lg.svg",
+          });
+        } catch {}
+      }
+    });
+  }
+
+  async function markFired(firedKey) {
+    const fired = await store.get(FIRED_KEY, []);
+    if (fired.includes(firedKey)) return true;
+    const next = [...fired, firedKey].slice(-200);
+    await store.set(FIRED_KEY, next);
+    return false;
+  }
+
+  async function scheduleRemind(item) {
+    if (remindTimers[item.id]) {
+      clearTimeout(remindTimers[item.id]);
+      delete remindTimers[item.id];
+    }
+    if (!item.remindAt || item.completed) return;
+
+    const firedKey = item.id + ":" + item.remindAt;
+    const fired = await store.get(FIRED_KEY, []);
+    if (fired.includes(firedKey)) return;
+
+    const delta = item.remindAt - Date.now();
+    if (delta <= 0) {
+      const alreadyFired = await markFired(firedKey);
+      if (alreadyFired) return;
+      fireRemind(item);
+      td = td.map(v => v.id === item.id ? { ...v, remindAt: null } : v);
+      store.set(K, td);
+      return;
+    }
+
+    remindTimers[item.id] = setTimeout(async () => {
+      delete remindTimers[item.id];
+      const cur = td.find(v => v.id === item.id);
+      if (!cur || cur.completed) return;
+      const alreadyFired = await markFired(firedKey);
+      if (alreadyFired) return;
+      fireRemind(cur);
+      td = td.map(v => v.id === cur.id ? { ...v, remindAt: null } : v);
+      store.set(K, td);
+    }, delta);
+  }
+
+  function scheduleAll() {
+    Object.values(remindTimers).forEach(clearTimeout);
+    remindTimers = {};
+    td.forEach(item => scheduleRemind(item));
+  }
+
+  async function run() {
+    if (!document.documentElement) return;
+
+    const [rawTd, rawUi, rawPos, rawOpen, rawSound, rawBallSize, rawWdvCfg, rawGhCfg] = await Promise.all([
+      store.get(K, []),
+      store.get(U, { filter: "all" }),
+      store.get(P, { right: 20, bottom: 20 }),
+      store.get(O, false),
+      store.get(SOUND_KEY, 0),
+      store.get(BALL_SIZE_KEY, 44),
+      store.get(WEBDAV_CFG_KEY, null),
+      store.get(GITHUB_CFG_KEY, null),
+    ]);
+
+    td = Array.isArray(rawTd) ? rawTd : [];
+    const su = rawUi, sp2 = rawPos, so = !!rawOpen;
+    ui = su && typeof su.filter === "string"
+      ? { filter: su.filter, open: so }
+      : { filter: "all", open: so };
+    pos = sp2 && typeof sp2.right === "number" && typeof sp2.bottom === "number"
+      ? sp2 : { right: 20, bottom: 20 };
+    currentSound = (typeof rawSound === "number" && rawSound >= 0 && rawSound < SOUNDS.length) ? rawSound : 0;
+    ballSize = (typeof rawBallSize === "number" && rawBallSize >= 32 && rawBallSize <= 80)
+      ? rawBallSize : 44;
+    wdvCfg = rawWdvCfg && typeof rawWdvCfg.url === "string" ? rawWdvCfg : { url: "", user: "", pass: "", remotePath: "", autoSync: false, autoTrigger: false };
+
+    ghCfg = (rawGhCfg && typeof rawGhCfg === "object")
+      ? rawGhCfg
+      : { token: "", gistId: "", fname: "", autoSync: false, autoTrigger: false };
+    if (!ghCfg.token   && GITHUB_TOKEN)    ghCfg.token   = GITHUB_TOKEN;
+    if (!ghCfg.gistId  && GITHUB_GIST_ID)  ghCfg.gistId  = GITHUB_GIST_ID;
+    if (!isUserscript && ghCfg.token && !rawGhCfg) {
+      ghCfg.autoSync    = true;
+      ghCfg.autoTrigger = true;
+    }
+
+    css();
+    setupSPAGuard();
+    scheduleAll();
+
+    if (typeof GM_addValueChangeListener === "function") {
+      _syncListener = GM_addValueChangeListener(K, async (_key, _oldVal, newVal, remote) => {
+        if (!remote || dead) return;
+        const newTd = jp(newVal, null);
+        if (!Array.isArray(newTd)) return;
+        td = newTd;
+        scheduleAll();
+        render();
+      });
+    }
+
+    const { t, w, m, rp, sp, dv, im, fileInp, inp: i, fm: f, list: l, emp: e, cnt: c, xBtn: x, clrBtn: clr, bs,
+            rpDt, rpSave, rpDel, rpClose,
+            spClose, spList,
+            sizeSlider, sizeVal,
+            wpUrl, wpRemotePath, wpUser, wpPass, wpSwitch, wpAutoSwitch, wpAutoRow, wpSave, wpSyncNow, wpClose, wpCredGroup,
+            wpTabs, wpTabWdv, wpTabGh, ghCred, ghTok, ghGid, ghFname,
+          } = mk(ui.open);
+
+    function applyBallSize(size) {
+      const s = clamp(size, 32, 80);
+      t.style.width = s + "px";
+      t.style.height = s + "px";
+      t.style.fontSize = Math.round(s * 18 / 44) + "px";
+    }
+
+    applyBallSize(ballSize);
+
+    if (isUserscript && sizeSlider) {
+      sizeSlider.addEventListener("input", () => {
+        const v = parseInt(sizeSlider.value, 10);
+        ballSize = v;
+        sizeVal.textContent = v + "px";
+        sizeSlider.style.background = sliderBg(v, 32, 80);
+        applyBallSize(v);
+        store.set(BALL_SIZE_KEY, v);
+      });
+      sizeSlider.addEventListener("pointerdown", ev => ev.stopPropagation());
+      sizeSlider.addEventListener("click", ev => ev.stopPropagation());
+    }
+
+    const hideWdv = () => { dv.classList.remove("show"); };
+
+    function showWdvPanel() {
+      hideMenu(); hideRp(); hideSp();
+      wpUrl.value = wdvCfg.url || "";
+      wpRemotePath.value = wdvCfg.remotePath || wdvCfg.subDir || "";
+      wpUser.value = wdvCfg.user || "";
+      wpPass.value = wdvCfg.pass || "";
+      wpSwitch.classList.toggle("on", !!wdvCfg.autoSync);
+      wpAutoSwitch.classList.toggle("on", !!wdvCfg.autoTrigger);
+      wpAutoRow.style.display = wdvCfg.autoSync ? "" : "none";
+      wpTabs.style.display = wdvCfg.autoSync ? "" : "none";
+      ghTok.value  = (ghCfg.token && ghCfg.token !== GITHUB_TOKEN) ? ghCfg.token : "";
+      ghGid.value  = ghCfg.gistId || "";
+      ghFname.value = ghCfg.fname || "";
+      const activeTab = (ghCfg.token || GITHUB_TOKEN) && !wdvCfg.url ? "github" : "webdav";
+      switchSyncTab(activeTab);
+      dv.classList.add("show");
+      const pad2 = 10, pw = 300, ph = 410;
+      const left = clamp(window.innerWidth / 2 - pw / 2, pad2, Math.max(pad2, window.innerWidth - pw - pad2));
+      const top = clamp(window.innerHeight / 2 - ph / 2, pad2, Math.max(pad2, window.innerHeight - ph - pad2));
+      dv.style.left = left + "px";
+      dv.style.top = top + "px";
+    }
+
+    function switchSyncTab(tab) {
+      wpTabWdv.classList.toggle("active", tab === "webdav");
+      wpTabGh.classList.toggle("active", tab === "github");
+      const showCred = wpSwitch.classList.contains("on");
+      wpCredGroup.style.display = (tab === "webdav" && showCred) ? "" : "none";
+      ghCred.style.display      = (tab === "github" && showCred) ? "" : "none";
+      dv.dataset.syncTab = tab;
+    }
+
+    function startSyncAnim() {
+      t.classList.remove("lp-ok", "lp-err", "lp-warn");
+      t.classList.add("lp-charging");
+    }
+
+    function stopSyncAnim(state) {
+      const cls = state === "ok" ? "lp-ok" : state === "err" ? "lp-err" : state === "warn" ? "lp-warn" : null;
+      const done = () => {
+        t.classList.remove("lp-charging");
+        if (cls) {
+          requestAnimationFrame(() => {
+            t.classList.add(cls);
+            let cleared = false;
+            const onResultEnd = () => { if (cleared) return; cleared = true; t.classList.remove(cls); };
+            t.addEventListener("animationend", onResultEnd, { once: true });
+            setTimeout(() => { if (!cleared) { cleared = true; t.classList.remove(cls); } }, 1200);
+          });
+        }
+      };
+      if (t.classList.contains("lp-charging")) {
+        let handled = false;
+        const onEnd = () => { if (handled) return; handled = true; done(); };
+        t.addEventListener("animationend", onEnd, { once: true });
+        setTimeout(() => { if (!handled) { handled = true; done(); } }, 1200);
+      } else {
+        done();
+      }
+    }
+
+    async function doSync(silent) {
+      if (_syncing) return;
+      if (!wdvCfg || !wdvCfg.autoSync || !validateWdvUrl(wdvCfg.url)) {
+        if (!silent) showToast("\u672A\u542F\u7528\u540C\u6B65");
+        return;
+      }
+      _syncing = true;
+      const lastSyncTs = await store.get(WEBDAV_LAST_KEY, 0);
+      startSyncAnim();
+      if (!silent) showToast("☁ 同步中...");
+      try {
+        const baseUrl = wdvCfg.url.replace(/\/$/, "");
+        const rp = (wdvCfg.remotePath || "").replace(/^\/+|\/+$/g, "");
+        const lastSlash = rp.lastIndexOf("/");
+        const dir = lastSlash >= 0 ? rp.slice(0, lastSlash) : "";
+        const fname = (lastSlash >= 0 ? rp.slice(lastSlash + 1) : rp) || "todo.json";
+        const syncDir = dir ? baseUrl + "/" + dir : baseUrl;
+        const fileUrl = syncDir + "/" + fname;
+        await davEnsureDir(syncDir);
+        const remoteRaw = await davGet(fileUrl);
+        let remoteTodos = [];
+        if (remoteRaw) {
+          try { remoteTodos = JSON.parse(remoteRaw); } catch {}
+        }
+        if (!Array.isArray(remoteTodos)) remoteTodos = [];
+        const result = mergeTodos(td, remoteTodos, lastSyncTs);
+        td = result.merged;
+        scheduleAll();
+        const _uploadData = td.map(({ synced: _s, ...rest }) => rest);
+        await davPut(fileUrl, JSON.stringify(_uploadData));
+        td = td.map(v => ({ ...v, synced: true }));
+        await store.set(WEBDAV_LAST_KEY, Date.now());
+        render();
+        davCleanOrphans(syncDir, fname).catch(() => {});
+        if (!silent) showToast("☁ 同步完成");
+        stopSyncAnim("ok");
+      } catch (err) {
+        console.error("[todo-webdav]", err);
+        stopSyncAnim("err");
+        if (!silent) showToast("\u26a0 同步失败，请检查 WebDAV 配置");
+      } finally {
+        _syncing = false;
+      }
+    }
+
+    function triggerAutoSync() {
+      if (!isUserscript) return;
+      if (wdvCfg && wdvCfg.autoSync && wdvCfg.autoTrigger && wdvCfg.url) {
+        if (_autoSync) clearTimeout(_autoSync);
+        _autoSync = setTimeout(() => { _autoSync = null; doSync(true); }, 3000);
+        return;
+      }
+      if (ghCfg && ghCfg.autoSync && ghCfg.autoTrigger && (ghCfg.token || GITHUB_TOKEN)) {
+        if (_autoSync) clearTimeout(_autoSync);
+        _autoSync = setTimeout(() => { _autoSync = null; doGithubSync(true); }, 3000);
+      }
+    }
+
+    async function doGithubSync(silent) {
+      if (_syncing) return;
+      const token = ghCfg.token || GITHUB_TOKEN;
+      if (!token) {
+        if (!silent) showToast("未配置 GitHub Token");
+        return;
+      }
+      const fname = ghCfg.fname || "todo.json";
+      _syncing = true;
+      const lastSyncTs = await store.get(GITHUB_LAST_KEY, 0);
+      startSyncAnim();
+      if (!silent) showToast("🐙 GitHub 同步中...");
+      try {
+        let gistId    = ghCfg.gistId || GITHUB_GIST_ID;
+        let remoteTodos = [];
+        let needCreate  = !gistId;
+
+        if (gistId) {
+          const remote = await ghGetGist(gistId, token, fname);
+          if (remote === null) {
+            needCreate = true; gistId = "";
+          } else {
+            remoteTodos = Array.isArray(remote) ? remote : [];
+          }
+        }
+
+        if (needCreate) {
+          const upload = td.map(({ synced: _s, ...rest }) => rest);
+          const created = await ghCreateGist(token, fname, JSON.stringify(upload));
+          gistId = created.id;
+          ghCfg  = { ...ghCfg, gistId };
+          store.set(GITHUB_CFG_KEY, ghCfg);
+          if (!silent) showToast("🐙 已创建 Gist：" + gistId.slice(0, 8) + "...");
+        } else {
+          const result = mergeTodos(td, remoteTodos, lastSyncTs);
+          td = result.merged;
+          scheduleAll();
+          const upload = td.map(({ synced: _s, ...rest }) => rest);
+          await ghPatchGist(gistId, token, fname, JSON.stringify(upload));
+        }
+
+        td = td.map(v => ({ ...v, synced: true }));
+        await store.set(GITHUB_LAST_KEY, Date.now());
+        render();
+        stopSyncAnim("ok");
+        if (!silent) showToast("🐙 GitHub 同步完成");
+      } catch (err) {
+        console.error("[todo-github]", err);
+        stopSyncAnim("err");
+        if (!silent) showToast("⚠ GitHub 同步失败：" + (err.message || "请检查 Token / 网络"));
+      } finally {
+        _syncing = false;
+      }
+    }
+
+    const d = { on: 0, drag: 0, moved: 0, id: null, x: 0, y: 0, r: 20, b: 20 };
+    const sd = { on: 0, id: null, sx: 0, sy: 0, dragId: null, overId: null, place: "after", moved: 0 };
+    let editingId = null;
+    let remindTargetId = null;
+    let imMenuTargetId = null;
+
+    const saveState = () => { store.set(K, td); store.set(U, { filter: ui.filter }); store.set(O, !!ui.open); if (!_syncing) triggerAutoSync(); };
+    const savePos = (r, b) => store.set(P, { right: r, bottom: b });
+    const flt = () =>
+      ui.filter === "active" ? td.filter(v => !v.completed) :
+      ui.filter === "completed" ? td.filter(v => v.completed) : td.slice();
+    const rfb = () => bs.forEach(b => b.classList.toggle("active", b.dataset.f === ui.filter));
+    const clearSort = () => l.querySelectorAll(".drag-over-top,.drag-over-bottom,.sorting")
+      .forEach(n => n.classList.remove("drag-over-top", "drag-over-bottom", "sorting"));
+    const hideMenu = () => m.classList.remove("show");
+    const hideRp = () => { rp.classList.remove("show"); remindTargetId = null; };
+    const hideSp = () => sp.classList.remove("show");
+    const hideImMenu = () => { im.classList.remove("show"); imMenuTargetId = null; };
+    const sync = () => ap({ right: parseFloat(t.style.right) || 20, bottom: parseFloat(t.style.bottom) || 20 });
+    const onResize = () => { if (!dead) { sync(); hideMenu(); hideRp(); hideSp(); hideWdv(); } };
+
+    function kill() {
+      if (dead) return;
+      dead = true;
+      if (_syncListener !== null && typeof GM_removeValueChangeListener === "function") {
+        try { GM_removeValueChangeListener(_syncListener); } catch {}
+        _syncListener = null;
+      }
+      if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
+      if (_autoSync) { clearTimeout(_autoSync); _autoSync = null; }
+      hideMenu(); hideRp(); hideSp(); hideWdv(); hideImMenu();
+      Object.values(remindTimers).forEach(clearTimeout);
+      remindTimers = {};
+      window.removeEventListener("resize", onResize);
+      document.removeEventListener("pointerdown", onDocDown, true);
+      t.remove(); w.remove(); m.remove(); rp.remove(); sp.remove(); dv.remove(); im.remove(); fileInp.remove();
+      const toastEl = document.querySelector(".tab-todo-toast");
+      if (toastEl) toastEl.remove();
+      const s = document.getElementById(S);
+      if (s) s.remove();
+    }
+
+    function clearAllData() {
+      td = []; ui.filter = "all";
+      scheduleAll();
+      saveState(); render(); sync();
+    }
+
+    function fmtRemind(ts) {
+      if (!ts) return "";
+      const d = new Date(ts);
+      return d.toLocaleString([], { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+    }
+
+    function render() {
+      if (dead) return;
+      const arr = flt();
+      const done = td.filter(v => v.completed).length;
+      l.textContent = "";
+      e.style.display = arr.length ? "none" : "block";
+
+      arr.forEach(v => {
+        const ck = el("input", { type: "checkbox", cls: "ck" });
+        ck.checked = !!v.completed;
+
+        const txt = el("div", { cls: "txt" });
+        txt.textContent = v.text;
+
+        const meta = el("div", { cls: "meta" });
+        if (v.synced) meta.appendChild(el("span", { cls: "sync-cloud" }, "\u2601"));
+        if (v.createdAt) meta.appendChild(document.createTextNode("\u521B\u5EFA\u4E8E " + new Date(v.createdAt).toLocaleString()));
+
+        if (v.remindAt) {
+          const tag = el("span", { cls: "remind-tag" + (v.remindAt < Date.now() ? " fired" : "") });
+          tag.textContent = "⏰ " + fmtRemind(v.remindAt);
+          meta.appendChild(document.createTextNode(" "));
+          meta.appendChild(tag);
+        }
+
+        const ct = el("div", { cls: "ct" }, txt, meta);
+        const moreBtn = el("button", { type: "button", cls: "more-btn", "aria-label": "更多" }, "\u22EF");
+        const delBtn = el("button", { type: "button", cls: "del", "aria-label": "删除" }, "\u2715");
+
+        const li = el("li", { cls: "it" + (v.completed ? " c" : "") });
+        li.dataset.id = v.id;
+        li.appendChild(ck);
+        li.appendChild(ct);
+        li.appendChild(moreBtn);
+        li.appendChild(delBtn);
+        l.appendChild(li);
+      });
+
+      c.textContent = "共 " + td.length + " 项 · 未完成 " + td.filter(v => !v.completed).length + " · 已完成 " + done;
+      clr.disabled = !done;
+      rfb();
+      saveState();
+    }
+
+    function getWidgetHeight() {
+      return ui.open && !w.classList.contains("hidden")
+        ? Math.min(Math.max(w.getBoundingClientRect().height || 420, 260), window.innerHeight - 24)
+        : 420;
+    }
+
+    function ap(p) {
+      if (dead) return;
+      const ts = ballSize, gap = 14, mgn = 12, maxW = 360, minW = 280;
+      const ww = Math.min(maxW, Math.max(minW, window.innerWidth - 24));
+      const wh = getWidgetHeight();
+      const right = clamp(p.right, mgn, Math.max(mgn, window.innerWidth - ts - mgn));
+      const bottom = clamp(p.bottom, mgn, Math.max(mgn, window.innerHeight - ts - mgn));
+      t.style.right = right + "px"; t.style.bottom = bottom + "px";
+      t.style.left = "auto"; t.style.top = "auto";
+      const btnLeft = window.innerWidth - right - ts;
+      const btnTop = window.innerHeight - bottom - ts;
+      const btnRight = btnLeft + ts, btnBottom = btnTop + ts;
+      const cx = btnLeft + ts / 2;
+      const wl = clamp(cx - ww / 2, mgn, Math.max(mgn, window.innerWidth - ww - mgn));
+      const topC = clamp(btnTop - wh - gap, mgn, Math.max(mgn, window.innerHeight - wh - mgn));
+      const botC = clamp(btnBottom + gap, mgn, Math.max(mgn, window.innerHeight - wh - mgn));
+      const canTop = btnTop - gap - wh >= mgn;
+      const canBot = btnBottom + gap + wh <= window.innerHeight - mgn;
+      let wt = canTop ? topC : canBot ? botC : botC;
+      if (!(wl >= btnRight + gap || wl + ww <= btnLeft - gap) &&
+          !(wt >= btnBottom + gap || wt + wh <= btnTop - gap)) {
+        if (canTop) wt = topC; else if (canBot) wt = botC;
+      }
+      w.style.width = ww + "px"; w.style.left = wl + "px";
+      w.style.top = wt + "px"; w.style.right = "auto"; w.style.bottom = "auto";
+      savePos(right, bottom);
+    }
+
+    function open() {
+      hideMenu(); ui.open = true; saveState();
+      w.classList.remove("hidden");
+      requestAnimationFrame(() => { sync(); i.focus(); });
+    }
+
+    function close() {
+      ui.open = false; saveState();
+      w.classList.add("hidden");
+      hideImMenu();
+    }
+
+    function add(v) {
+      v = String(v || "").trim();
+      if (!v) return;
+      td.unshift({
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+        text: v, completed: false, createdAt: Date.now(), updatedAt: Date.now(), remindAt: null,
+      });
+      render();
+    }
+
+    function saveEdit(id, val) {
+      val = String(val || "").trim();
+      editingId = null;
+      if (id && val) { td = td.map(v => v.id === id ? { ...v, text: val, updatedAt: Date.now(), synced: false } : v); render(); sync(); }
+      else render();
+    }
+
+    function startEdit(id) {
+      if (!id || editingId === id || sd.on) return;
+      editingId = id;
+      render();
+      const li = l.querySelector(".it[data-id=\"" + id + "\"]");
+      const txtEl = li && li.querySelector(".txt");
+      const item = td.find(v => v.id === id);
+      if (!li || !txtEl || !item) return void render();
+      const editInp = el("input", { cls: "edit", type: "text", maxlength: "200" });
+      editInp.value = item.text;
+      txtEl.textContent = "";
+      txtEl.appendChild(editInp);
+      editInp.focus();
+      editInp.select();
+
+      let done = false;
+      const finish = ok => {
+        if (done) return;
+        done = true;
+        ok ? saveEdit(id, editInp.value) : (editingId = null, render());
+      };
+      editInp.addEventListener("keydown", ev => {
+        if (ev.key === "Enter") { ev.preventDefault(); finish(true); }
+        else if (ev.key === "Escape") { ev.preventDefault(); finish(false); }
+      });
+      editInp.addEventListener("blur", () => finish(true), { once: true });
+    }
+
+    function showRemindPanel(id) {
+      hideMenu(); hideSp();
+      remindTargetId = id;
+      const item = td.find(v => v.id === id);
+      if (!item) return;
+      const pad = n => String(n).padStart(2, "0");
+      if (item.remindAt) {
+        const d = new Date(item.remindAt);
+        rpDt.value = d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + "T" + pad(d.getHours()) + ":" + pad(d.getMinutes());
+      } else {
+        const now = new Date(Date.now() + 5 * 60000);
+        rpDt.value = now.getFullYear() + "-" + pad(now.getMonth() + 1) + "-" + pad(now.getDate()) + "T" + pad(now.getHours()) + ":" + pad(now.getMinutes());
+      }
+      rp.classList.add("show");
+      const btn = l.querySelector(".it[data-id=\"" + id + "\"] .more-btn");
+      if (btn) {
+        const r = btn.getBoundingClientRect();
+        const pw = 280, ph = 160, pad2 = 10;
+        let left = clamp(r.left, pad2, Math.max(pad2, window.innerWidth - pw - pad2));
+        let top = r.top - ph - 8;
+        if (top < pad2) top = r.bottom + 8;
+        top = clamp(top, pad2, Math.max(pad2, window.innerHeight - ph - pad2));
+        rp.style.left = left + "px";
+        rp.style.top = top + "px";
+      } else {
+        rp.style.left = "50%";
+        rp.style.top = "50%";
+        rp.style.transform = "translate(-50%,-50%)";
+      }
+    }
+
+    function showSoundPanel() {
+      if (!isUserscript) return;
+      hideMenu(); hideRp();
+      spList.querySelectorAll(".sp-item").forEach((item, idx) => {
+        item.classList.toggle("active", idx === currentSound);
+        const chk = item.querySelector(".sp-check");
+        if (chk) chk.textContent = idx === currentSound ? "✓" : "";
+      });
+      sp.classList.add("show");
+      const pad2 = 10, pw = 300, ph = 320;
+      const left = clamp(window.innerWidth / 2 - pw / 2, pad2, Math.max(pad2, window.innerWidth - pw - pad2));
+      const top = clamp(window.innerHeight / 2 - ph / 2, pad2, Math.max(pad2, window.innerHeight - ph - pad2));
+      sp.style.left = left + "px";
+      sp.style.top = top + "px";
+    }
+
+    function moveItem(fromId, toId, place) {
+      if (!fromId || !toId || fromId === toId) return;
+      const from = td.findIndex(v => v.id === fromId);
+      const to = td.findIndex(v => v.id === toId);
+      if (from < 0 || to < 0) return;
+      const arr = td.slice();
+      const item = arr.splice(from, 1)[0];
+      let idx = arr.findIndex(v => v.id === toId);
+      if (idx >= 0) {
+        if (place === "after") idx++;
+        arr.splice(idx, 0, item);
+        td = arr;
+        render();
+      }
+    }
+
+    function showMenu(x, y) {
+      hideRp(); hideSp();
+      if (isUserscript && sizeSlider) {
+        sizeSlider.value = String(ballSize);
+        sizeVal.textContent = ballSize + "px";
+        sizeSlider.style.background = sliderBg(ballSize, 32, 80);
+      }
+      m.classList.add("show");
+      m.style.left = "0px"; m.style.top = "0px";
+      const r = m.getBoundingClientRect();
+      const pad = 8;
+      const ml = clamp(x, pad, Math.max(pad, window.innerWidth - r.width - pad));
+      const mt = clamp(y, pad, Math.max(pad, window.innerHeight - r.height - pad));
+      m.style.left = ml + "px"; m.style.top = mt + "px";
+    }
+
+    function showImMenu(id, btn) {
+      hideMenu(); hideRp(); hideSp(); hideWdv();
+      imMenuTargetId = id;
+      im.classList.add("show");
+      im.style.left = "0px"; im.style.top = "0px";
+      const ir = im.getBoundingClientRect();
+      const br = btn.getBoundingClientRect();
+      const pad = 6;
+      let left = clamp(br.left, pad, Math.max(pad, window.innerWidth - ir.width - pad));
+      let top = br.bottom + 4;
+      if (top + ir.height > window.innerHeight - pad) top = br.top - ir.height - 4;
+      top = clamp(top, pad, Math.max(pad, window.innerHeight - ir.height - pad));
+      im.style.left = left + "px"; im.style.top = top + "px";
+    }
+
+    function onDocDown(ev) {
+      if (m.classList.contains("show") && !m.contains(ev.target) && ev.target !== t) hideMenu();
+      if (rp.classList.contains("show") && !rp.contains(ev.target)) hideRp();
+      if (sp.classList.contains("show") && !sp.contains(ev.target)) hideSp();
+      if (dv.classList.contains("show") && !dv.contains(ev.target)) hideWdv();
+      if (im.classList.contains("show") && !im.contains(ev.target)) hideImMenu();
+    }
+
+    ap(pos);
+    render();
+    if (!ui.open) w.classList.add("hidden");
+    document.addEventListener("pointerdown", onDocDown, true);
+
+    t.addEventListener("click", ev => {
+      if (dead) return;
+      if (lpFired) { lpFired = false; ev.preventDefault(); ev.stopPropagation(); return; }
+      hideMenu();
+      if (d.moved || d.drag) { ev.preventDefault(); ev.stopPropagation(); }
+      else { w.classList.contains("hidden") ? open() : close(); }
+    });
+
+    t.addEventListener("contextmenu", ev => {
+      ev.preventDefault(); ev.stopPropagation();
+      showMenu(ev.clientX, ev.clientY);
+    });
+
+    m.addEventListener("click", ev => {
+      const btn = ev.target && ev.target.closest(".mi");
+      if (!btn || !btn.dataset.act) return;
+      const act = btn.dataset.act;
+      hideMenu();
+      if (act === "close") kill();
+      else if (act === "clear") clearAllData();
+      else if (act === "sound") showSoundPanel();
+      else if (act === "sync") showWdvPanel();
+      else if (act === "export") {
+        const blob = new Blob([JSON.stringify(td, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "todo-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast("\uD83D\uDCE4 导出成功");
+      }
+      else if (act === "import") fileInp.click();
+    });
+
+    fileInp.addEventListener("change", () => {
+      const file = fileInp.files && fileInp.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const imported = JSON.parse(reader.result);
+          if (!Array.isArray(imported)) { showToast("\u26A0 文件格式错误"); return; }
+          const validItems = imported.filter(v => v && typeof v === "object" && v.id);
+          if (!validItems.length) { showToast("\u26A0 未找到有效数据"); return; }
+          const existingIds = new Set(td.map(v => v.id));
+          let added = 0, skipped = 0;
+          validItems.forEach(v => {
+            if (existingIds.has(v.id)) { skipped++; }
+            else { td.push(v); added++; }
+          });
+          td.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+          scheduleAll();
+          render(); sync();
+          showToast("\uD83D\uDCE5 导入完成：新增 " + added + " 条，跳过 " + skipped + " 条");
+        } catch (err) {
+          console.error("[todo-import]", err);
+          showToast("\u26A0 导入失败，请检查文件格式");
+        }
+      };
+      reader.readAsText(file);
+      fileInp.value = "";
+    });
+
+    rpSave.addEventListener("click", () => {
+      if (!remindTargetId || !rpDt.value) return;
+      const ts = new Date(rpDt.value).getTime();
+      if (!ts || isNaN(ts)) return;
+      td = td.map(v => v.id === remindTargetId ? { ...v, remindAt: ts, synced: false } : v);
+      scheduleAll();
+      render(); sync(); hideRp();
+      requestNotifyPerm(() => {});
+    });
+
+    rpDel.addEventListener("click", () => {
+      if (!remindTargetId) return;
+      td = td.map(v => v.id === remindTargetId ? { ...v, remindAt: null, synced: false } : v);
+      scheduleAll();
+      render(); sync(); hideRp();
+    });
+
+    rpClose.addEventListener("click", hideRp);
+
+    spClose.addEventListener("click", hideSp);
+
+    spList.addEventListener("click", ev => {
+      const playBtn = ev.target.closest(".sp-play");
+      const item = ev.target.closest(".sp-item");
+      if (playBtn) {
+        const idx = parseInt(playBtn.dataset.idx, 10);
+        if (!isNaN(idx)) playSound(idx);
+        return;
+      }
+      if (item) {
+        const idx = parseInt(item.dataset.idx, 10);
+        if (!isNaN(idx) && idx >= 0 && idx < SOUNDS.length) {
+          currentSound = idx;
+          store.set(SOUND_KEY, idx);
+          spList.querySelectorAll(".sp-item").forEach((it, i) => {
+            it.classList.toggle("active", i === idx);
+            const chk = it.querySelector(".sp-check");
+            if (chk) chk.textContent = i === idx ? "✓" : "";
+          });
+          playSound(idx);
+        }
+      }
+    });
+
+    wpClose.addEventListener("click", hideWdv);
+
+    wpTabs.addEventListener("click", ev => {
+      const tab = ev.target && ev.target.closest(".wp-tab");
+      if (!tab || !tab.dataset.tab) return;
+      switchSyncTab(tab.dataset.tab);
+    });
+
+    wpSwitch.addEventListener("click", () => {
+      const on = !wpSwitch.classList.contains("on");
+      wpSwitch.classList.toggle("on", on);
+      wpAutoRow.style.display = on ? "" : "none";
+      wpTabs.style.display = on ? "" : "none";
+      const curTab = dv.dataset.syncTab || "webdav";
+      wpCredGroup.style.display = (curTab === "webdav" && on) ? "" : "none";
+      ghCred.style.display      = (curTab === "github" && on) ? "" : "none";
+    });
+
+    wpAutoSwitch.addEventListener("click", () => {
+      wpAutoSwitch.classList.toggle("on");
+    });
+
+    wpSave.addEventListener("click", () => {
+      const tab = dv.dataset.syncTab || "webdav";
+      if (tab === "webdav") {
+        const url = wpUrl.value.trim();
+        if (url) {
+          let u = null;
+          try { u = new URL(url); } catch {}
+          if (!u) {
+            showToast("服务器地址无效");
+            return;
+          }
+          if (u.protocol !== "https:") {
+            showToast("仅支持 https，请使用 https:// 开头的地址");
+            return;
+          }
+        }
+        wdvCfg = {
+          url, remotePath: wpRemotePath.value.trim(),
+          user: wpUser.value.trim(), pass: wpPass.value,
+          autoSync: wpSwitch.classList.contains("on"),
+          autoTrigger: wpAutoSwitch.classList.contains("on"),
+        };
+        store.set(WEBDAV_CFG_KEY, wdvCfg);
+      } else {
+        const tok = ghTok.value.trim() || GITHUB_TOKEN;
+        if (!tok) { showToast("Token 不能为空"); return; }
+        ghCfg = {
+          token: tok, gistId: ghGid.value.trim() || (ghCfg && ghCfg.gistId) || "",
+          fname: ghFname.value.trim() || "todo.json",
+          autoSync: wpSwitch.classList.contains("on"),
+          autoTrigger: wpAutoSwitch.classList.contains("on"),
+        };
+        store.set(GITHUB_CFG_KEY, ghCfg);
+      }
+      hideWdv();
+      showToast("同步设置已保存");
+    });
+
+    wpSyncNow.addEventListener("click", () => {
+      const tab = dv.dataset.syncTab || "webdav";
+      if (tab === "webdav") {
+        const url = wpUrl.value.trim();
+        if (!url || !validateWdvUrl(url)) { showToast("请先填写有效的服务器地址"); return; }
+        wdvCfg = {
+          url, remotePath: wpRemotePath.value.trim(),
+          user: wpUser.value.trim(), pass: wpPass.value,
+          autoSync: wpSwitch.classList.contains("on"),
+          autoTrigger: wpAutoSwitch.classList.contains("on"),
+        };
+        store.set(WEBDAV_CFG_KEY, wdvCfg);
+        hideWdv();
+        doSync();
+      } else {
+        const tok = ghTok.value.trim() || GITHUB_TOKEN;
+        if (!tok) { showToast("请先填写 Token"); return; }
+        ghCfg = {
+          token: tok, gistId: ghGid.value.trim() || (ghCfg && ghCfg.gistId) || "",
+          fname: ghFname.value.trim() || "todo.json",
+          autoSync: wpSwitch.classList.contains("on"),
+          autoTrigger: wpAutoSwitch.classList.contains("on"),
+        };
+        store.set(GITHUB_CFG_KEY, ghCfg);
+        hideWdv();
+        doGithubSync();
+      }
+    });
+
+    x.addEventListener("click", close);
+
+    f.addEventListener("submit", ev => {
+      ev.preventDefault();
+      add(i.value);
+      i.value = "";
+      i.focus();
+      sync();
+    });
+
+    l.addEventListener("click", ev => {
+      const n = ev.target;
+      const it = n && n.closest(".it");
+      if (!it || !it.dataset.id || sd.on) return;
+      if (n.classList.contains("more-btn")) showImMenu(it.dataset.id, n);
+      else if (n.classList.contains("del")) {
+        td = td.filter(v => v.id !== it.dataset.id);
+        scheduleAll();
+        render(); sync();
+      }
+    });
+
+    im.addEventListener("click", ev => {
+      const btn = ev.target && ev.target.closest(".imi");
+      if (!btn || !btn.dataset.iact) return;
+      const act = btn.dataset.iact;
+      const tid = imMenuTargetId;
+      hideImMenu();
+      if (act === "edit" && tid) startEdit(tid);
+      else if (act === "remind" && tid) showRemindPanel(tid);
+    });
+
+    l.addEventListener("change", ev => {
+      const n = ev.target;
+      const it = n && n.closest(".it");
+      if (!it || !n.classList.contains("ck") || !it.dataset.id || sd.on) return;
+      td = td.map(v => v.id === it.dataset.id ? { ...v, completed: n.checked, updatedAt: Date.now(), synced: false } : v);
+      scheduleAll();
+      render(); sync();
+    });
+
+    clr.addEventListener("click", () => {
+      const len = td.length;
+      td = td.filter(v => !v.completed);
+      if (td.length !== len) { scheduleAll(); render(); sync(); }
+    });
+
+    bs.forEach(b => b.addEventListener("click", () => {
+      if (b.dataset.f) { ui.filter = b.dataset.f; render(); sync(); }
+    }));
+
+    l.addEventListener("pointerdown", ev => {
+      hideMenu(); hideRp(); hideSp(); hideImMenu();
+      const it = ev.target && ev.target.closest(".it");
+      const isInput = ev.target && (
+        ev.target.closest(".edit") || ev.target.closest(".ck") ||
+        ev.target.closest(".del") || ev.target.closest(".more-btn")
+      );
+      if (!it || !it.dataset.id || isInput) return;
+      sd.on = 1; sd.moved = 0; sd.id = ev.pointerId;
+      sd.sx = ev.clientX; sd.sy = ev.clientY;
+      sd.dragId = it.dataset.id; sd.overId = null; sd.place = "after";
+      l.classList.add("sorting");
+      it.classList.add("sorting");
+      try { it.setPointerCapture && it.setPointerCapture(ev.pointerId); } catch {}
+    });
+
+    l.addEventListener("pointermove", ev => {
+      if (!sd.on || sd.id !== ev.pointerId || !sd.dragId) return;
+      const dx = ev.clientX - sd.sx, dy = ev.clientY - sd.sy;
+      if (Math.abs(dx) < 4 && Math.abs(dy) < 4) return;
+      sd.moved = 1;
+      clearSort();
+      const dragEl = l.querySelector(".it[data-id=\"" + sd.dragId + "\"]");
+      if (dragEl) dragEl.classList.add("sorting");
+      const items = [...l.querySelectorAll(".it")].filter(n => n.dataset.id !== sd.dragId);
+      let target = null, place = "after";
+      for (const item of items) {
+        const r = item.getBoundingClientRect();
+        if (ev.clientY >= r.top && ev.clientY <= r.bottom) {
+          target = item;
+          place = ev.clientY < r.top + r.height / 2 ? "before" : "after";
+          break;
+        }
+      }
+      if (!target && items.length) {
+        const first = items[0].getBoundingClientRect();
+        const last = items[items.length - 1].getBoundingClientRect();
+        if (ev.clientY < first.top) { target = items[0]; place = "before"; }
+        else if (ev.clientY > last.bottom) { target = items[items.length - 1]; place = "after"; }
+      }
+      if (target) {
+        sd.overId = target.dataset.id;
+        sd.place = place;
+        target.classList.add(place === "before" ? "drag-over-top" : "drag-over-bottom");
+      }
+    });
+
+    function endSort(ev) {
+      if (!sd.on || sd.id !== ev.pointerId) return;
+      const { dragId, overId, place, moved } = sd;
+      sd.on = 0; sd.id = null; sd.dragId = null; sd.overId = null; sd.place = "after";
+      l.classList.remove("sorting");
+      clearSort();
+      if (moved && dragId && overId && dragId !== overId) { moveItem(dragId, overId, place); sync(); }
+      setTimeout(() => { sd.moved = 0; }, 0);
+    }
+
+    l.addEventListener("pointerup", endSort);
+    l.addEventListener("pointercancel", endSort);
+
+    t.addEventListener("pointerdown", ev => {
+      hideMenu();
+      if (dead || (ev.button !== 0 && ev.pointerType !== "touch")) return;
+      lpFired = false;
+      if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
+      d.on = 1; d.drag = 0; d.id = ev.pointerId;
+      d.x = ev.clientX; d.y = ev.clientY;
+      d.r = parseFloat(t.style.right) || 20;
+      d.b = parseFloat(t.style.bottom) || 20;
+      try { t.setPointerCapture && t.setPointerCapture(ev.pointerId); } catch {}
+      if (isUserscript) {
+        lpTimer = setTimeout(() => {
+          lpTimer = null;
+          if (!d.on || d.drag) return;
+          lpFired = true;
+          if (wdvCfg && wdvCfg.autoSync && validateWdvUrl(wdvCfg.url)) {
+            doSync();
+          } else {
+            doGithubSync();
+          }
+        }, 600);
+      }
+    });
+
+    t.addEventListener("pointermove", ev => {
+      if (!d.on || d.id !== ev.pointerId || dead) return;
+      const dx = ev.clientX - d.x, dy = ev.clientY - d.y;
+      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
+        if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
+        d.drag = 1; d.moved = 1;
+        t.classList.add("dragging");
+      }
+      if (d.drag) ap({ right: d.r - dx, bottom: d.b - dy });
+    });
+
+    function up(ev) {
+      if (!d.on) return;
+      if (typeof ev.pointerId === "number" && d.id !== ev.pointerId) return;
+      if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
+      const was = d.drag;
+      d.on = 0; d.drag = 0; d.id = null;
+      t.classList.remove("dragging");
+      try {
+        if (t.releasePointerCapture && typeof ev.pointerId === "number")
+          t.releasePointerCapture(ev.pointerId);
+      } catch {}
+      if (was || d.moved) setTimeout(() => { d.moved = 0; }, 0);
+    }
+
+    t.addEventListener("pointerup", up);
+    t.addEventListener("pointercancel", up);
+    window.addEventListener("resize", onResize);
+
+    if (ui.open) requestAnimationFrame(() => { sync(); i.focus(); });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => run(), { once: true });
+  } else {
+    run();
+  }
+})();

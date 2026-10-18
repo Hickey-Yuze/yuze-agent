@@ -3218,6 +3218,12 @@ $('btnFindClose')?.addEventListener('click', closeFind);
 /* ══ 妙招面板 ════════════════════════════════════════════════ */
 const skillPanel = $('skillPanel');
 const skillGrid = $('skillGrid');
+(function () {
+  const host = skillGrid.closest('.sk-scroll') || skillGrid;
+  host.addEventListener('scroll', () => {
+    if (host.scrollTop + host.clientHeight >= host.scrollHeight - 320) skillGridAppend();
+  }, { passive: true });
+})();
 const skillSearch = $('skillSearch');
 let skillCat = 'all';
 let skillView = 'library';
@@ -3268,7 +3274,8 @@ const BUILTIN_SKILLS = [
   { id: 'b30', cat: 'prompt', icon: '🖼️', name: '图→反推提示词', desc: '（先选妙招再截图）根据图片反推 AI 生图的提示词，适合复刻参考图的风格与构图。', prompt: '根据我提供的图片，反推一段可用于 AI 生图的提示词，覆盖主体、场景、风格、构图与光线。', author: '666ahxxx', installs: 2750 },
   { id: 'b31', cat: 'task', icon: '📈', name: '金融大师·自进化', desc: '专业的全品类金融投资分析助手：股票推荐、评分、走势分析、基本面评估、交易建议、市场日总结、新股申购建议，并支持理财产品、基金、债券、保险分析。支持多平台财经师舆情分析与 .txt 批量导入。分析不构成投资建议。', prompt: '对当前页面或我提供的标的做全品类金融分析：走势、基本面、风险与操作建议，并标注数据来源。', author: 'Hermione', installs: 2723 },
   { id: 'b32', cat: 'script', icon: '📦', name: '小红书收藏整理', desc: '整理小红书收藏内容，支持分类归档与批量处理，方便后续查找。', prompt: '整理我小红书收藏的内容，按主题分类并给出索引。', author: 'Leo的屋儿', installs: 2599 },
-  { id: 'b33', cat: 'task', icon: '🎞️', name: '内容转视频生成器', desc: '输入任意文字内容，自动生成精美动画视频。支持产品介绍、社交媒体、知识科普、教程演示等多种场景，一键输出 MP4。无需剪辑软件，像写网页一样做视频。', prompt: '把我提供的文字内容生成一段动画视频（MP4），按场景设计节奏与转场。', author: '围巾哥萧尘', installs: 2262 }
+  { id: 'b33', cat: 'task', icon: '🎞️', name: '内容转视频生成器', desc: '输入任意文字内容，自动生成精美动画视频。支持产品介绍、社交媒体、知识科普、教程演示等多种场景，一键输出 MP4。无需剪辑软件，像写网页一样做视频。', prompt: '把我提供的文字内容生成一段动画视频（MP4），按场景设计节奏与转场。', author: '围巾哥萧尘', installs: 2262 },
+  ...(Array.isArray(window.YUZE_DISCOVER_EXTRA) ? window.YUZE_DISCOVER_EXTRA : []),
 ];
 
 async function loadCustomSkills() {
@@ -3338,7 +3345,17 @@ function renderSkillGrid() {
     skillGrid.appendChild(e);
     return;
   }
-  rows.forEach((s) => skillGrid.appendChild(skillCard(s)));
+  skillGrid._rows = rows;
+  skillGrid._shown = 0;
+  skillGridAppend();
+}
+
+function skillGridAppend() {
+  const rows = skillGrid._rows || [];
+  const PAGE = 80;
+  const next = rows.slice(skillGrid._shown, skillGrid._shown + PAGE);
+  next.forEach((s) => skillGrid.appendChild(skillCard(s)));
+  skillGrid._shown += next.length;
 }
 
 function skillCard(s) {

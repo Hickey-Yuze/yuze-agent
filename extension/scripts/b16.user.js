@@ -182,4 +182,182 @@
 </div></div>
 <div class="twe-card"><div class="twe-card-header"><div><span class="twe-card-name">🔒 锁定倍速</span><div class="twe-card-desc">防止视频自动重置速度</div></div><label class="twe-switch-wrap"><input type="checkbox" class="twe-switch" id="twe-lock-speed"></label></div></div>
 <div class="twe-section-title" style="margin-top:12px;">⌨️ 快捷键</div>
-<div class="twe-card"><div class="twe-card-desc" style="line-height:2;"><kbd style="display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(99,102,241,0.1);color:var(--twe-primary);font-size:11px;font-weight:600;margin-right:4px;">]</kbd> 加速 <kbd style="display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(99,102,241,0.1);color:var(--twe-primary);font-size:11px;font-weight:600;margin-right:4px;">[</kbd> 减速 <kbd style="display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(99,102,241,0.1);color:var(--twe-primary);font-size:11px;font-weight:600;margin-right:4px;">\
+<div class="twe-card"><div class="twe-card-desc" style="line-height:2;"><kbd style="display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(99,102,241,0.1);color:var(--twe-primary);font-size:11px;font-weight:600;margin-right:4px;">]</kbd> 加速 <kbd style="display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(99,102,241,0.1);color:var(--twe-primary);font-size:11px;font-weight:600;margin-right:4px;">[</kbd> 减速 <kbd style="display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(99,102,241,0.1);color:var(--twe-primary);font-size:11px;font-weight:600;margin-right:4px;">\\</kbd> 重置</div></div>`;
+    }
+
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    function buildNotesTab() {
+        const todoItems = state.todos.map((t, i) => `<li class="twe-todo-item ${t.done ? 'done' : ''}" data-index="${i}"><span class="twe-todo-check">${t.done ? '✓' : ''}</span><span class="twe-todo-text">${escapeHtml(t.text)}</span><span class="twe-todo-del">×</span></li>`).join('');
+        return `<div class="twe-section-title">📝 快速笔记</div>
+<div class="twe-card"><textarea class="twe-note-area" id="twe-note-area" placeholder="在这里记录灵感、摘录重点...&#10;&#10;支持划词快捷添加 → 选中文字后按 N 键">${escapeHtml(state.notes)}</textarea>
+<div class="twe-btn-group" style="justify-content:flex-end;"><button class="twe-btn" id="twe-copy-note">📋 复制</button><button class="twe-btn" id="twe-export-note">💾 导出MD</button><button class="twe-btn twe-btn-danger" id="twe-clear-note">清空</button></div></div>
+<div class="twe-section-title" style="margin-top:12px;">✅ 待办清单</div>
+<div class="twe-card"><div class="twe-todo-input-wrap"><input type="text" class="twe-todo-input" id="twe-todo-input" placeholder="添加新任务..."><button class="twe-todo-add-btn" id="twe-todo-add">+</button></div>
+<ul class="twe-todo-list" id="twe-todo-list">${todoItems || '<li style="text-align:center;color:#bbb;font-size:12px;padding:12px 0;">暂无待办，添加一个吧~</li>'}</ul></div>`;
+    }
+
+    function buildToolsTab() {
+        const mins = Math.floor(state.tomatoRemaining / 60), secs = state.tomatoRemaining % 60;
+        return `<div class="twe-section-title">🍅 番茄钟</div>
+<div class="twe-card"><div class="twe-tomato-display"><div class="twe-tomato-time" id="twe-tomato-display">${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}</div><div class="twe-tomato-label" id="twe-tomato-label">${state.tomatoRunning ? '专注中...' : '准备开始'}</div></div>
+<div class="twe-tomato-controls"><button class="twe-tomato-btn start" id="twe-tomato-start">${state.tomatoRunning ? '⏸' : '▶'}</button><button class="twe-tomato-btn reset" id="twe-tomato-reset">↺</button></div>
+<div class="twe-btn-group" style="justify-content:center;margin-top:10px;">
+<button class="twe-speed-btn" data-time="5">5分钟</button><button class="twe-speed-btn" data-time="15">15分钟</button><button class="twe-speed-btn active" data-time="25">25分钟</button><button class="twe-speed-btn" data-time="45">45分钟</button></div></div>
+<div class="twe-section-title" style="margin-top:12px;">🛠️ 实用工具</div>
+<div class="twe-card"><div class="twe-card-header"><span class="twe-card-name">📄 页面操作</span></div><div class="twe-btn-group"><button class="twe-btn" id="twe-scroll-top">↑ 回顶部</button><button class="twe-btn" id="twe-scroll-bottom">↓ 到底部</button><button class="twe-btn" id="twe-print-page">🖨️ 打印</button></div></div>
+<div class="twe-card"><div class="twe-card-header"><span class="twe-card-name">🔗 链接工具</span></div><div class="twe-btn-group"><button class="twe-btn" id="twe-copy-link">复制链接</button><button class="twe-btn" id="twe-copy-title">复制标题</button></div></div>`;
+    }
+
+    function buildStatsTab() {
+        return `<div class="twe-stats-row"><div class="twe-stat-item"><div class="twe-stat-num">${state.stats.pomodoros}</div><div class="twe-stat-label">番茄数</div></div><div class="twe-stat-item"><div class="twe-stat-num">${state.stats.todosDone}</div><div class="twe-stat-label">已完成</div></div><div class="twe-stat-item"><div class="twe-stat-num">${state.stats.notesCount}</div><div class="twe-stat-label">笔记数</div></div></div>
+<div class="twe-card" style="margin-top:14px;"><div class="twe-card-header"><span class="twe-card-name">ℹ️ 脚本信息</span></div><div class="twe-card-desc" style="line-height:2;"><strong>${CONFIG.name}</strong> v${CONFIG.version}<br>当前页面：<span style="word-break:break-all;color:var(--twe-primary);">${location.hostname}</span><br>运行状态：<span style="color:#22c55e;">● 正常运行中</span></div></div>
+<div class="twe-btn-group" style="justify-content:center;"><button class="twe-btn twe-btn-danger" id="twe-clear-data">清除所有数据</button></div>`;
+    }
+
+    function createPanel() {
+        const panel = createElement('div', 'twe-panel');
+        panel.id = 'twe-main-panel';
+        panel.innerHTML = `<div class="twe-panel-header"><div class="twe-panel-title">⚡ <span>Tabbit</span> 智能工作台</div><div class="twe-panel-actions"><button class="twe-btn-icon" id="twe-minimize" title="最小化">−</button><button class="twe-btn-icon" id="twe-close-panel" title="关闭">×</button></div></div>
+<div class="twe-tabs"><button class="twe-tab twe-active" data-tab="read">📖 阅读</button><button class="twe-tab" data-tab="video">🎬 视频</button><button class="twe-tab" data-tab="notes">📝 笔记</button><button class="twe-tab" data-tab="tools">⏱️ 效率</button><button class="twe-tab" data-tab="stats">📊 数据</button></div>
+<div class="twe-tab-content twe-active" data-tab="read">${buildReadTab()}</div>
+<div class="twe-tab-content" data-tab="video">${buildVideoTab()}</div>
+<div class="twe-tab-content" data-tab="notes">${buildNotesTab()}</div>
+<div class="twe-tab-content" data-tab="tools">${buildToolsTab()}</div>
+<div class="twe-tab-content" data-tab="stats">${buildStatsTab()}</div>`;
+        return panel;
+    }
+
+    function togglePanel() {
+        const panel = $('#twe-main-panel');
+        state.panelOpen = !state.panelOpen;
+        panel.classList.toggle('twe-active', state.panelOpen);
+    }
+    function switchTab(tabName) {
+        state.activeTab = tabName;
+        $$('.twe-tab').forEach(t => t.classList.toggle('twe-active', t.dataset.tab === tabName));
+        $$('.twe-tab-content').forEach(c => c.classList.toggle('twe-active', c.dataset.tab === tabName));
+    }
+
+    // --- Reading ---
+    function applyFontSize(size) { state.fontSize = size; storage.set('fontSize', size); document.body.style.fontSize = size + '%'; }
+    function applyLineHeight(h) { state.lineHeight = h; storage.set('lineHeight', h); $$('.twe-card,.twe-tab-content,article,main,.article,.content,.post-body,.markdown-body,.rich_media_content').forEach(el => el.style.lineHeight = h); }
+    function toggleEyeCare(on) {
+        state.eyeCareMode = on;
+        if (on) { document.body.style.backgroundColor = '#c7edcc'; document.body.style.color = '#2d4a1e'; showToast('✅ 护眼模式已开启'); }
+        else { document.body.style.backgroundColor = ''; document.body.style.color = ''; showToast('❌ 护眼模式已关闭'); }
+    }
+    function toggleFocusMode(on) {
+        state.focusMode = on;
+        if (on) { ['nav','header','footer','aside','.sidebar','.advertisement','.ad','[class*="sidebar"]','[class*="banner"]'].forEach(s => $$(s).forEach(el => el.style.display = 'none')); showToast('🎯 专注模式：已隐藏侧边栏和广告'); }
+        else location.reload();
+    }
+    function toggleImmersive(on) {
+        state.readingMode = on;
+        if (on) { document.body.style.maxWidth = '720px'; document.body.style.margin = '0 auto'; document.body.style.padding = '40px 24px'; document.body.style.backgroundColor = '#fefefe'; showToast('📖 沉浸阅读模式已开启'); }
+        else { document.body.style.cssText = ''; showToast('已退出沉浸阅读'); }
+    }
+    function resetReading() { state.fontSize = 100; state.lineHeight = 1.7; storage.set('fontSize',100); storage.set('lineHeight',1.7); document.body.style.fontSize = ''; document.body.style.backgroundColor = ''; document.body.style.color = ''; document.body.style.cssText = ''; location.reload(); }
+
+    // --- Video ---
+    function getVideo() { return $('video') || $('iframe')?.contentWindow?.document?.querySelector('video'); }
+    function setVideoSpeed(speed) {
+        state.videoSpeed = speed;
+        const video = getVideo();
+        if (video) { video.playbackRate = speed; showToast(`⚡ 播放速度：${speed}x`); }
+        else showToast('⚠️ 未检测到视频元素');
+        $('#twe-current-speed').textContent = speed + 'x';
+        $$('.twe-speed-btn').forEach(b => b.classList.toggle('active', parseFloat(b.dataset.speed) === speed));
+    }
+    function lockSpeed(lock) {
+        state.videoSpeedLocked = lock;
+        if (lock) { setInterval(() => { const v = getVideo(); if (v && v.playbackRate !== state.videoSpeed) v.playbackRate = state.videoSpeed; }, 500); showToast('🔒 倍速已锁定'); }
+        else showToast('🔓 倍速已解锁');
+    }
+
+    // --- Tomato ---
+    function updateTomatoDisplay() { const el = $('#twe-tomato-display'); if (el) { const m = Math.floor(state.tomatoRemaining/60), s = state.tomatoRemaining%60; el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; } }
+    function updateTomatoUI() { const btn = $('#twe-tomato-start'), label = $('#twe-tomato-label'); if (btn) btn.textContent = state.tomatoRunning ? '⏸' : '▶'; if (label) label.textContent = state.tomatoRunning ? '专注中...' : '准备开始'; }
+    function startTomato() { if (state.tomatoRunning) { pauseTomato(); return; } state.tomatoRunning = true; updateTomatoUI(); state.tomatoInterval = setInterval(() => { if (state.tomatoRemaining > 0) { state.tomatoRemaining--; updateTomatoDisplay(); } else completeTomato(); }, 1000); updateTomatoUI(); showToast('🍅 开始专注！'); }
+    function pauseTomato() { state.tomatoRunning = false; clearInterval(state.tomatoInterval); updateTomatoUI(); showToast('⏸ 已暂停'); }
+    function resetTomato() { state.tomatoRunning = false; clearInterval(state.tomatoInterval); state.tomatoRemaining = state.tomatoTime; updateTomatoDisplay(); updateTomatoUI(); }
+    function setTomatoTime(mins) { state.tomatoTime = mins * 60; state.tomatoRemaining = mins * 60; updateTomatoDisplay(); $$('.twe-tomato-controls ~ div .twe-speed-btn[data-time]').forEach(b => b.classList.toggle('active', parseInt(b.dataset.time) === mins)); }
+    function completeTomato() { state.tomatoRunning = false; clearInterval(state.tomatoInterval); state.stats.pomodoros++; storage.set('stats', state.stats); state.tomatoRemaining = state.tomatoTime; updateTomatoDisplay(); updateTomatoUI(); updateStatsDisplay(); showToast('🎉 番茄完成！休息一下吧~'); try { new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbsGczIjzTEl/V+OYcFh/KltMjGpWcFh/KltMjGpWcA==').play().catch(() => {}); } catch(e) {} }
+
+    // --- Todos ---
+    function saveTodos() { storage.set('todos', state.todos); }
+    function saveStats() { storage.set('stats', state.stats); }
+    function addTodo(text) { if (!text.trim()) return; state.todos.unshift({ text: text.trim(), done: false }); saveTodos(); renderTodos(); showToast('✅ 已添加待办'); }
+    function toggleTodo(index) { if (state.todos[index]) { state.todos[index].done = !state.todos[index].done; if (state.todos[index].done) state.stats.todosDone++; saveTodos(); saveStats(); renderTodos(); updateStatsDisplay(); } }
+    function deleteTodo(index) { state.todos.splice(index, 1); saveTodos(); renderTodos(); }
+    function renderTodos() { const list = $('#twe-todo-list'); if (!list) return; if (state.todos.length === 0) { list.innerHTML = '<li style="text-align:center;color:#bbb;font-size:12px;padding:12px 0;">暂无待办，添加一个吧~</li>'; return; } list.innerHTML = state.todos.map((t, i) => `<li class="twe-todo-item ${t.done?'done':''}" data-index="${i}"><span class="twe-todo-check">${t.done?'✓':''}</span><span class="twe-todo-text">${escapeHtml(t.text)}</span><span class="twe-todo-del">×</span></li>`).join(''); bindTodoEvents(list); }
+    function bindTodoEvents(container) { container.querySelectorAll('.twe-todo-item').forEach(item => { item.querySelector('.twe-todo-check').addEventListener('click', () => toggleTodo(parseInt(item.dataset.index))); item.querySelector('.twe-todo-del').addEventListener('click', () => deleteTodo(parseInt(item.dataset.index))); }); }
+
+    // --- Notes ---
+    function saveNote() { const area = $('#twe-note-area'); if (!area) return; state.notes = area.value; storage.set('notes', state.notes); if (area.value.length > 0 && state.notes !== storage.get('notes_prev', '')) { state.stats.notesCount++; storage.set('stats', state.stats); storage.set('notes_prev', state.notes); updateStatsDisplay(); } }
+
+    // --- Stats ---
+    function updateStatsDisplay() { const nums = $$('.twe-stat-num'); if (nums[0]) nums[0].textContent = state.stats.pomodoros; if (nums[1]) nums[1].textContent = state.stats.todosDone; if (nums[2]) nums[2].textContent = state.stats.notesCount; }
+
+    // --- Bind Events ---
+    function bindAllEvents(panel) {
+        $$('.twe-tab').forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.tab)));
+        $('#twe-minimize')?.addEventListener('click', togglePanel);
+        $('#twe-close-panel')?.addEventListener('click', () => { togglePanel(); showToast('面板已收起，点击悬浮球重新打开'); });
+        $('#twe-font-size')?.addEventListener('input', (e) => { applyFontSize(+e.target.value); e.target.parentElement.previousElementSibling.querySelector('span:last-child').textContent = e.target.value + '%'; });
+        $('#twe-line-height')?.addEventListener('input', (e) => { applyLineHeight(+e.target.value); e.target.parentElement.previousElementSibling.querySelector('span:last-child').textContent = e.target.value; });
+        $('#twe-eye-care')?.addEventListener('change', (e) => toggleEyeCare(e.target.checked));
+        $('#twe-focus-mode')?.addEventListener('change', (e) => toggleFocusMode(e.target.checked));
+        $('#twe-immersive')?.addEventListener('change', (e) => toggleImmersive(e.target.checked));
+        $('#twe-reset-read')?.addEventListener('click', () => { resetReading(); showToast('↺ 排版已重置'); });
+        $('#twe-exit-all')?.addEventListener('click', () => { resetReading(); state.eyeCareMode=false; state.focusMode=false; state.readingMode=false; $$('#twe-panel .twe-switch').forEach(s=>s.checked=false); showToast('✕ 已退出所有效果'); });
+        $$('.twe-speed-btn[data-speed]').forEach(btn => btn.addEventListener('click', () => { const s = btn.dataset.speed; if (s==='custom') { const val=prompt('输入自定义倍速（如 1.75）：','1.75'); if(val&&!isNaN(val)) setVideoSpeed(parseFloat(val)); } else setVideoSpeed(parseFloat(s)); }));
+        $('#twe-lock-speed')?.addEventListener('change', (e) => lockSpeed(e.target.checked));
+        $('#twe-copy-note')?.addEventListener('click', () => { navigator.clipboard.writeText($('#twe-note-area')?.value||'').then(() => showToast('📋 笔记已复制')); });
+        $('#twe-export-note')?.addEventListener('click', () => { const note=$('#twe-note-area')?.value||''; const blob=new Blob([`# 网页笔记\n\n${note}\n\n---\n导出时间：${new Date().toLocaleString()}\n来源：${location.href}`],{type:'text/markdown'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`TWE笔记_${Date.now()}.md`; a.click(); showToast('💾 Markdown文件已下载'); });
+        $('#twe-clear-note')?.addEventListener('click', () => { if($('#twe-noteArea')){$('#twe-note-area').value='';state.notes='';storage.set('notes','');showToast('笔记已清空');} });
+        $('#twe-note-area')?.addEventListener('input', () => saveNote());
+        $('#twe-todo-add')?.addEventListener('click', () => addTodo($('#twe-todo-input')?.value||''));
+        $('#twe-todo-input')?.addEventListener('keydown', (e) => { if (e.key==='Enter') addTodo(e.target.value); });
+        bindTodoEvents(panel);
+        $('#twe-tomato-start')?.addEventListener('click', startTomato);
+        $('#twe-tomato-reset')?.addEventListener('click', resetTomato);
+        $$('#twe-tomato-controls ~ div .twe-speed-btn[data-time]').forEach(b => b.addEventListener('click', () => setTomatoTime(parseInt(b.dataset.time))));
+        $('#twe-scroll-top')?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        $('#twe-scroll-bottom')?.addEventListener('click', () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }));
+        $('#twe-print-page')?.addEventListener('click', () => window.print());
+        $('#twe-copy-link')?.addEventListener('click', () => { navigator.clipboard.writeText(location.href).then(() => showToast('🔗 链接已复制')); });
+        $('#twe-copy-title')?.addEventListener('click', () => { navigator.clipboard.writeText(document.title).then(() => showToast('📄 标题已复制')); });
+        $('#twe-clear-data')?.addEventListener('click', () => { if(confirm('确定要清除所有数据吗？')) { localStorage.removeItem('twe_ballPos');localStorage.removeItem('twe_fontSize');localStorage.removeItem('twe_lineHeight');localStorage.removeItem('twe_todos');localStorage.removeItem('twe_notes');localStorage.removeItem('twe_stats');location.reload(); } });
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.isContentEditable) return;
+            if (e.key===']') setVideoSpeed(Math.min(16,state.videoSpeed+0.25));
+            if (e.key==='[') setVideoSpeed(Math.max(0.25,state.videoSpeed-0.25));
+            if (e.key==='\\') setVideoSpeed(1);
+            if ((e.key==='n'||e.key==='N') && window.getSelection().toString().trim()) {
+                const selected = window.getSelection().toString().trim();
+                const noteArea = $('#twe-note-area');
+                if (noteArea) { noteArea.value += (noteArea.value?'\n':'')+`> ${selected}\n`; saveNote(); showToast('📝 已添加到笔记'); switchTab('notes'); }
+            }
+        });
+    }
+
+    function init() {
+        const styleEl = document.createElement('style');
+        styleEl.textContent = styles;
+        document.head.appendChild(styleEl);
+        const ball = createFloatBall();
+        document.body.appendChild(ball);
+        const panel = createPanel();
+        document.body.appendChild(panel);
+        const rect = ball.getBoundingClientRect();
+        panel.style.right = (window.innerWidth - rect.left + 16) + 'px';
+        panel.style.bottom = (window.innerHeight - rect.top - 20) + 'px';
+        bindAllEvents(panel);
+        document.addEventListener('click', (e) => { if (state.panelOpen && !panel.contains(e.target) && !ball.contains(e.target)) togglePanel(); });
+        console.log(`%c⚡ ${CONFIG.name} v${CONFIG.version} 已启动`, 'color:#6366f1;font-weight:bold;font-size:14px;');
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+})();
