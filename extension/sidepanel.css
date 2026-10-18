@@ -1612,10 +1612,10 @@ body {
 
 /* 引用条（规格版：吸附输入框顶部，共用圆角容器，浅灰 #F1F2F4） */
 .quote-top { display: contents; }
-.quote-wrap { display: flex; align-items: center; gap: 10px; margin: -10px -10px 6px; padding: 0 14px; min-height: 44px; background: #F1F2F4; border-radius: 12px; flex: none; }
+.quote-wrap { display: flex; align-items: center; gap: 10px; margin: -10px -10px 6px; padding: 5px 14px; min-height: 0; background: #F1F2F4; border-radius: 12px; flex: none; }
 .quote-wrap.hidden { display: none; }
 .quote-wrap.q-disabled { opacity: .6; }
-.quote-wrap .quote-bar { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; padding: 8px 0; overflow-x: auto; scrollbar-width: none; }
+.quote-wrap .quote-bar { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; padding: 4px 0; overflow-x: auto; scrollbar-width: none; }
 .quote-wrap .quote-bar::-webkit-scrollbar { display: none; }
 .quote-wrap .quote-switch { flex: none; }
 .quote-chip { display: inline-flex; align-items: center; gap: 8px; min-width: 0; background: transparent; border: 0; border-radius: 0; padding: 0; font-size: 13px; color: #1A1D21; }
