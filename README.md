@@ -56,7 +56,7 @@ chrome.debugger → 原生 CDP → 当前标签页
 
 齿轮 ⚙ 打开设置弹窗 →「提供商」→ 编辑：
 
-- **WorkBuddy 本机网关**（默认）：本机 `http://127.0.0.1:7863/v1`，无需 API Key。
+- **本机网关**（默认）：本机 `http://127.0.0.1:7863/v1`，无需 API Key。
 - 自定义：任意 OpenAI 兼容 `/chat/completions` 接口，填 API Key、API 地址、模型名；点「获取模型」自动列出可用模型。
 
 Key 保存在 `chrome.storage.local`，只留在本机浏览器里。
