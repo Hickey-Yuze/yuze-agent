@@ -3550,16 +3550,25 @@ function openSkillDetail(s) {
 
   const codeEl = $('sdCode');
   if (codeEl) {
-    codeEl.textContent = '';
+    codeEl.value = '';
+    sdDefaultCode = '';
+    const ov = (scriptOverrides || {})[s.id];
     if (s.codeFile) {
-      codeEl.textContent = '加载中…';
-      fetch(chrome.runtime.getURL(s.codeFile))
-        .then((r) => r.text())
-        .then((t) => { codeEl.textContent = t; })
-        .catch((e) => { codeEl.textContent = '读取失败：' + (e && e.message); });
+      codeEl.value = '加载中…';
+      if (ov != null) {
+        sdDefaultCode = ov;
+        codeEl.value = ov;
+      } else {
+        fetch(chrome.runtime.getURL(s.codeFile))
+          .then((r) => r.text())
+          .then((t) => { sdDefaultCode = t; if (mzCurrent && mzCurrent.id === s.id) codeEl.value = t; updateSdCodeBtns(); })
+          .catch((e) => { codeEl.value = '读取失败：' + (e && e.message); });
+      }
     } else {
-      codeEl.textContent = '该妙招不含脚本代码（提示词类）。';
+      codeEl.value = '该妙招不含脚本代码（提示词类）。';
     }
+    codeEl.readOnly = !s.codeFile;
+    updateSdCodeBtns();
   }
 
   skillPanel.classList.add('hidden');
@@ -3580,6 +3589,14 @@ $('btnSkillRun')?.addEventListener('click', async () => {
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab || !tab.id) { setStatus('\u6ca1\u6709\u6d3b\u52a8\u6807\u7b7e\u9875'); return; }
+    const ov = (scriptOverrides || {})[mzCurrent.id];
+    if (ov != null) {
+      // \u5df2\u7f16\u8f91\u4fdd\u5b58\u7684\u811a\u672c\uff1a\u7528 debugger \u6ce8\u5165\u6700\u65b0\u4ee3\u7801\uff08\u4e0d\u53d7\u9875\u9762 CSP \u9650\u5236\uff09
+      await cdp('Runtime.evaluate', { expression: ov, userGesture: true });
+      setStatus('\u5df2\u8fd0\u884c\uff08\u7f16\u8f91\u7248\uff09\uff1a' + mzCurrent.name);
+      setTimeout(() => setStatus(''), 2500);
+      return;
+    }
     // 先释放 debugger（agent 的浏览器工具会占用该页，导致脚本注入被阻塞）
     if (attachedTabId !== null) {
       try { await chrome.debugger.detach({ tabId: attachedTabId }); } catch (_) {}
@@ -3592,6 +3609,44 @@ $('btnSkillRun')?.addEventListener('click', async () => {
     setStatus('\u8fd0\u884c\u5931\u8d25\uff1a' + ((e && e.message) || e));
     setTimeout(() => setStatus(''), 4000);
   }
+});
+
+let sdDefaultCode = '';
+let scriptOverrides = {};
+(async () => { try { const o = await chrome.storage.local.get('scriptOverrides'); scriptOverrides = o.scriptOverrides || {}; } catch (_) {} })();
+
+function updateSdCodeBtns() {
+  const s = mzCurrent; const save = $('btnSdSave'); const reset = $('btnSdReset');
+  if (!save || !reset) return;
+  const editable = !!(s && s.codeFile);
+  const val = $('sdCode') ? $('sdCode').value : '';
+  save.classList.toggle('hidden', !editable || val === sdDefaultCode || !sdDefaultCode);
+  reset.classList.toggle('hidden', !(editable && (scriptOverrides || {})[s.id] != null));
+}
+$('sdCode')?.addEventListener('input', updateSdCodeBtns);
+$('btnSdSave')?.addEventListener('click', async () => {
+  if (!mzCurrent || !mzCurrent.codeFile) return;
+  scriptOverrides = scriptOverrides || {};
+  scriptOverrides[mzCurrent.id] = $('sdCode').value;
+  try {
+    await chrome.storage.local.set({ scriptOverrides });
+    setStatus('已保存脚本，下次运行生效');
+    setTimeout(() => setStatus(''), 2500);
+  } catch (e) {
+    setStatus('保存失败：' + ((e && e.message) || e));
+    setTimeout(() => setStatus(''), 4000);
+  }
+  updateSdCodeBtns();
+});
+$('btnSdReset')?.addEventListener('click', async () => {
+  if (!mzCurrent || !mzCurrent.codeFile) return;
+  delete scriptOverrides[mzCurrent.id];
+  try { await chrome.storage.local.set({ scriptOverrides }); } catch (_) {}
+  const el = $('sdCode');
+  if (el && sdDefaultCode) el.value = sdDefaultCode;
+  setStatus('已还原默认脚本');
+  setTimeout(() => setStatus(''), 2500);
+  updateSdCodeBtns();
 });
 
 function closeSkillDetail() {

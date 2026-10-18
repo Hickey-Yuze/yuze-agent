@@ -1539,6 +1539,12 @@ body {
   border-radius: 9px; padding: 6px 11px; cursor: pointer;
 }
 .se-add:hover { color: var(--accent); border-color: var(--accent-line); }
+.sd-code-head { display: flex; justify-content: flex-end; gap: 8px; margin: 0 0 8px; }
+.sd-code-btn { font: inherit; font-size: 12px; border-radius: 8px; padding: 5px 12px; cursor: pointer; border: 1px solid var(--line); background: #fff; color: var(--text); }
+.sd-code-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.sd-code-btn.hidden { display: none; }
+textarea.sd-code { width: 100%; box-sizing: border-box; resize: vertical; outline: none; }
+textarea.sd-code:focus { border-color: rgba(0,122,255,.5); background: #fff; }
 .sd-code { background: #f6f6f8; border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin: 0 0 18px; font: 11px/1.5 ui-monospace, "SF Mono", Menlo, monospace; color: var(--text); white-space: pre; overflow: auto; max-height: 320px; }
 .sd-runmode { display: inline-flex; gap: 6px; margin: 2px 0 16px; background: #f2f2f4; border-radius: 9px; padding: 3px; }
 .sd-mode { font: inherit; font-size: 12px; color: var(--text-dim); background: none; border: none; padding: 5px 14px; border-radius: 7px; cursor: pointer; }

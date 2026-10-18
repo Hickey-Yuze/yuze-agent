@@ -41,11 +41,21 @@ try {
         const code = (document.querySelector('#sdCode') || {}).textContent || '';
         const runBtn = document.querySelector('#btnSkillRun');
         const modes = [...document.querySelectorAll('.sd-mode')].map(m => m.dataset.mode + ':' + (m.classList.contains('active') ? 'on' : 'off'));
-        return JSON.stringify({ detail, name: document.querySelector('#sdName').textContent, codeLen: code.length, runVisible: !!(runBtn && getComputedStyle(runBtn).display !== 'none'), modes });
+        
+        const sd = document.getElementById('sdCode');
+        const sv = document.getElementById('btnSdSave');
+        sd.value = (sd.value || '') + '\\n// edited';
+        sd.dispatchEvent(new Event('input'));
+        const saveShown = !sv.classList.contains('hidden');
+        if (saveShown) { sv.click(); await new Promise(r => setTimeout(r, 300)); }
+        const overrides = (await chrome.storage.local.get('scriptOverrides')).scriptOverrides || {};
+        const savedLen = (overrides['b15'] || '').length;
+        return JSON.stringify({ savedLen, detail, name: document.querySelector('#sdName').textContent, codeLen: (document.getElementById('sdCode')?.value || '').length, runVisible: !!(runBtn && getComputedStyle(runBtn).display !== 'none'), modes });
       } catch (e) { return 'ERR: ' + (e && e.message); }
     })()`,
     awaitPromise: true, returnByValue: true,
   }, sessionId);
+  console.log('RAW:', JSON.stringify(r).slice(0, 600));
   console.log('SCRIPT:', r.result.value);
   const shot = await send('Page.captureScreenshot', { format: 'png' }, sessionId);
   writeFileSync(join(DOCS, 'script-detail.png'), Buffer.from(shot.data, 'base64'));
