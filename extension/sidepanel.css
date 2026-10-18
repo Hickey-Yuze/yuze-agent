@@ -46,7 +46,8 @@ body {
   height: 48px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
+  gap: 4px;
   padding: 0 10px 0 12px;
   border-bottom: 1px solid var(--line-soft);
   background: rgba(245, 245, 247, .84);
@@ -778,9 +779,9 @@ body {
 /* ══ 引用条 / 引用菜单 ═══════════════════════════════════ */
 .quote-bar { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 20px 7px; }
 .quote-chip {
-  display: inline-flex; align-items: center; gap: 5px; max-width: 100%;
-  background: var(--surface-3); border: 1px solid var(--line);
-  border-radius: 8px; padding: 3px 5px 3px 8px;
+  display: inline-flex; align-items: center; gap: 6px; max-width: 100%;
+  background: transparent; border: 0; border-radius: 0;
+  padding: 2px 2px 2px 0;
   font-size: 11.5px; color: var(--text-dim);
   animation: msgIn .14s ease;
 }
@@ -1609,11 +1610,12 @@ body {
 .settings .prov-del { padding: 6px 10px; }
 .settings .prov-body { padding: 2px 14px 13px; }
 
-/* 引用条 + 开关同行 */
+/* 引用条（对照图二：通宽白底 bar，chip 为文字式，开关在右端） */
 .quote-top { display: contents; }
-.quote-wrap { display: flex; align-items: stretch; gap: 8px; margin: 0 22px 8px; }
+.quote-wrap { display: flex; align-items: stretch; gap: 10px; margin: 0; padding: 0 12px 0 16px; background: #fff; border-top: 1px solid var(--line); }
 .quote-wrap.hidden { display: none; }
-.quote-wrap .quote-bar { flex: 1; min-width: 0; margin: 0; }
+.quote-wrap .quote-bar { flex: 1; min-width: 0; margin: 0; padding: 9px 0; flex-wrap: nowrap; overflow-x: auto; }
+.quote-wrap .quote-bar::-webkit-scrollbar { display: none; }
 .quote-wrap .quote-switch { flex: none; }
 
 /* 提供商卡两行布局 + 状态（对照设计稿） */
