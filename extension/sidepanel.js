@@ -1965,7 +1965,7 @@ async function connectMcp(server) {
   await mcpRpc(server, 'initialize', {
     protocolVersion: '2024-11-05',
     capabilities: {},
-    clientInfo: { name: 'chrome-agent', version: '0.4' }
+    clientInfo: { name: 'Yuze-agent', version: '0.5' }
   });
   const list = await mcpRpc(server, 'tools/list', {});
   const seen = new Set();

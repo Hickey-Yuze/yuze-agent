@@ -127,7 +127,7 @@ node server.mjs      # 保持运行
 文字版：
 
 ```
-chrome-agent/
+Yuze-agent/
 ├── extension/          # Chrome MV3 扩展本体
 │   ├── manifest.json
 │   ├── sidepanel.html / .css / .js   # 侧边栏 UI 与全部逻辑
