@@ -811,14 +811,43 @@ function prettyResult(raw) {
   return s;
 }
 
+const WELCOME_CARDS = [
+  { ico: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14.5 14.5 0 0 1 0 18 14.5 14.5 0 0 1 0-18z"/></svg>', title: '打开网页并总结', q: '打开 example.com 并告诉我这页的标题', hint: '例如：打开 example.com 并告诉我这页的标题' },
+  { ico: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21M8.5 11h5M8.5 8.5h5"/></svg>', title: '搜索并浏览结果', q: '在搜索框输入「机械键盘」并查看搜索结果', hint: '在搜索框输入「机械键盘」并查看搜索结果' },
+  { ico: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8z"/></svg>', title: '模拟点击操作', q: '点开第一条结果，总结这页讲了什么', hint: '点开第一条结果，总结这页讲了什么' },
+];
+
+function hostOf(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (_) { return u || ''; } }
+
 function welcomeNode() {
   const d = document.createElement('div');
   d.className = 'welcome';
-  d.innerHTML = `<h2>让它替你操作页面</h2><ul>
-    <li>打开 example.com 并告诉我标题</li>
-    <li>在搜索框输入「机械键盘」并搜索</li>
-    <li>点开第一条结果，总结这页在讲什么</li>
-  </ul>`;
+  let recents = [];
+  try {
+    const list = recentSessions.filter((s) => s && s.title && s.host);
+    for (const s of list.slice(0, 2)) recents.push({ title: s.title.slice(0, 14), host: s.host });
+  } catch (_) {}
+  const cardsHtml = WELCOME_CARDS.map((c, i) => `
+    <button type="button" class="wl-card" data-i="${i}">
+      <span class="wl-ico">${c.ico}</span><b>${c.title}</b><i>${c.hint}</i>
+    </button>`).join('');
+  const recentHtml = recents.length
+    ? `<div class="wl-recent"><span class="wl-rl">最近任务</span>${recents.map((r) => `<button type="button" class="wl-chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>${r.title} · ${r.host}</button>`).join('')}</div>`
+    : '';
+  d.innerHTML = `
+    <div class="wl-hero">
+      <h2>描述任务，我替你操作页面</h2>
+      <p>打开网页、搜索信息、填写表单、抓取数据，像真人一样替你操作浏览器</p>
+      <span class="wl-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.9 5.6L19.5 10.5l-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z"/></svg>AI 浏览器助手</span>
+    </div>
+    <div class="wl-cards">${cardsHtml}</div>
+    ${recentHtml}`;
+  d.querySelectorAll('.wl-card').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const inp = document.getElementById('inpMsg');
+      if (inp) { inp.value = WELCOME_CARDS[+btn.dataset.i].q; inp.focus(); inp.dispatchEvent(new Event('input')); }
+    });
+  });
   return d;
 }
 
@@ -1481,9 +1510,11 @@ window.addEventListener('unload', () => {
 
 const SESS_LIMIT = 100;
 
+let recentSessions = [];
 async function loadSessions() {
   const o = await chrome.storage.local.get('sessions');
-  return Array.isArray(o.sessions) ? o.sessions : [];
+  recentSessions = Array.isArray(o.sessions) ? o.sessions : [];
+  return recentSessions;
 }
 async function saveSessions(list) {
   await chrome.storage.local.set({ sessions: list });

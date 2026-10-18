@@ -42,10 +42,15 @@ try {
         // quoteWrap
         const at = !!document.querySelector('#btnQuote .at-ic');
         const swInWrap = !!document.querySelector('#quoteWrap > #btnQuoteAuto');
+        const tb = !!document.querySelector('.topbar .topbar-name');
+        const tbBtns = [...document.querySelectorAll('.topbar .tb-btn')].map(b => b.id).join(',');
+        const wlH = document.querySelector('.wl-hero h2')?.textContent;
+        const wlCards = document.querySelectorAll('.wl-card').length;
+        const ver = document.getElementById('setVer')?.textContent || '';
         document.querySelector('#btnSettingsClose').click();
         await new Promise(r => setTimeout(r, 200));
         document.querySelector('#btnSettings').click();
-        return JSON.stringify({ card, title, rows, save, provEdit, status, closed, at, swInWrap });
+        return JSON.stringify({ card, title, rows, save, provEdit, status, closed, at, swInWrap, tb, tbBtns, wlH, wlCards, ver });
       } catch (e) { return 'ERR: ' + ((e && e.message) || e); }
     })()`,
     awaitPromise: true, returnByValue: true,
