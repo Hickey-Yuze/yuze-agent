@@ -1,3 +1,6 @@
+// 点击工具栏图标直接打开侧边栏（MV3 必须显式开启，否则点图标无反应）
+chrome.sidePanel?.setPanelBehavior?.({ openPanelOnActionClick: true }).catch(() => {});
+
 // 自动运行：进入匹配网站时自动注入已启用「自动运行」的脚本技炉
 chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
   if (info.status !== 'complete' || !tab.url) return;
