@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         TripReader 旅游攻略结构化助手
-// @namespace    tabbit-hackathon-tripreader
+// @namespace    Yuze-hackathon-tripreader
 // @version      0.3.0
 // @description  手动触发，将任意网页的旅游攻略正文结构化为路线、玩法、热点、实用信息四类卡片，附带原文溯源高亮与 Markdown 导出
 // @author       liangrui08
@@ -429,7 +429,7 @@ ${page.content || ""}`;
 /** 网页注入层：攻略总结侧边栏 */
 (function (global) {
   "use strict";
-  // 同一文档内若 Tabbit 再次执行脚本，沿用已有 UI 对象和解析状态。
+  // 同一文档内若 Yuze 再次执行脚本，沿用已有 UI 对象和解析状态。
   if (global.__tripreaderUI) {
     global.UI = global.__tripreaderUI;
     return;
@@ -508,7 +508,7 @@ ${page.content || ""}`;
 (function () {
   "use strict";
 
-  // Tabbit 可能在同一页面重复执行妙招。避免第二次初始化覆盖已有结果，
+  // Yuze 可能在同一页面重复执行技炉。避免第二次初始化覆盖已有结果，
   // 同一 document 的运行实例只保留一份；真正刷新或 URL 切换仍会按正常逻辑重置。
   if (window.__tripreaderMainInitialized) return;
   window.__tripreaderMainInitialized = true;
@@ -580,7 +580,7 @@ ${page.content || ""}`;
     log("URL 变化，侧边栏已重置，等待手动解析:", location.href);
   }
 
-  // Tabbit 可能在未刷新页面时重新注入脚本。复用已有侧边栏时保留已展示的结果，
+  // Yuze 可能在未刷新页面时重新注入脚本。复用已有侧边栏时保留已展示的结果，
   // 只有首次创建侧边栏才渲染就绪态。
   const reusedExistingPanel = UI.mount();
   UI.setAnalyzeHandler(analyzeCurrentPage);

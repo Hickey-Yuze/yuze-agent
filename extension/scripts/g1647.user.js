@@ -1,5 +1,5 @@
 // ==========================================
-// 单脚本：爆款矩阵智能填充工坊 (Tabbit Script)
+// 单脚本：爆款矩阵智能填充工坊 (Yuze Script)
 // 核心功能：输入主题 -> AI生成内容 -> 自动识别网页并填充
 // ==========================================
 
@@ -63,7 +63,7 @@
         goBtn.disabled = true;
 
         try {
-            // 核心提示词（内置在脚本中，替代外部提示词妙招）
+            // 核心提示词（内置在脚本中，替代外部提示词技炉）
             const promptText = `你是一个爆款短视频策划专家。请针对主题：“${topic}”，生成用于新媒体平台（抖音/B站/小红书）的发布物料。
 请以严格的 JSON 格式返回，不要包含任何 Markdown 标记，仅提供纯 JSON。
 JSON 结构必须为：
@@ -74,8 +74,8 @@ JSON 结构必须为：
   "script": "包含黄金开头、痛点引入、解决方案的短视频简短逐字稿（200字左右）。"
 }`;
 
-            // 调用 Tabbit 内置大模型 API
-            const response = await window.Tabbit.AI.invoke({
+            // 调用 Yuze 内置大模型 API
+            const response = await window.Yuze.AI.invoke({
                 task: "content_generation_suite",
                 prompt: promptText,
                 model: "gpt-4"

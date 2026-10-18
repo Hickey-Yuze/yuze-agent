@@ -22,7 +22,7 @@
     return;
   }
 
-  const adapter = window.TabbitStudyAdapter || {};
+  const adapter = window.YuzeStudyAdapter || {};
   const defaultState = () => ({
     version: 1,
     timer: {

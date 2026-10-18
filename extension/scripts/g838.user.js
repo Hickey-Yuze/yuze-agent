@@ -180,7 +180,7 @@
       + '<h1>' + title + '</h1>'
       + '<div class="meta">来源：法安网 | 导出时间：' + now + '</div>'
       + '<div class="content">' + contentHtml + '</div>'
-      + '<div class="footer">Tabbit 浏览器 · 一键导出</div>'
+      + '<div class="footer">Yuze 浏览器 · 一键导出</div>'
       + '</body>'
       + '</html>';
 

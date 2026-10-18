@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      1.0
 // @description  网页护眼助手，支持字体调整、护眼模式、颜色自定义和拖拽功能
-// @author       Tabbit
+// @author       Yuze
 // @match        *://*/*
 // @grant        none
 // ==/UserScript==

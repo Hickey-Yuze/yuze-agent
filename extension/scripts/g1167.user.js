@@ -130,7 +130,7 @@
   // ====== 注入UI ======
   function injectUI(data, title) {
     // 移除旧面板
-    var old = document.getElementById('tabbit-img-extractor');
+    var old = document.getElementById('Yuze-img-extractor');
     if (old) old.remove();
 
     var allImages = data.mainImages.concat(data.detailImages);
@@ -140,14 +140,14 @@
     if (allImages.length === 0) return;
 
     var panel = document.createElement('div');
-    panel.id = 'tabbit-img-extractor';
+    panel.id = 'Yuze-img-extractor';
 
     // 样式
     var style = document.createElement('style');
     style.textContent = '\
-      #tabbit-img-btn{position:fixed;right:20px;bottom:20px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:99999;box-shadow:0 4px 15px rgba(102,126,234,0.4);transition:transform .2s}\
-      #tabbit-img-btn:hover{transform:scale(1.1)}\
-      #tabbit-img-panel{position:fixed;right:20px;top:50%;transform:translateY(-50%);width:360px;max-height:80vh;background:#fff;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.15);z-index:99999;font-family:-apple-system,sans-serif;display:flex;flex-direction:column;overflow:hidden}\
+      #Yuze-img-btn{position:fixed;right:20px;bottom:20px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:99999;box-shadow:0 4px 15px rgba(102,126,234,0.4);transition:transform .2s}\
+      #Yuze-img-btn:hover{transform:scale(1.1)}\
+      #Yuze-img-panel{position:fixed;right:20px;top:50%;transform:translateY(-50%);width:360px;max-height:80vh;background:#fff;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.15);z-index:99999;font-family:-apple-system,sans-serif;display:flex;flex-direction:column;overflow:hidden}\
       .tie-header{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:16px;display:flex;justify-content:space-between;align-items:center}\
       .tie-header h3{margin:0;font-size:16px;font-weight:600}\
       .tie-close{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:0;line-height:1}\
@@ -170,7 +170,7 @@
 
     // 浮动按钮
     var btn = document.createElement('div');
-    btn.id = 'tabbit-img-btn';
+    btn.id = 'Yuze-img-btn';
     btn.textContent = '📸';
     btn.title = '提取商品图片';
     document.body.appendChild(btn);
@@ -195,7 +195,7 @@
     }
 
     var panelHTML = '\
-      <div id="tabbit-img-panel" style="display:none">\
+      <div id="Yuze-img-panel" style="display:none">\
         <div class="tie-header"><h3>📸 商品图提取</h3><button class="tie-close" id="tie-close-btn">✕</button></div>\
         <div class="tie-info"><span>共 <b>' + allImages.length + '</b> 张图片（主图' + mainCount + ' + 详情' + detailCount + '）</span><button id="tie-rescan" style="background:none;border:none;color:#667eea;font-size:13px;cursor:pointer">🔄 重新扫描</button></div>\
         <div class="tie-body">' + mainHTML + detailHTML + '</div>\
@@ -209,19 +209,19 @@
 
     // 事件绑定
     btn.addEventListener('click', function() {
-      var p = document.getElementById('tabbit-img-panel');
+      var p = document.getElementById('Yuze-img-panel');
       p.style.display = p.style.display === 'none' ? 'flex' : 'none';
     });
 
     document.getElementById('tie-close-btn').addEventListener('click', function() {
-      document.getElementById('tabbit-img-panel').style.display = 'none';
+      document.getElementById('Yuze-img-panel').style.display = 'none';
     });
 
     document.getElementById('tie-rescan').addEventListener('click', function() {
       var newData = extractImages(detectPlatform());
-      document.getElementById('tabbit-img-panel').remove();
+      document.getElementById('Yuze-img-panel').remove();
       injectUI(newData, getProductTitle(detectPlatform()));
-      document.getElementById('tabbit-img-panel').style.display = 'flex';
+      document.getElementById('Yuze-img-panel').style.display = 'flex';
     });
 
     document.getElementById('tie-dl-main').addEventListener('click', function() {

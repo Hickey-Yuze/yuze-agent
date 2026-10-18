@@ -2,19 +2,19 @@
 (function() {
   'use strict';
 
-  const SCRIPT_ID = 'tabbit-img-prompt-studio';
+  const SCRIPT_ID = 'Yuze-img-prompt-studio';
   const STYLE_ID = `${SCRIPT_ID}-style`;
   const PANEL_ID = `${SCRIPT_ID}-panel`;
   const RESULT_PANEL_ID = `${SCRIPT_ID}-result-panel`;
   const LAUNCHER_ID = `${SCRIPT_ID}-launcher`;
   const ERROR_DIALOG_ID = `${SCRIPT_ID}-error-dialog`;
-  const PROCESSED_ATTR = 'data-tabbit-img-prompt-studio-ready';
-  const HOST_CLASS = 'tabbit-img-prompt-host';
-  const BUTTON_CLASS = 'tabbit-img-prompt-button';
-  const STATUS_CLASS = 'tabbit-img-prompt-status';
-  const STORAGE_KEY = 'tabbit:image-prompt-studio:history:v1';
-  const OUTPUT_STORAGE_KEY = 'tabbit:image-prompt-studio:outputs:v1';
-  const CLEANUP_KEY = '__tabbitImagePromptStudioCleanup';
+  const PROCESSED_ATTR = 'data-Yuze-img-prompt-studio-ready';
+  const HOST_CLASS = 'Yuze-img-prompt-host';
+  const BUTTON_CLASS = 'Yuze-img-prompt-button';
+  const STATUS_CLASS = 'Yuze-img-prompt-status';
+  const STORAGE_KEY = 'Yuze:image-prompt-studio:history:v1';
+  const OUTPUT_STORAGE_KEY = 'Yuze:image-prompt-studio:outputs:v1';
+  const CLEANUP_KEY = '__YuzeImagePromptStudioCleanup';
 
   if (window[CLEANUP_KEY]) window[CLEANUP_KEY]();
 
@@ -110,9 +110,9 @@
     maxOutputs: 50,
     analysisTimeoutMs: 90000,
     generationTimeoutMs: 180000,
-    mockAnalysisDelayMs: Math.max(0, Number(window.__tabbitImagePromptStudioConfig?.mockAnalysisDelayMs) || 520),
-    mockGenerationDelayMs: Math.max(0, Number(window.__tabbitImagePromptStudioConfig?.mockGenerationDelayMs) || 620),
-    mockBridge: Boolean(window.__tabbitImagePromptStudioConfig?.mockBridge)
+    mockAnalysisDelayMs: Math.max(0, Number(window.__YuzeImagePromptStudioConfig?.mockAnalysisDelayMs) || 520),
+    mockGenerationDelayMs: Math.max(0, Number(window.__YuzeImagePromptStudioConfig?.mockGenerationDelayMs) || 620),
+    mockBridge: Boolean(window.__YuzeImagePromptStudioConfig?.mockBridge)
   };
 
   function cleanText(value) {
@@ -195,7 +195,7 @@
     const details = sanitizeErrorLogValue(entry.rawError);
     const context = sanitizeErrorLogValue(entry.context || {});
     return [
-      'Tabbit 图片 Prompt 工作室错误日志（日志专用版）',
+      'Yuze 图片 Prompt 工作室错误日志（日志专用版）',
       `时间: ${entry.timestamp}`,
       `步骤: ${entry.step}`,
       `页面: ${location.href}`,
@@ -245,31 +245,31 @@
       document.getElementById(ERROR_DIALOG_ID)?.remove();
       const overlay = document.createElement('div');
       overlay.id = ERROR_DIALOG_ID;
-      overlay.className = 'tabbit-img-error-overlay';
+      overlay.className = 'Yuze-img-error-overlay';
       overlay.setAttribute('role', 'dialog');
       overlay.setAttribute('aria-modal', 'true');
       overlay.setAttribute('aria-label', '错误日志');
       overlay.innerHTML = `
-        <section class="tabbit-img-error-dialog">
-          <div class="tabbit-img-error-head">
+        <section class="Yuze-img-error-dialog">
+          <div class="Yuze-img-error-head">
             <div>
               <strong>操作失败 · ${escapeHtml(entry.step)}</strong>
               <span>日志专用版已捕获完整错误信息</span>
             </div>
-            <button type="button" class="tabbit-img-error-close" data-action="close-error-log" aria-label="关闭">×</button>
+            <button type="button" class="Yuze-img-error-close" data-action="close-error-log" aria-label="关闭">×</button>
           </div>
-          <textarea class="tabbit-img-error-log" readonly spellcheck="false" aria-label="可复制的错误日志"></textarea>
-          <div class="tabbit-img-error-foot">
-            <span class="tabbit-img-error-status">可直接选择文本，或点击复制日志。</span>
+          <textarea class="Yuze-img-error-log" readonly spellcheck="false" aria-label="可复制的错误日志"></textarea>
+          <div class="Yuze-img-error-foot">
+            <span class="Yuze-img-error-status">可直接选择文本，或点击复制日志。</span>
             <div>
-              <button type="button" class="tabbit-img-error-secondary" data-action="close-error-log">关闭</button>
-              <button type="button" class="tabbit-img-error-primary" data-action="copy-error-log">复制日志</button>
+              <button type="button" class="Yuze-img-error-secondary" data-action="close-error-log">关闭</button>
+              <button type="button" class="Yuze-img-error-primary" data-action="copy-error-log">复制日志</button>
             </div>
           </div>
         </section>
       `;
-      const textarea = overlay.querySelector('.tabbit-img-error-log');
-      const status = overlay.querySelector('.tabbit-img-error-status');
+      const textarea = overlay.querySelector('.Yuze-img-error-log');
+      const status = overlay.querySelector('.Yuze-img-error-status');
       const copyButton = overlay.querySelector('[data-action="copy-error-log"]');
       textarea.value = entry.logText;
       overlay.querySelectorAll('[data-action="close-error-log"]').forEach(button => {
@@ -282,7 +282,7 @@
       (document.body || document.documentElement).appendChild(overlay);
       window.setTimeout(() => textarea.focus(), 0);
     } catch (dialogError) {
-      console.error('[Tabbit][错误日志弹窗创建失败]', dialogError, entry.logText);
+      console.error('[Yuze][错误日志弹窗创建失败]', dialogError, entry.logText);
       window.alert?.(`操作失败：${entry.step}\n\n${entry.logText}`);
     }
   }
@@ -302,7 +302,7 @@
     };
     entry.logText = formatErrorLog(entry);
     state.errorLogs = [entry, ...state.errorLogs].slice(0, 20);
-    console.error(`[Tabbit][${entry.step}]`, error, context);
+    console.error(`[Yuze][${entry.step}]`, error, context);
     showErrorLogDialog(entry);
     return entry;
   }
@@ -316,7 +316,7 @@
       return await withTimeout(factory(), timeoutMs, label);
     } catch (error) {
       if (!isBridgeAuthWarmupError(error)) throw error;
-      console.warn(`[Tabbit] ${label} 首次鉴权未就绪，自动重试一次:`, error);
+      console.warn(`[Yuze] ${label} 首次鉴权未就绪，自动重试一次:`, error);
       await sleep(700);
       return withTimeout(factory(), timeoutMs, label);
     }
@@ -460,10 +460,10 @@
   }
 
   function getActivePromptTextarea() {
-    const activePane = state.panel?.querySelector(`.tabbit-img-studio-pane[data-pane="${state.activeTab}"]`);
-    return activePane?.querySelector('.tabbit-img-studio-prompt-textarea[data-role="main-prompt"]')
-      || activePane?.querySelector('.tabbit-img-studio-prompt-textarea')
-      || state.panel?.querySelector('.tabbit-img-studio-prompt-textarea')
+    const activePane = state.panel?.querySelector(`.Yuze-img-studio-pane[data-pane="${state.activeTab}"]`);
+    return activePane?.querySelector('.Yuze-img-studio-prompt-textarea[data-role="main-prompt"]')
+      || activePane?.querySelector('.Yuze-img-studio-prompt-textarea')
+      || state.panel?.querySelector('.Yuze-img-studio-prompt-textarea')
       || null;
   }
 
@@ -521,7 +521,7 @@
 
   function syncSelectedPromptDom(item) {
     if (!state.panel || !item || item.id !== state.selectedId) return;
-    const promptTextarea = state.panel.querySelector('.tabbit-img-studio-prompt-textarea[data-prompt-kind="recreate"]') || getActivePromptTextarea();
+    const promptTextarea = state.panel.querySelector('.Yuze-img-studio-prompt-textarea[data-prompt-kind="recreate"]') || getActivePromptTextarea();
     if (promptTextarea && promptTextarea.dataset.role !== 'negative' && promptTextarea.dataset.role !== 'main-prompt') {
       promptTextarea.value = item.prompt || '';
       promptTextarea.scrollTop = promptTextarea.scrollHeight;
@@ -531,9 +531,9 @@
       mainPromptTextarea.value = item.prompt || '';
       mainPromptTextarea.scrollTop = mainPromptTextarea.scrollHeight;
     }
-    const negativeTextarea = state.panel.querySelector('.tabbit-img-studio-small-textarea[data-role="negative"]');
+    const negativeTextarea = state.panel.querySelector('.Yuze-img-studio-small-textarea[data-role="negative"]');
     if (negativeTextarea) negativeTextarea.value = item.negativePrompt || '';
-    const statusText = state.panel.querySelector('.tabbit-img-studio-streaming-copy');
+    const statusText = state.panel.querySelector('.Yuze-img-studio-streaming-copy');
     if (statusText && item.status === 'analyzing') {
       statusText.textContent = item.prompt ? 'Prompt 正在流式输出' : '正在读取图片风格';
     }
@@ -710,7 +710,7 @@
       }
 
       .${BUTTON_CLASS}.is-loading svg {
-        animation: tabbitImagePromptSpin 820ms linear infinite !important;
+        animation: YuzeImagePromptSpin 820ms linear infinite !important;
       }
 
       .${BUTTON_CLASS}.is-queued {
@@ -762,7 +762,7 @@
         opacity: 0.88 !important;
       }
 
-      #${LAUNCHER_ID} .tabbit-img-launcher-badge {
+      #${LAUNCHER_ID} .Yuze-img-launcher-badge {
         position: absolute !important;
         top: -4px !important;
         right: -4px !important;
@@ -781,15 +781,15 @@
         box-shadow: 0 8px 18px rgba(255,45,85,0.24) !important;
       }
 
-      #${LAUNCHER_ID}.has-work .tabbit-img-launcher-badge {
+      #${LAUNCHER_ID}.has-work .Yuze-img-launcher-badge {
         display: inline-flex !important;
       }
 
       #${LAUNCHER_ID}.is-receiving {
-        animation: tabbitImageDockReceive 720ms cubic-bezier(.16,1,.3,1) both !important;
+        animation: YuzeImageDockReceive 720ms cubic-bezier(.16,1,.3,1) both !important;
       }
 
-      .tabbit-img-dock-sprite {
+      .Yuze-img-dock-sprite {
         position: fixed !important;
         z-index: 1000002 !important;
         left: 0 !important;
@@ -809,14 +809,14 @@
         will-change: transform, opacity, filter !important;
       }
 
-      .tabbit-img-dock-sprite img {
+      .Yuze-img-dock-sprite img {
         width: 100% !important;
         height: 100% !important;
         display: block !important;
         object-fit: cover !important;
       }
 
-      .tabbit-img-dock-sprite::after {
+      .Yuze-img-dock-sprite::after {
         content: "" !important;
         position: absolute !important;
         inset: 0 !important;
@@ -827,7 +827,7 @@
         mix-blend-mode: screen !important;
       }
 
-      .tabbit-img-dock-particle {
+      .Yuze-img-dock-particle {
         position: fixed !important;
         z-index: 1000001 !important;
         width: 8px !important;
@@ -922,7 +922,7 @@
         visibility: visible !important;
         transform: translate3d(0, 0, 0) scale(1) !important;
         filter: blur(0) saturate(1) !important;
-        animation: tabbitMacWindowOpen 420ms cubic-bezier(.16,1,.3,1) both !important;
+        animation: YuzeMacWindowOpen 420ms cubic-bezier(.16,1,.3,1) both !important;
         transition:
           opacity 260ms cubic-bezier(.16,1,.3,1),
           transform 360ms cubic-bezier(.16,1,.3,1),
@@ -986,32 +986,32 @@
         width: 44px !important;
       }
 
-      #${RESULT_PANEL_ID}.is-result-expanding .tabbit-img-studio-result-column {
+      #${RESULT_PANEL_ID}.is-result-expanding .Yuze-img-studio-result-column {
         transform-origin: left center !important;
-        animation: tabbitRibbonUnfoldRight 420ms cubic-bezier(.16,1,.3,1) both !important;
+        animation: YuzeRibbonUnfoldRight 420ms cubic-bezier(.16,1,.3,1) both !important;
       }
 
-      #${RESULT_PANEL_ID}.is-result-collapsing .tabbit-img-studio-result-column {
+      #${RESULT_PANEL_ID}.is-result-collapsing .Yuze-img-studio-result-column {
         transform-origin: left center !important;
-        animation: tabbitRibbonFoldRight 340ms cubic-bezier(.4,0,.2,1) both !important;
+        animation: YuzeRibbonFoldRight 340ms cubic-bezier(.4,0,.2,1) both !important;
       }
 
-      #${RESULT_PANEL_ID} .tabbit-img-studio-result-column {
+      #${RESULT_PANEL_ID} .Yuze-img-studio-result-column {
         position: relative !important;
         height: 100% !important;
         box-sizing: border-box !important;
         padding: 12px !important;
       }
 
-      #${RESULT_PANEL_ID} .tabbit-img-studio-result-column::before,
-      #${RESULT_PANEL_ID} .tabbit-img-studio-result-column::after {
+      #${RESULT_PANEL_ID} .Yuze-img-studio-result-column::before,
+      #${RESULT_PANEL_ID} .Yuze-img-studio-result-column::after {
         content: "" !important;
         position: absolute !important;
         pointer-events: none !important;
         z-index: 1 !important;
       }
 
-      #${RESULT_PANEL_ID} .tabbit-img-studio-result-column::before {
+      #${RESULT_PANEL_ID} .Yuze-img-studio-result-column::before {
         left: 0 !important;
         top: 12px !important;
         bottom: 12px !important;
@@ -1025,7 +1025,7 @@
         transform-origin: right center !important;
       }
 
-      #${RESULT_PANEL_ID} .tabbit-img-studio-result-column::after {
+      #${RESULT_PANEL_ID} .Yuze-img-studio-result-column::after {
         left: 8px !important;
         top: 14px !important;
         bottom: 14px !important;
@@ -1036,19 +1036,19 @@
         transform: translateX(-10px) scaleX(0.46) !important;
       }
 
-      #${RESULT_PANEL_ID}.is-result-expanding .tabbit-img-studio-result-column::after {
-        animation: tabbitRibbonSheenRight 420ms cubic-bezier(.16,1,.3,1) both !important;
+      #${RESULT_PANEL_ID}.is-result-expanding .Yuze-img-studio-result-column::after {
+        animation: YuzeRibbonSheenRight 420ms cubic-bezier(.16,1,.3,1) both !important;
       }
 
-      #${RESULT_PANEL_ID}.is-result-collapsing .tabbit-img-studio-result-column::before {
-        animation: tabbitRibbonEdgePullRight 340ms cubic-bezier(.4,0,.2,1) both !important;
+      #${RESULT_PANEL_ID}.is-result-collapsing .Yuze-img-studio-result-column::before {
+        animation: YuzeRibbonEdgePullRight 340ms cubic-bezier(.4,0,.2,1) both !important;
       }
 
-      #${RESULT_PANEL_ID}.is-collapsed .tabbit-img-studio-result-column {
+      #${RESULT_PANEL_ID}.is-collapsed .Yuze-img-studio-result-column {
         padding: 8px !important;
       }
 
-      .tabbit-img-studio-header {
+      .Yuze-img-studio-header {
         display: grid !important;
         grid-template-columns: minmax(0, 1fr) auto !important;
         align-items: center !important;
@@ -1061,7 +1061,7 @@
         touch-action: none !important;
       }
 
-      #${PANEL_ID}.is-dragging .tabbit-img-studio-header {
+      #${PANEL_ID}.is-dragging .Yuze-img-studio-header {
         cursor: grabbing !important;
       }
 
@@ -1069,7 +1069,7 @@
         transition: none !important;
       }
 
-      .tabbit-img-studio-resize-handle {
+      .Yuze-img-studio-resize-handle {
         position: absolute !important;
         right: 8px !important;
         bottom: 8px !important;
@@ -1084,8 +1084,8 @@
         pointer-events: auto !important;
       }
 
-      .tabbit-img-studio-resize-handle::before,
-      .tabbit-img-studio-resize-handle::after {
+      .Yuze-img-studio-resize-handle::before,
+      .Yuze-img-studio-resize-handle::after {
         content: "" !important;
         position: absolute !important;
         right: 7px !important;
@@ -1097,22 +1097,22 @@
         transform-origin: right center !important;
       }
 
-      .tabbit-img-studio-resize-handle::before {
+      .Yuze-img-studio-resize-handle::before {
         width: 15px !important;
       }
 
-      .tabbit-img-studio-resize-handle::after {
+      .Yuze-img-studio-resize-handle::after {
         width: 9px !important;
         bottom: 13px !important;
       }
 
-      .tabbit-img-studio-resize-handle:hover,
-      #${PANEL_ID}.is-resizing .tabbit-img-studio-resize-handle {
+      .Yuze-img-studio-resize-handle:hover,
+      #${PANEL_ID}.is-resizing .Yuze-img-studio-resize-handle {
         color: rgba(18,24,34,0.64) !important;
         background: rgba(255,255,255,0.32) !important;
       }
 
-      .tabbit-img-studio-title {
+      .Yuze-img-studio-title {
         margin: 0 !important;
         font-size: 15px !important;
         line-height: 1.22 !important;
@@ -1120,7 +1120,7 @@
         color: rgba(18,24,34,0.94) !important;
       }
 
-      .tabbit-img-studio-subtitle {
+      .Yuze-img-studio-subtitle {
         margin-top: 3px !important;
         font-size: 12px !important;
         line-height: 1.3 !important;
@@ -1128,8 +1128,8 @@
         color: rgba(74,84,102,0.72) !important;
       }
 
-      .tabbit-img-studio-close,
-      .tabbit-img-studio-icon-button {
+      .Yuze-img-studio-close,
+      .Yuze-img-studio-icon-button {
         appearance: none !important;
         -webkit-appearance: none !important;
         display: inline-flex !important;
@@ -1146,13 +1146,13 @@
         transition: transform 160ms cubic-bezier(.2,.8,.2,1), background 160ms cubic-bezier(.2,.8,.2,1) !important;
       }
 
-      .tabbit-img-studio-close:hover,
-      .tabbit-img-studio-icon-button:hover {
+      .Yuze-img-studio-close:hover,
+      .Yuze-img-studio-icon-button:hover {
         transform: scale(1.04) !important;
         background: rgba(255,255,255,0.76) !important;
       }
 
-      .tabbit-img-studio-shell {
+      .Yuze-img-studio-shell {
         min-height: 0 !important;
         display: grid !important;
         grid-template-columns: 160px minmax(0, 1fr) !important;
@@ -1160,11 +1160,11 @@
         transition: grid-template-columns 380ms cubic-bezier(.16,1,.3,1) !important;
       }
 
-      .tabbit-img-studio-shell.is-history-collapsed {
+      .Yuze-img-studio-shell.is-history-collapsed {
         grid-template-columns: 44px minmax(0, 1fr) !important;
       }
 
-      .tabbit-img-studio-history {
+      .Yuze-img-studio-history {
         position: relative !important;
         min-height: 0 !important;
         display: grid !important;
@@ -1175,15 +1175,15 @@
         transform-origin: left center !important;
       }
 
-      .tabbit-img-studio-history::before,
-      .tabbit-img-studio-history::after {
+      .Yuze-img-studio-history::before,
+      .Yuze-img-studio-history::after {
         content: "" !important;
         position: absolute !important;
         pointer-events: none !important;
         z-index: 2 !important;
       }
 
-      .tabbit-img-studio-history::before {
+      .Yuze-img-studio-history::before {
         right: -12px !important;
         top: 12px !important;
         bottom: 12px !important;
@@ -1197,7 +1197,7 @@
         transform-origin: left center !important;
       }
 
-      .tabbit-img-studio-history::after {
+      .Yuze-img-studio-history::after {
         right: 8px !important;
         top: 14px !important;
         bottom: 14px !important;
@@ -1208,23 +1208,23 @@
         transform: translateX(12px) scaleX(0.42) !important;
       }
 
-      .tabbit-img-studio-shell.is-history-expanding .tabbit-img-studio-history {
-        animation: tabbitRibbonUnfoldLeft 680ms cubic-bezier(.16,1,.3,1) both !important;
+      .Yuze-img-studio-shell.is-history-expanding .Yuze-img-studio-history {
+        animation: YuzeRibbonUnfoldLeft 680ms cubic-bezier(.16,1,.3,1) both !important;
       }
 
-      .tabbit-img-studio-shell.is-history-collapsing .tabbit-img-studio-history {
-        animation: tabbitRibbonFoldLeft 560ms cubic-bezier(.4,0,.2,1) both !important;
+      .Yuze-img-studio-shell.is-history-collapsing .Yuze-img-studio-history {
+        animation: YuzeRibbonFoldLeft 560ms cubic-bezier(.4,0,.2,1) both !important;
       }
 
-      .tabbit-img-studio-shell.is-history-expanding .tabbit-img-studio-history::after {
-        animation: tabbitRibbonSheenLeft 680ms cubic-bezier(.16,1,.3,1) both !important;
+      .Yuze-img-studio-shell.is-history-expanding .Yuze-img-studio-history::after {
+        animation: YuzeRibbonSheenLeft 680ms cubic-bezier(.16,1,.3,1) both !important;
       }
 
-      .tabbit-img-studio-shell.is-history-collapsing .tabbit-img-studio-history::before {
-        animation: tabbitRibbonEdgePullLeft 560ms cubic-bezier(.4,0,.2,1) both !important;
+      .Yuze-img-studio-shell.is-history-collapsing .Yuze-img-studio-history::before {
+        animation: YuzeRibbonEdgePullLeft 560ms cubic-bezier(.4,0,.2,1) both !important;
       }
 
-      .tabbit-img-studio-history-head {
+      .Yuze-img-studio-history-head {
         padding: 12px 9px 9px !important;
         display: flex !important;
         align-items: center !important;
@@ -1232,18 +1232,18 @@
         gap: 10px !important;
       }
 
-      .tabbit-img-studio-history-title {
+      .Yuze-img-studio-history-title {
         font-size: 12px !important;
         line-height: 1 !important;
         font-weight: 760 !important;
         color: rgba(74,84,102,0.78) !important;
       }
 
-      .tabbit-img-studio-history-collapse {
+      .Yuze-img-studio-history-collapse {
         flex: 0 0 auto !important;
       }
 
-      .tabbit-img-studio-history-side-toggle {
+      .Yuze-img-studio-history-side-toggle {
         appearance: none !important;
         -webkit-appearance: none !important;
         position: absolute !important;
@@ -1276,7 +1276,7 @@
           transform 160ms cubic-bezier(.2,.8,.2,1) !important;
       }
 
-      .tabbit-img-studio-history-side-toggle:hover {
+      .Yuze-img-studio-history-side-toggle:hover {
         opacity: 1 !important;
         color: rgba(18,24,34,0.72) !important;
         background:
@@ -1285,29 +1285,29 @@
         transform: translateY(-50%) scale(1.03) !important;
       }
 
-      .tabbit-img-studio-history-side-toggle svg {
+      .Yuze-img-studio-history-side-toggle svg {
         width: 15px !important;
         height: 15px !important;
         stroke-width: 2.5 !important;
       }
 
-      .tabbit-img-studio-shell.is-history-collapsed .tabbit-img-studio-history-head {
+      .Yuze-img-studio-shell.is-history-collapsed .Yuze-img-studio-history-head {
         padding: 12px 5px 8px !important;
         justify-content: center !important;
       }
 
-      .tabbit-img-studio-shell.is-history-collapsed .tabbit-img-studio-history-title,
-      .tabbit-img-studio-shell.is-history-collapsed [data-action="clear-history"],
-      .tabbit-img-studio-shell.is-history-collapsed .tabbit-img-studio-history-head,
-      .tabbit-img-studio-shell.is-history-collapsed .tabbit-img-studio-history-list {
+      .Yuze-img-studio-shell.is-history-collapsed .Yuze-img-studio-history-title,
+      .Yuze-img-studio-shell.is-history-collapsed [data-action="clear-history"],
+      .Yuze-img-studio-shell.is-history-collapsed .Yuze-img-studio-history-head,
+      .Yuze-img-studio-shell.is-history-collapsed .Yuze-img-studio-history-list {
         display: none !important;
       }
 
-      .tabbit-img-studio-history-rail {
+      .Yuze-img-studio-history-rail {
         display: none !important;
       }
 
-      .tabbit-img-studio-shell.is-history-collapsed .tabbit-img-studio-history-rail {
+      .Yuze-img-studio-shell.is-history-collapsed .Yuze-img-studio-history-rail {
         min-height: 0 !important;
         display: grid !important;
         place-items: start center !important;
@@ -1318,7 +1318,7 @@
         text-orientation: mixed !important;
       }
 
-      .tabbit-img-studio-history-list {
+      .Yuze-img-studio-history-list {
         min-height: 0 !important;
         overflow: auto !important;
         overscroll-behavior: contain !important;
@@ -1332,7 +1332,7 @@
         gap: 10px !important;
       }
 
-      .tabbit-img-studio-history-item {
+      .Yuze-img-studio-history-item {
         appearance: none !important;
         -webkit-appearance: none !important;
         position: relative !important;
@@ -1354,30 +1354,30 @@
         transition: transform 170ms cubic-bezier(.2,.8,.2,1), background 170ms cubic-bezier(.2,.8,.2,1), box-shadow 170ms cubic-bezier(.2,.8,.2,1) !important;
       }
 
-      .tabbit-img-studio-history-item:hover {
+      .Yuze-img-studio-history-item:hover {
         transform: translateY(-1px) !important;
         background: rgba(255,255,255,0.58) !important;
       }
 
-      .tabbit-img-studio-history-item.is-active {
+      .Yuze-img-studio-history-item.is-active {
         background:
           linear-gradient(145deg, rgba(255,255,255,0.78), rgba(255,255,255,0.42)),
           linear-gradient(135deg, rgba(255,45,85,0.16), rgba(0,122,255,0.13)) !important;
         box-shadow: 0 12px 26px rgba(20,24,32,0.12), inset 0 1px 0 rgba(255,255,255,0.78) !important;
       }
 
-      .tabbit-img-studio-history-item.is-selected {
+      .Yuze-img-studio-history-item.is-selected {
         border-color: rgba(0,122,255,0.38) !important;
         background:
           linear-gradient(145deg, rgba(255,255,255,0.82), rgba(255,255,255,0.46)),
           linear-gradient(135deg, rgba(0,122,255,0.18), rgba(52,199,89,0.12)) !important;
       }
 
-      .tabbit-img-studio-history-item.is-analyzing img {
+      .Yuze-img-studio-history-item.is-analyzing img {
         filter: saturate(0.86) brightness(1.04) !important;
       }
 
-      .tabbit-img-studio-history-thumb {
+      .Yuze-img-studio-history-thumb {
         display: block !important;
         width: 100% !important;
         aspect-ratio: 3 / 4 !important;
@@ -1387,7 +1387,7 @@
         background: rgba(48,48,52,0.08) !important;
       }
 
-      .tabbit-img-studio-history-thumb img {
+      .Yuze-img-studio-history-thumb img {
         width: 100% !important;
         height: 100% !important;
         min-height: 0 !important;
@@ -1399,7 +1399,7 @@
         display: block !important;
       }
 
-      .tabbit-img-studio-history-caption {
+      .Yuze-img-studio-history-caption {
         display: block !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
@@ -1408,7 +1408,7 @@
         color: rgba(40,48,62,0.76) !important;
       }
 
-      .tabbit-img-studio-history-state {
+      .Yuze-img-studio-history-state {
         position: absolute !important;
         left: 10px !important;
         top: 10px !important;
@@ -1431,13 +1431,13 @@
         white-space: nowrap !important;
       }
 
-      .tabbit-img-studio-history-state svg {
+      .Yuze-img-studio-history-state svg {
         width: 11px !important;
         height: 11px !important;
-        animation: tabbitImagePromptSpin 900ms linear infinite !important;
+        animation: YuzeImagePromptSpin 900ms linear infinite !important;
       }
 
-      .tabbit-img-studio-history-retry {
+      .Yuze-img-studio-history-retry {
         position: absolute !important;
         left: 10px !important;
         bottom: 32px !important;
@@ -1461,17 +1461,17 @@
         white-space: nowrap !important;
       }
 
-      .tabbit-img-studio-history-retry:hover {
+      .Yuze-img-studio-history-retry:hover {
         background: rgba(255,255,255,0.92) !important;
         color: rgba(0,122,255,0.88) !important;
       }
 
-      .tabbit-img-studio-history-retry svg {
+      .Yuze-img-studio-history-retry svg {
         width: 11px !important;
         height: 11px !important;
       }
 
-      .tabbit-img-studio-history-check {
+      .Yuze-img-studio-history-check {
         position: absolute !important;
         left: 9px !important;
         top: 9px !important;
@@ -1488,17 +1488,17 @@
         box-shadow: 0 8px 18px rgba(20,24,32,0.12), inset 0 1px 0 rgba(255,255,255,0.78) !important;
       }
 
-      .tabbit-img-studio-history-item.is-selected .tabbit-img-studio-history-check {
+      .Yuze-img-studio-history-item.is-selected .Yuze-img-studio-history-check {
         background: rgba(0,122,255,0.92) !important;
         color: white !important;
       }
 
-      .tabbit-img-studio-history-check svg {
+      .Yuze-img-studio-history-check svg {
         width: 13px !important;
         height: 13px !important;
       }
 
-      .tabbit-img-studio-empty {
+      .Yuze-img-studio-empty {
         padding: 16px 12px !important;
         border-radius: 16px !important;
         background: rgba(255,255,255,0.34) !important;
@@ -1507,14 +1507,14 @@
         line-height: 1.45 !important;
       }
 
-      .tabbit-img-studio-main {
+      .Yuze-img-studio-main {
         min-width: 0 !important;
         min-height: 0 !important;
         display: grid !important;
         grid-template-rows: auto 1fr !important;
       }
 
-      .tabbit-img-studio-tabs {
+      .Yuze-img-studio-tabs {
         padding: 10px 12px 8px !important;
         display: inline-flex !important;
         gap: 6px !important;
@@ -1522,7 +1522,7 @@
         border-bottom: 0.5px solid rgba(255,255,255,0.48) !important;
       }
 
-      .tabbit-img-studio-tab {
+      .Yuze-img-studio-tab {
         appearance: none !important;
         -webkit-appearance: none !important;
         height: 30px !important;
@@ -1536,26 +1536,26 @@
         transition: background 170ms cubic-bezier(.2,.8,.2,1), color 170ms cubic-bezier(.2,.8,.2,1), transform 170ms cubic-bezier(.2,.8,.2,1) !important;
       }
 
-      .tabbit-img-studio-tab:hover {
+      .Yuze-img-studio-tab:hover {
         transform: translateY(-1px) !important;
         background: rgba(255,255,255,0.38) !important;
       }
 
-      .tabbit-img-studio-tab.is-active {
+      .Yuze-img-studio-tab.is-active {
         color: rgba(18,24,34,0.92) !important;
         border-color: rgba(255,255,255,0.66) !important;
         background: rgba(255,255,255,0.62) !important;
         box-shadow: inset 0 1px 0 rgba(255,255,255,0.74), 0 8px 20px rgba(20,24,32,0.08) !important;
       }
 
-      .tabbit-img-studio-content {
+      .Yuze-img-studio-content {
         min-height: 0 !important;
         overflow: hidden !important;
         overscroll-behavior: contain !important;
         padding: 0 !important;
       }
 
-      .tabbit-img-studio-pane {
+      .Yuze-img-studio-pane {
         height: 100% !important;
         min-height: 0 !important;
         display: none !important;
@@ -1567,13 +1567,13 @@
         transition: opacity 210ms cubic-bezier(.2,.8,.2,1), transform 210ms cubic-bezier(.2,.8,.2,1) !important;
       }
 
-      .tabbit-img-studio-pane.is-active {
+      .Yuze-img-studio-pane.is-active {
         display: grid !important;
         opacity: 1 !important;
         transform: translateY(0) !important;
       }
 
-      .tabbit-img-studio-pane-grid {
+      .Yuze-img-studio-pane-grid {
         min-height: 0 !important;
         display: grid !important;
         grid-template-columns: minmax(0, 1fr) !important;
@@ -1584,7 +1584,7 @@
         transition: grid-template-columns 260ms cubic-bezier(.2,.8,.2,1) !important;
       }
 
-      .tabbit-img-studio-section {
+      .Yuze-img-studio-section {
         min-width: 0 !important;
         min-height: 0 !important;
         display: grid !important;
@@ -1596,20 +1596,20 @@
         padding-right: 2px !important;
       }
 
-      .tabbit-img-studio-pane-grid[data-pane="prompt"] .tabbit-img-studio-section {
+      .Yuze-img-studio-pane-grid[data-pane="prompt"] .Yuze-img-studio-section {
         align-content: start !important;
         max-width: 560px !important;
       }
 
-      .tabbit-img-studio-pane-grid[data-pane="prompt"] .tabbit-img-studio-prompt-textarea {
+      .Yuze-img-studio-pane-grid[data-pane="prompt"] .Yuze-img-studio-prompt-textarea {
         min-height: 126px !important;
       }
 
-      .tabbit-img-studio-pane-grid[data-pane="prompt"] .tabbit-img-studio-small-textarea {
+      .Yuze-img-studio-pane-grid[data-pane="prompt"] .Yuze-img-studio-small-textarea {
         min-height: 46px !important;
       }
 
-      .tabbit-img-studio-preview-row {
+      .Yuze-img-studio-preview-row {
         position: relative !important;
         display: grid !important;
         grid-template-columns: 72px minmax(0, 1fr) !important;
@@ -1621,7 +1621,7 @@
         background: rgba(255,255,255,0.38) !important;
       }
 
-      .tabbit-img-studio-preview-row img {
+      .Yuze-img-studio-preview-row img {
         width: 72px !important;
         aspect-ratio: 1 / 1.12 !important;
         object-fit: cover !important;
@@ -1629,7 +1629,7 @@
         background: rgba(48,48,52,0.08) !important;
       }
 
-      .tabbit-img-studio-meta-title {
+      .Yuze-img-studio-meta-title {
         margin: 0 0 5px !important;
         font-size: 13px !important;
         line-height: 1.28 !important;
@@ -1637,14 +1637,14 @@
         color: rgba(18,24,34,0.88) !important;
       }
 
-      .tabbit-img-studio-meta-text {
+      .Yuze-img-studio-meta-text {
         margin: 0 !important;
         font-size: 12px !important;
         line-height: 1.45 !important;
         color: rgba(74,84,102,0.74) !important;
       }
 
-      .tabbit-img-studio-history-upload-toggle {
+      .Yuze-img-studio-history-upload-toggle {
         position: absolute !important;
         top: 8px !important;
         right: 8px !important;
@@ -1663,41 +1663,41 @@
         transition: transform 160ms cubic-bezier(.2,.8,.2,1), background 160ms cubic-bezier(.2,.8,.2,1), color 160ms cubic-bezier(.2,.8,.2,1) !important;
       }
 
-      .tabbit-img-studio-history-upload-toggle:hover {
+      .Yuze-img-studio-history-upload-toggle:hover {
         transform: translateY(-1px) !important;
         background: rgba(255,255,255,0.92) !important;
       }
 
-      .tabbit-img-studio-history-upload-toggle.is-off {
+      .Yuze-img-studio-history-upload-toggle.is-off {
         color: rgba(142,142,147,0.94) !important;
         background: rgba(255,255,255,0.46) !important;
       }
 
-      .tabbit-img-studio-history-upload-toggle svg {
+      .Yuze-img-studio-history-upload-toggle svg {
         width: 14px !important;
         height: 14px !important;
       }
 
-      .tabbit-img-studio-field {
+      .Yuze-img-studio-field {
         display: grid !important;
         gap: 8px !important;
       }
 
-      .tabbit-img-studio-field label {
+      .Yuze-img-studio-field label {
         font-size: 12px !important;
         line-height: 1.2 !important;
         font-weight: 740 !important;
         color: rgba(74,84,102,0.82) !important;
       }
 
-      .tabbit-img-studio-field-head {
+      .Yuze-img-studio-field-head {
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
         gap: 10px !important;
       }
 
-      .tabbit-img-studio-field-tools {
+      .Yuze-img-studio-field-tools {
         display: inline-flex !important;
         align-items: center !important;
         gap: 6px !important;
@@ -1705,7 +1705,7 @@
         flex: 0 0 auto !important;
       }
 
-      .tabbit-img-studio-prompt-kind {
+      .Yuze-img-studio-prompt-kind {
         display: inline-flex !important;
         align-items: center !important;
         gap: 4px !important;
@@ -1716,7 +1716,7 @@
         box-shadow: inset 0 1px 0 rgba(255,255,255,0.62) !important;
       }
 
-      .tabbit-img-studio-kind-button {
+      .Yuze-img-studio-kind-button {
         appearance: none !important;
         -webkit-appearance: none !important;
         height: 24px !important;
@@ -1730,13 +1730,13 @@
         white-space: nowrap !important;
       }
 
-      .tabbit-img-studio-kind-button.is-active {
+      .Yuze-img-studio-kind-button.is-active {
         background: rgba(255,255,255,0.78) !important;
         color: rgba(18,24,34,0.90) !important;
         box-shadow: 0 6px 14px rgba(20,24,32,0.08), inset 0 1px 0 rgba(255,255,255,0.82) !important;
       }
 
-      .tabbit-img-studio-selection-note {
+      .Yuze-img-studio-selection-note {
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
@@ -1748,13 +1748,13 @@
         font: 650 12px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Segoe UI", sans-serif !important;
       }
 
-      .tabbit-img-studio-selected-grid {
+      .Yuze-img-studio-selected-grid {
         display: grid !important;
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
         gap: 10px !important;
       }
 
-      .tabbit-img-studio-fusion-selection {
+      .Yuze-img-studio-fusion-selection {
         display: grid !important;
         gap: 9px !important;
         padding: 10px !important;
@@ -1768,14 +1768,14 @@
           inset 0 1px 0 rgba(255,255,255,0.72) !important;
       }
 
-      .tabbit-img-studio-fusion-selection-head {
+      .Yuze-img-studio-fusion-selection-head {
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
         gap: 10px !important;
       }
 
-      .tabbit-img-studio-fusion-selection-title {
+      .Yuze-img-studio-fusion-selection-title {
         min-width: 0 !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
@@ -1784,7 +1784,7 @@
         font: 760 12px/1.2 -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Segoe UI", sans-serif !important;
       }
 
-      .tabbit-img-studio-mini-toggle {
+      .Yuze-img-studio-mini-toggle {
         appearance: none !important;
         -webkit-appearance: none !important;
         height: 28px !important;
@@ -1802,19 +1802,19 @@
         transition: transform 160ms cubic-bezier(.2,.8,.2,1), background 160ms cubic-bezier(.2,.8,.2,1), color 160ms cubic-bezier(.2,.8,.2,1) !important;
       }
 
-      .tabbit-img-studio-mini-toggle:hover,
-      .tabbit-img-studio-mini-toggle.is-active {
+      .Yuze-img-studio-mini-toggle:hover,
+      .Yuze-img-studio-mini-toggle.is-active {
         transform: translateY(-1px) !important;
         color: rgba(0,122,255,0.86) !important;
         background: rgba(255,255,255,0.82) !important;
       }
 
-      .tabbit-img-studio-mini-toggle svg {
+      .Yuze-img-studio-mini-toggle svg {
         width: 14px !important;
         height: 14px !important;
       }
 
-      .tabbit-img-studio-selected-card {
+      .Yuze-img-studio-selected-card {
         appearance: none !important;
         -webkit-appearance: none !important;
         width: 100% !important;
@@ -1830,25 +1830,25 @@
           inset 0 1px 0 rgba(255,255,255,0.76) !important;
       }
 
-      .tabbit-img-studio-selected-card .tabbit-img-studio-meta-title {
+      .Yuze-img-studio-selected-card .Yuze-img-studio-meta-title {
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         white-space: nowrap !important;
       }
 
-      .tabbit-img-studio-selected-card .tabbit-img-studio-meta-text {
+      .Yuze-img-studio-selected-card .Yuze-img-studio-meta-text {
         overflow: hidden !important;
         display: -webkit-box !important;
         -webkit-line-clamp: 2 !important;
         -webkit-box-orient: vertical !important;
       }
 
-      .tabbit-img-studio-selected-grid.is-hero {
+      .Yuze-img-studio-selected-grid.is-hero {
         grid-template-columns: minmax(0, 1fr) !important;
         gap: 12px !important;
       }
 
-      .tabbit-img-studio-selected-grid.is-hero .tabbit-img-studio-selected-card {
+      .Yuze-img-studio-selected-grid.is-hero .Yuze-img-studio-selected-card {
         min-height: 138px !important;
         grid-template-columns: minmax(0, 1fr) !important;
         padding: 0 !important;
@@ -1858,7 +1858,7 @@
         box-shadow: 0 18px 38px rgba(255,132,188,0.16), inset 0 1px 0 rgba(255,255,255,0.68) !important;
       }
 
-      .tabbit-img-studio-selected-grid.is-hero .tabbit-img-studio-selected-card > img {
+      .Yuze-img-studio-selected-grid.is-hero .Yuze-img-studio-selected-card > img {
         width: 100% !important;
         height: 138px !important;
         min-height: 138px !important;
@@ -1868,7 +1868,7 @@
         border-radius: 24px !important;
       }
 
-      .tabbit-img-studio-selected-grid.is-hero .tabbit-img-studio-selected-card > div {
+      .Yuze-img-studio-selected-grid.is-hero .Yuze-img-studio-selected-card > div {
         position: absolute !important;
         left: 12px !important;
         right: 44px !important;
@@ -1888,31 +1888,31 @@
         -webkit-backdrop-filter: blur(14px) saturate(1.32) !important;
       }
 
-      .tabbit-img-studio-selected-grid.is-hero .tabbit-img-studio-meta-title {
+      .Yuze-img-studio-selected-grid.is-hero .Yuze-img-studio-meta-title {
         margin: 0 !important;
         color: rgba(32,38,50,0.84) !important;
         text-shadow: 0 1px 0 rgba(255,255,255,0.72) !important;
       }
 
-      .tabbit-img-studio-selected-grid.is-hero .tabbit-img-studio-meta-text {
+      .Yuze-img-studio-selected-grid.is-hero .Yuze-img-studio-meta-text {
         display: none !important;
       }
 
-      .tabbit-img-studio-fusion-prompt.is-collapsed {
+      .Yuze-img-studio-fusion-prompt.is-collapsed {
         gap: 0 !important;
       }
 
-      .tabbit-img-studio-fusion-prompt.is-collapsed textarea {
+      .Yuze-img-studio-fusion-prompt.is-collapsed textarea {
         display: none !important;
       }
 
-      .tabbit-img-studio-selection-strip {
+      .Yuze-img-studio-selection-strip {
         display: flex !important;
         flex-wrap: wrap !important;
         gap: 7px !important;
       }
 
-      .tabbit-img-studio-selected-thumb {
+      .Yuze-img-studio-selected-thumb {
         width: 42px !important;
         height: 42px !important;
         border-radius: 12px !important;
@@ -1921,7 +1921,7 @@
         box-shadow: 0 8px 18px rgba(20,24,32,0.10) !important;
       }
 
-      .tabbit-img-studio-streaming-status {
+      .Yuze-img-studio-streaming-status {
         display: inline-flex !important;
         align-items: center !important;
         gap: 6px !important;
@@ -1937,36 +1937,36 @@
         white-space: nowrap !important;
       }
 
-      .tabbit-img-studio-streaming-status svg {
+      .Yuze-img-studio-streaming-status svg {
         width: 12px !important;
         height: 12px !important;
-        animation: tabbitImagePromptSpin 860ms linear infinite !important;
+        animation: YuzeImagePromptSpin 860ms linear infinite !important;
       }
 
-      .tabbit-img-studio-streaming-dots {
+      .Yuze-img-studio-streaming-dots {
         display: inline-flex !important;
         gap: 3px !important;
       }
 
-      .tabbit-img-studio-streaming-dots i {
+      .Yuze-img-studio-streaming-dots i {
         width: 3px !important;
         height: 3px !important;
         border-radius: 999px !important;
         background: currentColor !important;
         opacity: 0.34 !important;
-        animation: tabbitImagePromptDot 1100ms ease-in-out infinite !important;
+        animation: YuzeImagePromptDot 1100ms ease-in-out infinite !important;
       }
 
-      .tabbit-img-studio-streaming-dots i:nth-child(2) {
+      .Yuze-img-studio-streaming-dots i:nth-child(2) {
         animation-delay: 150ms !important;
       }
 
-      .tabbit-img-studio-streaming-dots i:nth-child(3) {
+      .Yuze-img-studio-streaming-dots i:nth-child(3) {
         animation-delay: 300ms !important;
       }
 
-      .tabbit-img-studio-prompt-textarea,
-      .tabbit-img-studio-small-textarea {
+      .Yuze-img-studio-prompt-textarea,
+      .Yuze-img-studio-small-textarea {
         width: 100% !important;
         box-sizing: border-box !important;
         resize: vertical !important;
@@ -1981,31 +1981,31 @@
         transition: background 160ms cubic-bezier(.2,.8,.2,1), border-color 160ms cubic-bezier(.2,.8,.2,1) !important;
       }
 
-      .tabbit-img-studio-prompt-textarea {
+      .Yuze-img-studio-prompt-textarea {
         min-height: 152px !important;
         padding: 11px 12px !important;
       }
 
-      .tabbit-img-studio-prompt-textarea.is-streaming {
+      .Yuze-img-studio-prompt-textarea.is-streaming {
         border-color: rgba(0,122,255,0.36) !important;
         background:
           linear-gradient(90deg, rgba(255,255,255,0.58), rgba(255,255,255,0.76), rgba(255,255,255,0.58)) !important;
         background-size: 220% 100% !important;
-        animation: tabbitImagePromptTextShimmer 1600ms ease-in-out infinite !important;
+        animation: YuzeImagePromptTextShimmer 1600ms ease-in-out infinite !important;
       }
 
-      .tabbit-img-studio-small-textarea {
+      .Yuze-img-studio-small-textarea {
         min-height: 56px !important;
         padding: 11px 12px !important;
       }
 
-      .tabbit-img-studio-prompt-textarea:focus,
-      .tabbit-img-studio-small-textarea:focus {
+      .Yuze-img-studio-prompt-textarea:focus,
+      .Yuze-img-studio-small-textarea:focus {
         background: rgba(255,255,255,0.76) !important;
         border-color: rgba(0,122,255,0.42) !important;
       }
 
-      .tabbit-img-studio-actions {
+      .Yuze-img-studio-actions {
         display: flex !important;
         align-items: center !important;
         justify-content: flex-end !important;
@@ -2013,8 +2013,8 @@
         flex-wrap: wrap !important;
       }
 
-      .tabbit-img-studio-primary,
-      .tabbit-img-studio-secondary {
+      .Yuze-img-studio-primary,
+      .Yuze-img-studio-secondary {
         appearance: none !important;
         -webkit-appearance: none !important;
         display: inline-flex !important;
@@ -2031,7 +2031,7 @@
         transition: transform 160ms cubic-bezier(.2,.8,.2,1), opacity 160ms cubic-bezier(.2,.8,.2,1), background 160ms cubic-bezier(.2,.8,.2,1) !important;
       }
 
-      .tabbit-img-studio-primary {
+      .Yuze-img-studio-primary {
         border: 0.5px solid rgba(255,255,255,0.74) !important;
         background:
           linear-gradient(145deg, rgba(255,255,255,0.86), rgba(255,255,255,0.42)),
@@ -2040,30 +2040,30 @@
         box-shadow: 0 12px 26px rgba(20,24,32,0.13), inset 0 1px 0 rgba(255,255,255,0.78) !important;
       }
 
-      .tabbit-img-studio-secondary {
+      .Yuze-img-studio-secondary {
         border: 0.5px solid rgba(255,255,255,0.62) !important;
         background: rgba(255,255,255,0.46) !important;
         color: rgba(46,56,70,0.76) !important;
       }
 
-      .tabbit-img-studio-primary:hover,
-      .tabbit-img-studio-secondary:hover {
+      .Yuze-img-studio-primary:hover,
+      .Yuze-img-studio-secondary:hover {
         transform: translateY(-1px) !important;
       }
 
-      .tabbit-img-studio-primary[disabled],
-      .tabbit-img-studio-secondary[disabled] {
+      .Yuze-img-studio-primary[disabled],
+      .Yuze-img-studio-secondary[disabled] {
         cursor: default !important;
         opacity: 0.64 !important;
         transform: none !important;
       }
 
-      .tabbit-img-studio-primary.is-loading svg,
-      .tabbit-img-studio-secondary.is-loading svg {
-        animation: tabbitImagePromptSpin 900ms linear infinite !important;
+      .Yuze-img-studio-primary.is-loading svg,
+      .Yuze-img-studio-secondary.is-loading svg {
+        animation: YuzeImagePromptSpin 900ms linear infinite !important;
       }
 
-      .tabbit-img-studio-result-column {
+      .Yuze-img-studio-result-column {
         min-width: 0 !important;
         min-height: 0 !important;
         display: grid !important;
@@ -2073,20 +2073,20 @@
         overscroll-behavior: contain !important;
       }
 
-      .tabbit-img-studio-result-column.is-collapsed {
+      .Yuze-img-studio-result-column.is-collapsed {
         grid-template-rows: 1fr !important;
         gap: 0 !important;
       }
 
-      .tabbit-img-studio-result-column.has-generating {
+      .Yuze-img-studio-result-column.has-generating {
         grid-template-rows: auto auto minmax(0, 1fr) !important;
       }
 
-      .tabbit-img-studio-result-column.is-collapsed.has-generating {
+      .Yuze-img-studio-result-column.is-collapsed.has-generating {
         grid-template-rows: 1fr !important;
       }
 
-      .tabbit-img-studio-result-head {
+      .Yuze-img-studio-result-head {
         display: flex !important;
         justify-content: space-between !important;
         align-items: center !important;
@@ -2096,7 +2096,7 @@
         color: rgba(74,84,102,0.78) !important;
       }
 
-      .tabbit-img-studio-result-title {
+      .Yuze-img-studio-result-title {
         min-width: 0 !important;
         flex: 1 1 auto !important;
         overflow: hidden !important;
@@ -2104,21 +2104,21 @@
         white-space: nowrap !important;
       }
 
-      .tabbit-img-studio-result-tools {
+      .Yuze-img-studio-result-tools {
         display: inline-flex !important;
         align-items: center !important;
         gap: 5px !important;
         flex: 0 0 auto !important;
       }
 
-      .tabbit-img-studio-result-collapse,
-      .tabbit-img-studio-history-collapse,
-      .tabbit-img-studio-result-view-toggle {
+      .Yuze-img-studio-result-collapse,
+      .Yuze-img-studio-history-collapse,
+      .Yuze-img-studio-result-view-toggle {
         width: 28px !important;
         height: 28px !important;
       }
 
-      .tabbit-img-studio-result-column.is-collapsed .tabbit-img-studio-result-head {
+      .Yuze-img-studio-result-column.is-collapsed .Yuze-img-studio-result-head {
         height: 100% !important;
         min-height: 0 !important;
         display: grid !important;
@@ -2128,28 +2128,28 @@
         padding: 0 !important;
       }
 
-      .tabbit-img-studio-result-column.is-collapsed .tabbit-img-studio-result-title {
+      .Yuze-img-studio-result-column.is-collapsed .Yuze-img-studio-result-title {
         writing-mode: vertical-rl !important;
         text-orientation: mixed !important;
         margin-top: 8px !important;
       }
 
-      .tabbit-img-studio-result-column.is-collapsed .tabbit-img-studio-result-count {
+      .Yuze-img-studio-result-column.is-collapsed .Yuze-img-studio-result-count {
         align-self: end !important;
         margin-bottom: 4px !important;
       }
 
-      .tabbit-img-studio-result-column.is-collapsed .tabbit-img-studio-result-view-toggle {
+      .Yuze-img-studio-result-column.is-collapsed .Yuze-img-studio-result-view-toggle {
         display: none !important;
       }
 
-      .tabbit-img-studio-result-column.is-collapsed .tabbit-img-studio-output-list,
-      .tabbit-img-studio-result-column.is-collapsed .tabbit-img-studio-output-focus,
-      .tabbit-img-studio-result-column.is-collapsed .tabbit-img-studio-generating-card {
+      .Yuze-img-studio-result-column.is-collapsed .Yuze-img-studio-output-list,
+      .Yuze-img-studio-result-column.is-collapsed .Yuze-img-studio-output-focus,
+      .Yuze-img-studio-result-column.is-collapsed .Yuze-img-studio-generating-card {
         display: none !important;
       }
 
-      .tabbit-img-studio-output-list {
+      .Yuze-img-studio-output-list {
         min-height: 0 !important;
         overflow: auto !important;
         overscroll-behavior: contain !important;
@@ -2159,13 +2159,13 @@
         gap: 10px !important;
       }
 
-      .tabbit-img-studio-result-column.is-focus-mode .tabbit-img-studio-output-list {
+      .Yuze-img-studio-result-column.is-focus-mode .Yuze-img-studio-output-list {
         overflow: hidden !important;
         align-content: stretch !important;
         grid-template-rows: minmax(0, 1fr) !important;
       }
 
-      .tabbit-img-studio-output {
+      .Yuze-img-studio-output {
         appearance: none !important;
         -webkit-appearance: none !important;
         position: relative !important;
@@ -2183,7 +2183,7 @@
           box-shadow 160ms cubic-bezier(.2,.8,.2,1) !important;
       }
 
-      .tabbit-img-studio-output:hover {
+      .Yuze-img-studio-output:hover {
         transform: translateY(-1px) !important;
         background: rgba(255,255,255,0.58) !important;
         box-shadow:
@@ -2191,7 +2191,7 @@
           inset 0 1px 0 rgba(255,255,255,0.74) !important;
       }
 
-      .tabbit-img-studio-output img {
+      .Yuze-img-studio-output img {
         display: block !important;
         width: 100% !important;
         aspect-ratio: 3 / 4 !important;
@@ -2200,12 +2200,12 @@
         background: rgba(48,48,52,0.08) !important;
       }
 
-      .tabbit-img-studio-output.is-refined-display {
+      .Yuze-img-studio-output.is-refined-display {
         border-color: rgba(0,122,255,0.24) !important;
         background: rgba(255,255,255,0.52) !important;
       }
 
-      .tabbit-img-studio-output-badge {
+      .Yuze-img-studio-output-badge {
         position: absolute !important;
         left: 14px !important;
         top: 14px !important;
@@ -2224,7 +2224,7 @@
         pointer-events: none !important;
       }
 
-      .tabbit-img-studio-output span {
+      .Yuze-img-studio-output span {
         display: block !important;
         margin-top: 7px !important;
         overflow: hidden !important;
@@ -2234,7 +2234,7 @@
         color: rgba(74,84,102,0.72) !important;
       }
 
-      .tabbit-img-studio-output .tabbit-img-studio-delete {
+      .Yuze-img-studio-output .Yuze-img-studio-delete {
         top: 12px !important;
         right: 12px !important;
         width: 28px !important;
@@ -2250,13 +2250,13 @@
         background: rgba(255,255,255,0.78) !important;
       }
 
-      .tabbit-img-studio-output .tabbit-img-studio-delete svg {
+      .Yuze-img-studio-output .Yuze-img-studio-delete svg {
         width: 14px !important;
         height: 14px !important;
         display: block !important;
       }
 
-      .tabbit-img-studio-output-focus {
+      .Yuze-img-studio-output-focus {
         min-height: 0 !important;
         height: 100% !important;
         display: grid !important;
@@ -2266,7 +2266,7 @@
         overscroll-behavior: contain !important;
       }
 
-      .tabbit-img-studio-focus-card {
+      .Yuze-img-studio-focus-card {
         appearance: none !important;
         -webkit-appearance: none !important;
         position: relative !important;
@@ -2286,7 +2286,7 @@
         overflow: hidden !important;
       }
 
-      .tabbit-img-studio-focus-card img {
+      .Yuze-img-studio-focus-card img {
         width: 100% !important;
         height: 100% !important;
         min-height: 0 !important;
@@ -2296,18 +2296,18 @@
         background: rgba(48,48,52,0.08) !important;
       }
 
-      .tabbit-img-studio-focus-card .tabbit-img-studio-delete {
+      .Yuze-img-studio-focus-card .Yuze-img-studio-delete {
         top: 14px !important;
         right: 14px !important;
       }
 
-      .tabbit-img-studio-focus-meta {
+      .Yuze-img-studio-focus-meta {
         min-height: 0 !important;
         display: grid !important;
         gap: 7px !important;
       }
 
-      .tabbit-img-studio-focus-title-row {
+      .Yuze-img-studio-focus-title-row {
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
@@ -2316,14 +2316,14 @@
         font: 680 11px/1.25 -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Segoe UI", sans-serif !important;
       }
 
-      .tabbit-img-studio-focus-title-row span:first-child {
+      .Yuze-img-studio-focus-title-row span:first-child {
         min-width: 0 !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         white-space: nowrap !important;
       }
 
-      .tabbit-img-studio-focus-dots {
+      .Yuze-img-studio-focus-dots {
         display: flex !important;
         justify-content: center !important;
         gap: 5px !important;
@@ -2331,7 +2331,7 @@
         overflow: hidden !important;
       }
 
-      .tabbit-img-studio-focus-dot {
+      .Yuze-img-studio-focus-dot {
         width: 6px !important;
         height: 6px !important;
         flex: 0 0 auto !important;
@@ -2343,12 +2343,12 @@
         transition: width 160ms cubic-bezier(.2,.8,.2,1), background 160ms cubic-bezier(.2,.8,.2,1) !important;
       }
 
-      .tabbit-img-studio-focus-dot.is-active {
+      .Yuze-img-studio-focus-dot.is-active {
         width: 16px !important;
         background: rgba(0,122,255,0.52) !important;
       }
 
-      .tabbit-img-studio-generating-card {
+      .Yuze-img-studio-generating-card {
         position: relative !important;
         overflow: hidden !important;
         display: grid !important;
@@ -2367,7 +2367,7 @@
         -webkit-backdrop-filter: blur(22px) saturate(1.45) !important;
       }
 
-      .tabbit-img-studio-generating-card::before {
+      .Yuze-img-studio-generating-card::before {
         content: "" !important;
         position: absolute !important;
         inset: -42% !important;
@@ -2375,11 +2375,11 @@
           conic-gradient(from 120deg, transparent, rgba(255,255,255,0.60), transparent 34%),
           radial-gradient(circle at 48% 52%, rgba(0,122,255,0.18), transparent 34%) !important;
         opacity: 0.58 !important;
-        animation: tabbitImageGeneratingAura 3600ms linear infinite !important;
+        animation: YuzeImageGeneratingAura 3600ms linear infinite !important;
         pointer-events: none !important;
       }
 
-      .tabbit-img-studio-generating-frame {
+      .Yuze-img-studio-generating-frame {
         position: relative !important;
         aspect-ratio: 1 / 1 !important;
         overflow: hidden !important;
@@ -2391,7 +2391,7 @@
         box-shadow: inset 0 1px 0 rgba(255,255,255,0.70), inset 0 -18px 42px rgba(18,24,34,0.08) !important;
       }
 
-      .tabbit-img-studio-generating-frame::before {
+      .Yuze-img-studio-generating-frame::before {
         content: "" !important;
         position: absolute !important;
         inset: 0 !important;
@@ -2399,10 +2399,10 @@
           linear-gradient(105deg, transparent 0%, rgba(255,255,255,0.14) 34%, rgba(255,255,255,0.74) 48%, rgba(255,255,255,0.14) 62%, transparent 100%),
           repeating-linear-gradient(180deg, rgba(255,255,255,0.16) 0 1px, transparent 1px 8px) !important;
         transform: translateX(-78%) !important;
-        animation: tabbitImageGeneratingSweep 2100ms cubic-bezier(.2,.8,.2,1) infinite !important;
+        animation: YuzeImageGeneratingSweep 2100ms cubic-bezier(.2,.8,.2,1) infinite !important;
       }
 
-      .tabbit-img-studio-generating-frame::after {
+      .Yuze-img-studio-generating-frame::after {
         content: "" !important;
         position: absolute !important;
         inset: 12% !important;
@@ -2413,10 +2413,10 @@
           radial-gradient(circle at 72% 24%, rgba(255,255,255,0.70) 0 1px, transparent 2px),
           radial-gradient(circle at 26% 76%, rgba(255,255,255,0.64) 0 1px, transparent 2px) !important;
         box-shadow: 0 0 34px rgba(255,255,255,0.38), inset 0 0 30px rgba(255,255,255,0.18) !important;
-        animation: tabbitImageGeneratingPulse 1800ms ease-in-out infinite !important;
+        animation: YuzeImageGeneratingPulse 1800ms ease-in-out infinite !important;
       }
 
-      .tabbit-img-studio-generating-caption {
+      .Yuze-img-studio-generating-caption {
         position: relative !important;
         z-index: 1 !important;
         display: flex !important;
@@ -2427,7 +2427,7 @@
         font: 700 11px/1.2 -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Segoe UI", sans-serif !important;
       }
 
-      .tabbit-img-studio-generating-progress {
+      .Yuze-img-studio-generating-progress {
         position: relative !important;
         z-index: 1 !important;
         height: 4px !important;
@@ -2437,17 +2437,17 @@
         box-shadow: inset 0 1px 0 rgba(255,255,255,0.62) !important;
       }
 
-      .tabbit-img-studio-generating-progress span {
+      .Yuze-img-studio-generating-progress span {
         display: block !important;
         width: 46% !important;
         height: 100% !important;
         border-radius: inherit !important;
         background: linear-gradient(90deg, rgba(255,45,85,0.28), rgba(0,122,255,0.42), rgba(255,255,255,0.74)) !important;
         box-shadow: 0 0 14px rgba(0,122,255,0.20) !important;
-        animation: tabbitImageGeneratingProgress 1700ms cubic-bezier(.2,.8,.2,1) infinite !important;
+        animation: YuzeImageGeneratingProgress 1700ms cubic-bezier(.2,.8,.2,1) infinite !important;
       }
 
-      .tabbit-img-studio-delete {
+      .Yuze-img-studio-delete {
         position: absolute !important;
         top: 7px !important;
         right: 7px !important;
@@ -2474,19 +2474,19 @@
           background 140ms cubic-bezier(.2,.8,.2,1) !important;
       }
 
-      .tabbit-img-studio-delete svg {
+      .Yuze-img-studio-delete svg {
         width: 12px !important;
         height: 12px !important;
       }
 
-      .tabbit-img-studio-delete:hover {
+      .Yuze-img-studio-delete:hover {
         opacity: 1 !important;
         transform: scale(1.06) !important;
         background: rgba(255,255,255,0.90) !important;
         color: rgba(255,45,85,0.92) !important;
       }
 
-      .tabbit-img-preview-overlay {
+      .Yuze-img-preview-overlay {
         position: fixed !important;
         inset: 0 !important;
         z-index: 1000000 !important;
@@ -2501,11 +2501,11 @@
         transition: opacity 180ms cubic-bezier(.2,.8,.2,1) !important;
       }
 
-      .tabbit-img-preview-overlay.is-visible {
+      .Yuze-img-preview-overlay.is-visible {
         opacity: 1 !important;
       }
 
-      .tabbit-img-preview-card {
+      .Yuze-img-preview-card {
         position: relative !important;
         width: min(94vw, 1120px) !important;
         max-height: min(90vh, 860px) !important;
@@ -2515,12 +2515,12 @@
         align-items: stretch !important;
       }
 
-      .tabbit-img-preview-card.is-readonly {
+      .Yuze-img-preview-card.is-readonly {
         width: min(90vw, 860px) !important;
         grid-template-columns: minmax(0, 1fr) !important;
       }
 
-      .tabbit-img-preview-card img {
+      .Yuze-img-preview-card img {
         display: block !important;
         max-width: 100% !important;
         max-height: calc(90vh - 54px) !important;
@@ -2530,18 +2530,18 @@
         box-shadow: 0 28px 80px rgba(0,0,0,0.28) !important;
       }
 
-      .tabbit-img-preview-main {
+      .Yuze-img-preview-main {
         min-width: 0 !important;
         display: grid !important;
         align-content: center !important;
         gap: 10px !important;
       }
 
-      .tabbit-img-preview-card.is-readonly .tabbit-img-preview-main {
+      .Yuze-img-preview-card.is-readonly .Yuze-img-preview-main {
         justify-items: center !important;
       }
 
-      .tabbit-img-preview-side {
+      .Yuze-img-preview-side {
         min-width: 0 !important;
         max-height: min(90vh, 820px) !important;
         display: grid !important;
@@ -2560,19 +2560,19 @@
         -webkit-backdrop-filter: blur(28px) saturate(1.45) !important;
       }
 
-      .tabbit-img-preview-side-title {
+      .Yuze-img-preview-side-title {
         margin: 0 !important;
         font: 780 14px/1.25 -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Segoe UI", sans-serif !important;
         color: rgba(18,24,34,0.88) !important;
       }
 
-      .tabbit-img-preview-side-subtitle {
+      .Yuze-img-preview-side-subtitle {
         margin: 4px 0 0 !important;
         color: rgba(74,84,102,0.66) !important;
         font: 600 11px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Segoe UI", sans-serif !important;
       }
 
-      .tabbit-img-preview-composer {
+      .Yuze-img-preview-composer {
         display: grid !important;
         gap: 8px !important;
         padding: 10px !important;
@@ -2584,7 +2584,7 @@
           inset 0 1px 0 rgba(255,255,255,0.78) !important;
       }
 
-      .tabbit-img-preview-refine-textarea {
+      .Yuze-img-preview-refine-textarea {
         width: 100% !important;
         min-height: 76px !important;
         box-sizing: border-box !important;
@@ -2599,19 +2599,19 @@
         outline: none !important;
       }
 
-      .tabbit-img-preview-refine-textarea:focus {
+      .Yuze-img-preview-refine-textarea:focus {
         border-color: rgba(0,122,255,0.28) !important;
         background: rgba(255,255,255,0.86) !important;
       }
 
-      .tabbit-img-preview-composer-actions {
+      .Yuze-img-preview-composer-actions {
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
         gap: 10px !important;
       }
 
-      .tabbit-img-preview-composer-hint {
+      .Yuze-img-preview-composer-hint {
         min-width: 0 !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
@@ -2620,7 +2620,7 @@
         font: 650 11px/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Segoe UI", sans-serif !important;
       }
 
-      .tabbit-img-preview-history {
+      .Yuze-img-preview-history {
         min-height: 0 !important;
         overflow: auto !important;
         display: grid !important;
@@ -2629,7 +2629,7 @@
         padding-right: 2px !important;
       }
 
-      .tabbit-img-preview-history-head {
+      .Yuze-img-preview-history-head {
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
@@ -2637,7 +2637,7 @@
         font: 740 11px/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Segoe UI", sans-serif !important;
       }
 
-      .tabbit-img-preview-history-count {
+      .Yuze-img-preview-history-count {
         height: 20px !important;
         min-width: 20px !important;
         padding: 0 7px !important;
@@ -2650,12 +2650,12 @@
         box-shadow: inset 0 1px 0 rgba(255,255,255,0.74) !important;
       }
 
-      .tabbit-img-preview-branch-card {
+      .Yuze-img-preview-branch-card {
         display: grid !important;
         gap: 8px !important;
       }
 
-      .tabbit-img-preview-branch {
+      .Yuze-img-preview-branch {
         appearance: none !important;
         -webkit-appearance: none !important;
         position: relative !important;
@@ -2672,19 +2672,19 @@
         transition: transform 160ms cubic-bezier(.2,.8,.2,1), background 160ms cubic-bezier(.2,.8,.2,1) !important;
       }
 
-      .tabbit-img-preview-branch:hover {
+      .Yuze-img-preview-branch:hover {
         transform: translateY(-1px) !important;
         background: rgba(255,255,255,0.68) !important;
       }
 
-      .tabbit-img-preview-branch.is-active {
+      .Yuze-img-preview-branch.is-active {
         border-color: rgba(0,122,255,0.32) !important;
         background:
           linear-gradient(145deg, rgba(255,255,255,0.74), rgba(255,255,255,0.50)),
           linear-gradient(135deg, rgba(0,122,255,0.14), rgba(52,199,89,0.08)) !important;
       }
 
-      .tabbit-img-preview-branch img {
+      .Yuze-img-preview-branch img {
         width: 100% !important;
         aspect-ratio: 1 / 0.82 !important;
         height: auto !important;
@@ -2695,7 +2695,7 @@
         box-shadow: none !important;
       }
 
-      .tabbit-img-preview-branch span {
+      .Yuze-img-preview-branch span {
         display: block !important;
         overflow: hidden !important;
         display: -webkit-box !important;
@@ -2705,7 +2705,7 @@
         font: 650 11px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Segoe UI", sans-serif !important;
       }
 
-      .tabbit-img-preview-branch-action {
+      .Yuze-img-preview-branch-action {
         appearance: none !important;
         -webkit-appearance: none !important;
         width: 100% !important;
@@ -2723,12 +2723,12 @@
         transition: transform 160ms cubic-bezier(.2,.8,.2,1), background 160ms cubic-bezier(.2,.8,.2,1), color 160ms cubic-bezier(.2,.8,.2,1) !important;
       }
 
-      .tabbit-img-preview-branch-action:hover {
+      .Yuze-img-preview-branch-action:hover {
         transform: translateY(-1px) !important;
         background: rgba(255,255,255,0.64) !important;
       }
 
-      .tabbit-img-preview-branch-action.is-active {
+      .Yuze-img-preview-branch-action.is-active {
         border-color: rgba(0,122,255,0.30) !important;
         background:
           linear-gradient(145deg, rgba(255,255,255,0.82), rgba(255,255,255,0.48)),
@@ -2736,12 +2736,12 @@
         color: rgba(18,24,34,0.86) !important;
       }
 
-      .tabbit-img-preview-branch-action svg {
+      .Yuze-img-preview-branch-action svg {
         width: 13px !important;
         height: 13px !important;
       }
 
-      .tabbit-img-preview-empty {
+      .Yuze-img-preview-empty {
         min-height: 190px !important;
         display: grid !important;
         place-items: center !important;
@@ -2754,7 +2754,7 @@
         font: 650 12px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Segoe UI", sans-serif !important;
       }
 
-      .tabbit-img-preview-caption {
+      .Yuze-img-preview-caption {
         justify-self: center !important;
         max-width: min(86vw, 720px) !important;
         padding: 8px 12px !important;
@@ -2769,7 +2769,7 @@
         -webkit-backdrop-filter: blur(16px) saturate(1.45) !important;
       }
 
-      .tabbit-img-preview-close {
+      .Yuze-img-preview-close {
         position: absolute !important;
         top: -18px !important;
         right: -18px !important;
@@ -2786,7 +2786,7 @@
         cursor: pointer !important;
       }
 
-      .tabbit-img-studio-upload {
+      .Yuze-img-studio-upload {
         position: relative !important;
         display: grid !important;
         place-items: center !important;
@@ -2798,7 +2798,7 @@
         cursor: pointer !important;
       }
 
-      .tabbit-img-studio-upload img {
+      .Yuze-img-studio-upload img {
         width: 100% !important;
         height: 100% !important;
         min-height: 104px !important;
@@ -2806,7 +2806,7 @@
         display: block !important;
       }
 
-      .tabbit-img-studio-upload span {
+      .Yuze-img-studio-upload span {
         padding: 0 14px !important;
         text-align: center !important;
         font-size: 12px !important;
@@ -2814,7 +2814,7 @@
         color: rgba(74,84,102,0.72) !important;
       }
 
-      .tabbit-img-studio-prompt-upload {
+      .Yuze-img-studio-prompt-upload {
         min-height: 0 !important;
         width: max-content !important;
         max-width: 100% !important;
@@ -2830,13 +2830,13 @@
         box-shadow: 0 8px 18px rgba(20,24,32,0.08), inset 0 1px 0 rgba(255,255,255,0.76) !important;
       }
 
-      .tabbit-img-studio-prompt-upload svg {
+      .Yuze-img-studio-prompt-upload svg {
         width: 14px !important;
         height: 14px !important;
         color: rgba(0,122,255,0.82) !important;
       }
 
-      .tabbit-img-studio-prompt-upload span {
+      .Yuze-img-studio-prompt-upload span {
         padding: 0 !important;
         font-weight: 740 !important;
         color: rgba(40,48,62,0.78) !important;
@@ -2852,25 +2852,25 @@
           height: min(620px, calc(100vh - 24px)) !important;
         }
 
-        .tabbit-img-studio-shell {
+        .Yuze-img-studio-shell {
           grid-template-columns: 136px minmax(0, 1fr) !important;
         }
 
-        .tabbit-img-studio-shell.is-history-collapsed {
+        .Yuze-img-studio-shell.is-history-collapsed {
           grid-template-columns: 44px minmax(0, 1fr) !important;
         }
 
-        .tabbit-img-studio-pane-grid {
+        .Yuze-img-studio-pane-grid {
           grid-template-columns: 1fr !important;
           overflow: auto !important;
         }
 
-        .tabbit-img-studio-section {
+        .Yuze-img-studio-section {
           overflow: visible !important;
           padding-right: 0 !important;
         }
 
-        .tabbit-img-preview-card {
+        .Yuze-img-preview-card {
           grid-template-columns: 1fr !important;
           overflow: auto !important;
         }
@@ -2878,61 +2878,61 @@
 
       @media (prefers-reduced-motion: reduce) {
         #${PANEL_ID},
-        .tabbit-img-studio-shell,
+        .Yuze-img-studio-shell,
         #${RESULT_PANEL_ID},
-        .tabbit-img-studio-history,
-        #${RESULT_PANEL_ID} .tabbit-img-studio-result-column,
-        .tabbit-img-studio-history::before,
-        .tabbit-img-studio-history::after,
-        #${RESULT_PANEL_ID} .tabbit-img-studio-result-column::before,
-        #${RESULT_PANEL_ID} .tabbit-img-studio-result-column::after {
+        .Yuze-img-studio-history,
+        #${RESULT_PANEL_ID} .Yuze-img-studio-result-column,
+        .Yuze-img-studio-history::before,
+        .Yuze-img-studio-history::after,
+        #${RESULT_PANEL_ID} .Yuze-img-studio-result-column::before,
+        #${RESULT_PANEL_ID} .Yuze-img-studio-result-column::after {
           animation: none !important;
           transition-duration: 1ms !important;
         }
       }
 
-      @keyframes tabbitImagePromptSpin {
+      @keyframes YuzeImagePromptSpin {
         to { transform: rotate(360deg); }
       }
 
-      @keyframes tabbitImagePromptDot {
+      @keyframes YuzeImagePromptDot {
         0%, 100% { opacity: 0.30; transform: translateY(0); }
         45% { opacity: 0.92; transform: translateY(-2px); }
       }
 
-      @keyframes tabbitImagePromptTextShimmer {
+      @keyframes YuzeImagePromptTextShimmer {
         0% { background-position: 120% 0; }
         100% { background-position: -120% 0; }
       }
 
-      @keyframes tabbitImageGeneratingAura {
+      @keyframes YuzeImageGeneratingAura {
         to { transform: rotate(360deg); }
       }
 
-      @keyframes tabbitImageGeneratingSweep {
+      @keyframes YuzeImageGeneratingSweep {
         0% { transform: translateX(-78%); opacity: 0; }
         18% { opacity: 1; }
         72% { opacity: 1; }
         100% { transform: translateX(78%); opacity: 0; }
       }
 
-      @keyframes tabbitImageGeneratingPulse {
+      @keyframes YuzeImageGeneratingPulse {
         0%, 100% { transform: scale(0.88); opacity: 0.42; }
         50% { transform: scale(1.04); opacity: 0.88; }
       }
 
-      @keyframes tabbitImageGeneratingProgress {
+      @keyframes YuzeImageGeneratingProgress {
         0% { transform: translateX(-104%); }
         100% { transform: translateX(224%); }
       }
 
-      @keyframes tabbitImageDockReceive {
+      @keyframes YuzeImageDockReceive {
         0% { transform: translateY(0) scale(1); box-shadow: 0 16px 42px rgba(20,24,32,0.20), 0 4px 12px rgba(20,24,32,0.10), inset 0 1px 0 rgba(255,255,255,0.84); }
         42% { transform: translateY(-2px) scale(1.13); box-shadow: 0 22px 52px rgba(20,24,32,0.25), 0 0 0 9px rgba(0,122,255,0.08), inset 0 1px 0 rgba(255,255,255,0.92); }
         100% { transform: translateY(0) scale(1); box-shadow: 0 16px 42px rgba(20,24,32,0.20), 0 4px 12px rgba(20,24,32,0.10), inset 0 1px 0 rgba(255,255,255,0.84); }
       }
 
-      @keyframes tabbitMacWindowOpen {
+      @keyframes YuzeMacWindowOpen {
         0% {
           opacity: 0;
           transform: translate3d(28px, 36px, 0) scale(0.84);
@@ -2953,57 +2953,57 @@
         }
       }
 
-      @keyframes tabbitRibbonUnfoldLeft {
+      @keyframes YuzeRibbonUnfoldLeft {
         0% { transform: scaleX(0.88) skewY(-1.6deg); filter: saturate(1.04); }
         54% { transform: scaleX(1.045) skewY(0.9deg); filter: saturate(1.18); }
         76% { transform: scaleX(0.985) skewY(-0.35deg); }
         100% { transform: scaleX(1) skewY(0deg); filter: saturate(1); }
       }
 
-      @keyframes tabbitRibbonFoldLeft {
+      @keyframes YuzeRibbonFoldLeft {
         0% { transform: scaleX(1) skewY(0deg); filter: saturate(1); }
         42% { transform: scaleX(1.055) skewY(0.9deg); filter: saturate(1.12); }
         100% { transform: scaleX(0.90) skewY(-1.2deg); filter: saturate(0.96); }
       }
 
-      @keyframes tabbitRibbonSheenLeft {
+      @keyframes YuzeRibbonSheenLeft {
         0% { opacity: 0; transform: translateX(16px) scaleX(0.25); }
         34% { opacity: 0.72; transform: translateX(4px) scaleX(1.08); }
         100% { opacity: 0; transform: translateX(-18px) scaleX(0.34); }
       }
 
-      @keyframes tabbitRibbonEdgePullLeft {
+      @keyframes YuzeRibbonEdgePullLeft {
         0% { opacity: 0.62; transform: scaleX(0.74); }
         48% { opacity: 0.82; transform: scaleX(1.32); }
         100% { opacity: 0.36; transform: scaleX(0.48); }
       }
 
-      @keyframes tabbitRibbonUnfoldRight {
+      @keyframes YuzeRibbonUnfoldRight {
         0% { transform: translateX(-8px) scaleX(0.88) skewY(1.5deg); filter: saturate(1.04); }
         54% { transform: translateX(0) scaleX(1.045) skewY(-0.8deg); filter: saturate(1.18); }
         76% { transform: translateX(0) scaleX(0.985) skewY(0.32deg); }
         100% { transform: translateX(0) scaleX(1) skewY(0deg); filter: saturate(1); }
       }
 
-      @keyframes tabbitRibbonFoldRight {
+      @keyframes YuzeRibbonFoldRight {
         0% { transform: translateX(0) scaleX(1) skewY(0deg); filter: saturate(1); }
         42% { transform: translateX(-2px) scaleX(1.055) skewY(-0.9deg); filter: saturate(1.12); }
         100% { transform: translateX(-8px) scaleX(0.90) skewY(1.2deg); filter: saturate(0.96); }
       }
 
-      @keyframes tabbitRibbonSheenRight {
+      @keyframes YuzeRibbonSheenRight {
         0% { opacity: 0; transform: translateX(-16px) scaleX(0.25); }
         34% { opacity: 0.72; transform: translateX(-2px) scaleX(1.08); }
         100% { opacity: 0; transform: translateX(20px) scaleX(0.34); }
       }
 
-      @keyframes tabbitRibbonEdgePullRight {
+      @keyframes YuzeRibbonEdgePullRight {
         0% { opacity: 0.68; transform: scaleX(0.72); }
         48% { opacity: 0.86; transform: scaleX(1.32); }
         100% { opacity: 0.38; transform: scaleX(0.48); }
       }
 
-      .tabbit-img-error-overlay {
+      .Yuze-img-error-overlay {
         position: fixed !important;
         inset: 0 !important;
         z-index: 2147483647 !important;
@@ -3018,7 +3018,7 @@
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Segoe UI", sans-serif !important;
       }
 
-      .tabbit-img-error-dialog {
+      .Yuze-img-error-dialog {
         width: min(760px, calc(100vw - 32px)) !important;
         max-height: min(760px, calc(100vh - 32px)) !important;
         display: flex !important;
@@ -3033,34 +3033,34 @@
         box-shadow: 0 28px 90px rgba(15, 20, 35, 0.34), inset 0 1px 0 #fff !important;
       }
 
-      .tabbit-img-error-head,
-      .tabbit-img-error-foot {
+      .Yuze-img-error-head,
+      .Yuze-img-error-foot {
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
         gap: 14px !important;
       }
 
-      .tabbit-img-error-head > div {
+      .Yuze-img-error-head > div {
         display: flex !important;
         flex-direction: column !important;
         gap: 4px !important;
       }
 
-      .tabbit-img-error-head strong {
+      .Yuze-img-error-head strong {
         color: #b42318 !important;
         font-size: 17px !important;
         line-height: 1.3 !important;
       }
 
-      .tabbit-img-error-head span,
-      .tabbit-img-error-status {
+      .Yuze-img-error-head span,
+      .Yuze-img-error-status {
         color: #667085 !important;
         font-size: 12px !important;
         line-height: 1.4 !important;
       }
 
-      .tabbit-img-error-close {
+      .Yuze-img-error-close {
         width: 32px !important;
         height: 32px !important;
         flex: 0 0 auto !important;
@@ -3072,7 +3072,7 @@
         cursor: pointer !important;
       }
 
-      .tabbit-img-error-log {
+      .Yuze-img-error-log {
         width: 100% !important;
         min-height: 320px !important;
         max-height: 56vh !important;
@@ -3088,14 +3088,14 @@
         white-space: pre !important;
       }
 
-      .tabbit-img-error-foot > div {
+      .Yuze-img-error-foot > div {
         display: flex !important;
         gap: 8px !important;
         flex: 0 0 auto !important;
       }
 
-      .tabbit-img-error-secondary,
-      .tabbit-img-error-primary {
+      .Yuze-img-error-secondary,
+      .Yuze-img-error-primary {
         min-height: 34px !important;
         padding: 0 14px !important;
         border-radius: 10px !important;
@@ -3103,24 +3103,24 @@
         cursor: pointer !important;
       }
 
-      .tabbit-img-error-secondary {
+      .Yuze-img-error-secondary {
         border: 1px solid #d0d5dd !important;
         background: #fff !important;
         color: #344054 !important;
       }
 
-      .tabbit-img-error-primary {
+      .Yuze-img-error-primary {
         border: 1px solid #b42318 !important;
         background: #b42318 !important;
         color: #fff !important;
       }
 
       @media (max-width: 620px) {
-        .tabbit-img-error-overlay { padding: 10px !important; }
-        .tabbit-img-error-dialog { padding: 14px !important; }
-        .tabbit-img-error-log { min-height: 260px !important; }
-        .tabbit-img-error-foot { align-items: stretch !important; flex-direction: column !important; }
-        .tabbit-img-error-foot > div { justify-content: flex-end !important; }
+        .Yuze-img-error-overlay { padding: 10px !important; }
+        .Yuze-img-error-dialog { padding: 14px !important; }
+        .Yuze-img-error-log { min-height: 260px !important; }
+        .Yuze-img-error-foot { align-items: stretch !important; flex-direction: column !important; }
+        .Yuze-img-error-foot > div { justify-content: flex-end !important; }
       }
 
     `;
@@ -3256,9 +3256,9 @@
       `#${LAUNCHER_ID}`,
       `.${HOST_CLASS}`,
       `.${STATUS_CLASS}`,
-      '.tabbit-img-preview-overlay',
-      '.tabbit-img-dock-sprite',
-      '.tabbit-img-dock-particle'
+      '.Yuze-img-preview-overlay',
+      '.Yuze-img-dock-sprite',
+      '.Yuze-img-dock-particle'
     ].join(',')));
   }
 
@@ -3335,15 +3335,15 @@
     }
     status.textContent = message;
     status.classList.add('is-visible');
-    window.clearTimeout(status.__tabbitTimer);
-    status.__tabbitTimer = window.setTimeout(() => status.classList.remove('is-visible'), duration);
+    window.clearTimeout(status.__YuzeTimer);
+    status.__YuzeTimer = window.setTimeout(() => status.classList.remove('is-visible'), duration);
   }
 
   function setButtonState(button, type, label) {
     button.disabled = type === 'loading';
     button.classList.toggle('is-loading', type === 'loading');
     button.classList.toggle('is-queued', type === 'queued');
-    button.querySelector('.tabbit-img-prompt-label').textContent = label;
+    button.querySelector('.Yuze-img-prompt-label').textContent = label;
   }
 
   function blockCardNavigation(event) {
@@ -3389,7 +3389,7 @@
     const endY = targetRect.top + (targetRect.height - targetSize) / 2;
 
     const sprite = document.createElement('div');
-    sprite.className = 'tabbit-img-dock-sprite';
+    sprite.className = 'Yuze-img-dock-sprite';
     sprite.style.setProperty('width', `${Math.round(startSize)}px`, 'important');
     sprite.style.setProperty('height', `${Math.round(startSize)}px`, 'important');
     sprite.style.setProperty('border-radius', `${Math.round(Math.min(24, startSize * 0.24))}px`, 'important');
@@ -3403,7 +3403,7 @@
     const endCenterY = endY + targetSize / 2;
     const particles = Array.from({ length: 7 }, (_, index) => {
       const particle = document.createElement('span');
-      particle.className = 'tabbit-img-dock-particle';
+      particle.className = 'Yuze-img-dock-particle';
       const angle = (-120 + index * 34) * Math.PI / 180;
       const drift = 18 + (index % 3) * 8;
       const size = index % 2 ? 6 : 8;
@@ -3462,7 +3462,7 @@
     const button = document.createElement('button');
     button.type = 'button';
     button.className = BUTTON_CLASS;
-    button.innerHTML = `${iconSvg('scan')}<span class="tabbit-img-prompt-label">提取Prompt</span>`;
+    button.innerHTML = `${iconSvg('scan')}<span class="Yuze-img-prompt-label">提取Prompt</span>`;
     button.title = '分析这张图片，提取可复用的生成 Prompt';
     button.addEventListener('pointerdown', blockCardNavigation, true);
     button.addEventListener('pointerup', blockCardNavigation, true);
@@ -3685,7 +3685,7 @@
         return dataUrl;
       }
     } catch (error) {
-      console.warn('[Tabbit] 图片 fetch 转 base64 失败，尝试 canvas:', error);
+      console.warn('[Yuze] 图片 fetch 转 base64 失败，尝试 canvas:', error);
     }
 
     try {
@@ -3695,7 +3695,7 @@
         return dataUrl;
       }
     } catch (error) {
-      console.warn('[Tabbit] 图片 canvas 转 base64 失败，回退 URL:', error);
+      console.warn('[Yuze] 图片 canvas 转 base64 失败，回退 URL:', error);
     }
 
     return source;
@@ -3725,7 +3725,7 @@
   }
 
   function enqueueAnalysis(card, button) {
-    if (button?.dataset.tabbitAnalysisState === 'queued' || button?.dataset.tabbitAnalysisState === 'loading') return;
+    if (button?.dataset.YuzeAnalysisState === 'queued' || button?.dataset.YuzeAnalysisState === 'loading') return;
 
     const img = findImage(card);
     const image = getImageSource(img);
@@ -3754,7 +3754,7 @@
       itemId: item.id
     };
 
-    button.dataset.tabbitAnalysisState = 'queued';
+    button.dataset.YuzeAnalysisState = 'queued';
     state.analysisQueue.push(job);
     updateQueuedButtons();
     showPanel();
@@ -3895,7 +3895,7 @@
   async function analyzeJob(job) {
     const { card, button, image, title, aspectRatio, itemId } = job;
     if (button) {
-      button.dataset.tabbitAnalysisState = 'loading';
+      button.dataset.YuzeAnalysisState = 'loading';
       setButtonState(button, 'loading', '分析中');
     }
     setPanelMessage(queueMessage());
@@ -3907,7 +3907,7 @@
         await streamPromptText(itemId, analysis.prompt, { duration: Math.min(config.mockAnalysisDelayMs, 1400) });
       } else {
         if (!window.LLMBridge || typeof window.LLMBridge.chat !== 'function') {
-          throw new Error('当前页面未检测到 LLMBridge.chat，请在 Tabbit 脚本环境运行');
+          throw new Error('当前页面未检测到 LLMBridge.chat，请在 Yuze 脚本环境运行');
         }
         let streamedRaw = '';
         const handleChunk = (chunk) => {
@@ -3948,10 +3948,10 @@
       applyPanelPosition();
       showStatus(card, 'Prompt 已加入浮窗历史');
       if (button) {
-        button.dataset.tabbitAnalysisState = 'done';
+        button.dataset.YuzeAnalysisState = 'done';
         setButtonState(button, 'done', '已提取');
         window.setTimeout(() => {
-          button.dataset.tabbitAnalysisState = 'idle';
+          button.dataset.YuzeAnalysisState = 'idle';
           setButtonState(button, 'idle', '提取Prompt');
         }, 1200);
       }
@@ -3975,10 +3975,10 @@
       }, { persist: true, render: true });
       setPanelMessage(error?.message || '分析失败，请稍后再试');
       if (button) {
-        button.dataset.tabbitAnalysisState = 'error';
+        button.dataset.YuzeAnalysisState = 'error';
         setButtonState(button, 'error', '失败');
         window.setTimeout(() => {
-          button.dataset.tabbitAnalysisState = 'idle';
+          button.dataset.YuzeAnalysisState = 'idle';
           setButtonState(button, 'idle', '提取Prompt');
         }, 1500);
       }
@@ -4018,7 +4018,7 @@
     launcher.id = LAUNCHER_ID;
     launcher.type = 'button';
     launcher.title = '打开图片 Prompt Studio（错误日志专用版）';
-    launcher.innerHTML = `${iconSvg('sparkle')}<span class="tabbit-img-launcher-badge"></span>`;
+    launcher.innerHTML = `${iconSvg('sparkle')}<span class="Yuze-img-launcher-badge"></span>`;
     launcher.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
@@ -4032,7 +4032,7 @@
     const launcher = document.getElementById(LAUNCHER_ID);
     if (!launcher) return;
     const workCount = state.analysisQueue.length + (state.analysisRunning ? 1 : 0);
-    const badge = launcher.querySelector('.tabbit-img-launcher-badge');
+    const badge = launcher.querySelector('.Yuze-img-launcher-badge');
     launcher.classList.toggle('is-active', Boolean(state.panel?.classList.contains('is-visible')));
     launcher.classList.toggle('has-work', workCount > 0);
     if (badge) badge.textContent = workCount > 9 ? '9+' : String(workCount || '');
@@ -4176,9 +4176,9 @@
       if (isScrollableElement(node)) return node;
       node = node.parentElement;
     }
-    const activePane = root.querySelector('.tabbit-img-studio-pane.is-active');
+    const activePane = root.querySelector('.Yuze-img-studio-pane.is-active');
     if (isScrollableElement(activePane)) return activePane;
-    const activeGrid = root.querySelector('.tabbit-img-studio-pane-grid.is-active');
+    const activeGrid = root.querySelector('.Yuze-img-studio-pane-grid.is-active');
     if (isScrollableElement(activeGrid)) return activeGrid;
     return null;
   }
@@ -4199,12 +4199,12 @@
   }
 
   function bindScrollGuards(root) {
-    if (!root || root.dataset.tabbitScrollGuardBound === '1') return;
-    root.dataset.tabbitScrollGuardBound = '1';
+    if (!root || root.dataset.YuzeScrollGuardBound === '1') return;
+    root.dataset.YuzeScrollGuardBound = '1';
     let lastTouchY = null;
     root.addEventListener('wheel', (event) => {
       if (event.ctrlKey) return;
-      if (state.resultViewMode === 'focus' && event.target?.closest?.('.tabbit-img-studio-output-focus')) return;
+      if (state.resultViewMode === 'focus' && event.target?.closest?.('.Yuze-img-studio-output-focus')) return;
       stopPageScroll(event, root, event.deltaY);
     }, { capture: true, passive: false });
     root.addEventListener('touchstart', (event) => {
@@ -4225,10 +4225,10 @@
   function setPanelMessage(message) {
     if (!state.panel) return;
     if (state.generating) return;
-    const target = document.getElementById(RESULT_PANEL_ID)?.querySelector('.tabbit-img-studio-output-list')
-      || state.panel.querySelector('.tabbit-img-studio-output-list');
+    const target = document.getElementById(RESULT_PANEL_ID)?.querySelector('.Yuze-img-studio-output-list')
+      || state.panel.querySelector('.Yuze-img-studio-output-list');
     if (target && !state.outputs.length) {
-      target.innerHTML = `<div class="tabbit-img-studio-empty">${escapeHtml(message)}</div>`;
+      target.innerHTML = `<div class="Yuze-img-studio-empty">${escapeHtml(message)}</div>`;
     }
   }
 
@@ -4277,7 +4277,7 @@
       <span
         role="button"
         tabindex="0"
-        class="tabbit-img-studio-history-upload-toggle ${enabled ? '' : 'is-off'}"
+        class="Yuze-img-studio-history-upload-toggle ${enabled ? '' : 'is-off'}"
         data-toggle-history-upload-id="${escapeHtml(item.id)}"
         title="${enabled ? '生图时上传这张历史图' : '生图时不上传这张历史图'}"
         aria-label="${enabled ? '生图时上传这张历史图' : '生图时不上传这张历史图'}"
@@ -4323,16 +4323,16 @@
   function renderPromptKindControl(tab = state.activeTab) {
     const kind = getPromptKind(tab);
     return `
-      <div class="tabbit-img-studio-prompt-kind" role="group" aria-label="Prompt 类型">
-        <button type="button" class="tabbit-img-studio-kind-button ${kind === 'recreate' ? 'is-active' : ''}" data-action="prompt-kind" data-kind="recreate">完整复现</button>
-        <button type="button" class="tabbit-img-studio-kind-button ${kind === 'style' ? 'is-active' : ''}" data-action="prompt-kind" data-kind="style">纯风格</button>
+      <div class="Yuze-img-studio-prompt-kind" role="group" aria-label="Prompt 类型">
+        <button type="button" class="Yuze-img-studio-kind-button ${kind === 'recreate' ? 'is-active' : ''}" data-action="prompt-kind" data-kind="recreate">完整复现</button>
+        <button type="button" class="Yuze-img-studio-kind-button ${kind === 'style' ? 'is-active' : ''}" data-action="prompt-kind" data-kind="style">纯风格</button>
       </div>
     `;
   }
 
   function renderSelectedHistoryStrip(items) {
     if (!items.length) {
-      return '<div class="tabbit-img-studio-selection-note"><span>在左侧历史中选择 2 张以上图片融合风格。</span></div>';
+      return '<div class="Yuze-img-studio-selection-note"><span>在左侧历史中选择 2 张以上图片融合风格。</span></div>';
     }
     const isHero = state.selectedHistoryViewMode === 'hero';
     const renderSelectedCard = (item) => {
@@ -4342,23 +4342,23 @@
           ? '提取失败，可删除后重试'
           : item.tags?.length ? item.tags.join(' · ') : '已提取风格';
       return `
-        <button type="button" class="tabbit-img-studio-preview-row tabbit-img-studio-selected-card" data-preview-history-id="${escapeHtml(item.id)}" title="${escapeHtml(item.title)}">
+        <button type="button" class="Yuze-img-studio-preview-row Yuze-img-studio-selected-card" data-preview-history-id="${escapeHtml(item.id)}" title="${escapeHtml(item.title)}">
           <img alt="${escapeHtml(item.title)}" src="${escapeHtml(item.image)}">
           <div>
-            <p class="tabbit-img-studio-meta-title">${escapeHtml(item.title)}</p>
-            <p class="tabbit-img-studio-meta-text">${escapeHtml(tags)}${item.ratio ? ` · ${escapeHtml(item.ratio)}` : ''}</p>
+            <p class="Yuze-img-studio-meta-title">${escapeHtml(item.title)}</p>
+            <p class="Yuze-img-studio-meta-text">${escapeHtml(tags)}${item.ratio ? ` · ${escapeHtml(item.ratio)}` : ''}</p>
           </div>
           ${renderHistoryUploadToggle(item)}
         </button>
       `;
     };
     return `
-      <div class="tabbit-img-studio-fusion-selection">
-        <div class="tabbit-img-studio-fusion-selection-head">
-          <span class="tabbit-img-studio-fusion-selection-title">已选择 ${items.length} 张历史图</span>
-          <button type="button" class="tabbit-img-studio-mini-toggle ${isHero ? 'is-active' : ''}" data-action="toggle-selected-history-view" title="${isHero ? '切换为两列' : '切换为一列大图'}">${iconSvg(isHero ? 'layoutList' : 'focusImage')}</button>
+      <div class="Yuze-img-studio-fusion-selection">
+        <div class="Yuze-img-studio-fusion-selection-head">
+          <span class="Yuze-img-studio-fusion-selection-title">已选择 ${items.length} 张历史图</span>
+          <button type="button" class="Yuze-img-studio-mini-toggle ${isHero ? 'is-active' : ''}" data-action="toggle-selected-history-view" title="${isHero ? '切换为两列' : '切换为一列大图'}">${iconSvg(isHero ? 'layoutList' : 'focusImage')}</button>
         </div>
-        <div class="tabbit-img-studio-selected-grid ${isHero ? 'is-hero' : ''}">
+        <div class="Yuze-img-studio-selected-grid ${isHero ? 'is-hero' : ''}">
           ${items.map(renderSelectedCard).join('')}
         </div>
       </div>
@@ -4395,7 +4395,7 @@
 
   function renderHistoryList() {
     if (!state.history.length) {
-      return '<div class="tabbit-img-studio-empty">点击图片上的“提取Prompt”按钮后，识别过的图片会在这里按单列保存。</div>';
+      return '<div class="Yuze-img-studio-empty">点击图片上的“提取Prompt”按钮后，识别过的图片会在这里按单列保存。</div>';
     }
     const selectable = isFusionTab();
     return state.history.map(item => {
@@ -4403,13 +4403,13 @@
       const statusLabel = isAnalyzing ? '提取中' : item.status === 'error' ? '失败' : '';
       const selected = state.selectedHistoryIds.includes(item.id);
       return `
-      <button type="button" class="tabbit-img-studio-history-item ${item.id === state.selectedId ? 'is-active' : ''} ${selected ? 'is-selected' : ''} ${isAnalyzing ? 'is-analyzing' : ''}" data-history-id="${escapeHtml(item.id)}" title="${escapeHtml(item.title)}">
-        <span role="button" tabindex="0" class="tabbit-img-studio-delete" data-delete-history-id="${escapeHtml(item.id)}" title="删除这条历史">${iconSvg('close')}</span>
-        ${selectable ? `<span class="tabbit-img-studio-history-check">${selected ? iconSvg('check') : ''}</span>` : ''}
-        ${statusLabel ? `<span class="tabbit-img-studio-history-state">${isAnalyzing ? iconSvg('sparkle') : ''}${escapeHtml(statusLabel)}</span>` : ''}
-        ${item.status === 'error' ? `<span role="button" tabindex="0" class="tabbit-img-studio-history-retry" data-retry-history-id="${escapeHtml(item.id)}" title="重新提取 Prompt">${iconSvg('sparkle')}重试</span>` : ''}
-        <span class="tabbit-img-studio-history-thumb"><img alt="${escapeHtml(item.title)}" src="${escapeHtml(item.image)}"></span>
-        <span class="tabbit-img-studio-history-caption">${escapeHtml(item.title)}</span>
+      <button type="button" class="Yuze-img-studio-history-item ${item.id === state.selectedId ? 'is-active' : ''} ${selected ? 'is-selected' : ''} ${isAnalyzing ? 'is-analyzing' : ''}" data-history-id="${escapeHtml(item.id)}" title="${escapeHtml(item.title)}">
+        <span role="button" tabindex="0" class="Yuze-img-studio-delete" data-delete-history-id="${escapeHtml(item.id)}" title="删除这条历史">${iconSvg('close')}</span>
+        ${selectable ? `<span class="Yuze-img-studio-history-check">${selected ? iconSvg('check') : ''}</span>` : ''}
+        ${statusLabel ? `<span class="Yuze-img-studio-history-state">${isAnalyzing ? iconSvg('sparkle') : ''}${escapeHtml(statusLabel)}</span>` : ''}
+        ${item.status === 'error' ? `<span role="button" tabindex="0" class="Yuze-img-studio-history-retry" data-retry-history-id="${escapeHtml(item.id)}" title="重新提取 Prompt">${iconSvg('sparkle')}重试</span>` : ''}
+        <span class="Yuze-img-studio-history-thumb"><img alt="${escapeHtml(item.title)}" src="${escapeHtml(item.image)}"></span>
+        <span class="Yuze-img-studio-history-caption">${escapeHtml(item.title)}</span>
       </button>
     `;
     }).join('');
@@ -4417,7 +4417,7 @@
 
   function renderPreview(item) {
     if (!item) {
-      return '<div class="tabbit-img-studio-empty">先在图片上点击“提取Prompt”。</div>';
+      return '<div class="Yuze-img-studio-empty">先在图片上点击“提取Prompt”。</div>';
     }
     const tags = item.status === 'analyzing'
       ? '正在提取 Prompt'
@@ -4425,11 +4425,11 @@
         ? '提取失败，可删除后重试'
         : item.tags?.length ? item.tags.join(' · ') : '已提取风格';
     return `
-      <div class="tabbit-img-studio-preview-row">
+      <div class="Yuze-img-studio-preview-row">
         <img alt="${escapeHtml(item.title)}" src="${escapeHtml(item.image)}">
         <div>
-          <p class="tabbit-img-studio-meta-title">${escapeHtml(item.title)}</p>
-          <p class="tabbit-img-studio-meta-text">${escapeHtml(tags)}${item.ratio ? ` · ${escapeHtml(item.ratio)}` : ''}</p>
+          <p class="Yuze-img-studio-meta-title">${escapeHtml(item.title)}</p>
+          <p class="Yuze-img-studio-meta-text">${escapeHtml(tags)}${item.ratio ? ` · ${escapeHtml(item.ratio)}` : ''}</p>
         </div>
         ${renderHistoryUploadToggle(item)}
       </div>
@@ -4439,13 +4439,13 @@
   function renderGeneratingCard() {
     if (!state.generating) return '';
     return `
-      <div class="tabbit-img-studio-generating-card" aria-live="polite">
-        <div class="tabbit-img-studio-generating-frame"></div>
-        <div class="tabbit-img-studio-generating-caption">
+      <div class="Yuze-img-studio-generating-card" aria-live="polite">
+        <div class="Yuze-img-studio-generating-frame"></div>
+        <div class="Yuze-img-studio-generating-caption">
           <span>生成中</span>
-          <span class="tabbit-img-studio-streaming-dots"><i></i><i></i><i></i></span>
+          <span class="Yuze-img-studio-streaming-dots"><i></i><i></i><i></i></span>
         </div>
-        <div class="tabbit-img-studio-generating-progress"><span></span></div>
+        <div class="Yuze-img-studio-generating-progress"><span></span></div>
       </div>
     `;
   }
@@ -4453,16 +4453,16 @@
   function renderOutputList() {
     if (!state.outputs.length) {
       if (state.generating) return '';
-      return '<div class="tabbit-img-studio-empty">生成结果会显示在这里。验证脚本布局时不需要真的调用生图。</div>';
+      return '<div class="Yuze-img-studio-empty">生成结果会显示在这里。验证脚本布局时不需要真的调用生图。</div>';
     }
     return state.outputs.map(output => {
       const display = getOutputDisplay(output);
       const isRefinedDisplay = Boolean(display.displayBranchId);
       return `
-      <button type="button" class="tabbit-img-studio-output ${isRefinedDisplay ? 'is-refined-display' : ''}" data-preview-url="${escapeHtml(display.url)}" data-preview-title="${escapeHtml(display.title)}" data-output-id="${escapeHtml(getOutputKey(output))}" data-output-key="${escapeHtml(getOutputKey(output))}">
-        <span role="button" tabindex="0" class="tabbit-img-studio-delete" data-delete-output-key="${escapeHtml(getOutputKey(output))}" title="删除这张结果">${iconSvg('close')}</span>
+      <button type="button" class="Yuze-img-studio-output ${isRefinedDisplay ? 'is-refined-display' : ''}" data-preview-url="${escapeHtml(display.url)}" data-preview-title="${escapeHtml(display.title)}" data-output-id="${escapeHtml(getOutputKey(output))}" data-output-key="${escapeHtml(getOutputKey(output))}">
+        <span role="button" tabindex="0" class="Yuze-img-studio-delete" data-delete-output-key="${escapeHtml(getOutputKey(output))}" title="删除这张结果">${iconSvg('close')}</span>
         <img alt="${escapeHtml(display.title)}" src="${escapeHtml(display.url)}">
-        ${isRefinedDisplay ? '<em class="tabbit-img-studio-output-badge">微调展示</em>' : ''}
+        ${isRefinedDisplay ? '<em class="Yuze-img-studio-output-badge">微调展示</em>' : ''}
         <span>${escapeHtml(display.title)}</span>
       </button>
     `;
@@ -4478,7 +4478,7 @@
   function renderOutputFocus() {
     if (!state.outputs.length) {
       if (state.generating) return '';
-      return '<div class="tabbit-img-studio-empty">生成结果会显示在这里。验证脚本布局时不需要真的调用生图。</div>';
+      return '<div class="Yuze-img-studio-empty">生成结果会显示在这里。验证脚本布局时不需要真的调用生图。</div>';
     }
     const index = clampResultFocusIndex();
     const output = state.outputs[index] || state.outputs[0];
@@ -4486,19 +4486,19 @@
     const outputKey = getOutputKey(output);
     const isRefinedDisplay = Boolean(display.displayBranchId);
     return `
-      <div class="tabbit-img-studio-output-focus" data-focus-output-index="${index}">
-        <button type="button" class="tabbit-img-studio-focus-card ${isRefinedDisplay ? 'is-refined-display' : ''}" data-preview-url="${escapeHtml(display.url)}" data-preview-title="${escapeHtml(display.title)}" data-output-id="${escapeHtml(outputKey)}" data-output-key="${escapeHtml(outputKey)}">
-          <span role="button" tabindex="0" class="tabbit-img-studio-delete" data-delete-output-key="${escapeHtml(outputKey)}" title="删除这张结果">${iconSvg('close')}</span>
+      <div class="Yuze-img-studio-output-focus" data-focus-output-index="${index}">
+        <button type="button" class="Yuze-img-studio-focus-card ${isRefinedDisplay ? 'is-refined-display' : ''}" data-preview-url="${escapeHtml(display.url)}" data-preview-title="${escapeHtml(display.title)}" data-output-id="${escapeHtml(outputKey)}" data-output-key="${escapeHtml(outputKey)}">
+          <span role="button" tabindex="0" class="Yuze-img-studio-delete" data-delete-output-key="${escapeHtml(outputKey)}" title="删除这张结果">${iconSvg('close')}</span>
           <img alt="${escapeHtml(display.title)}" src="${escapeHtml(display.url)}">
-          ${isRefinedDisplay ? '<em class="tabbit-img-studio-output-badge">微调展示</em>' : ''}
+          ${isRefinedDisplay ? '<em class="Yuze-img-studio-output-badge">微调展示</em>' : ''}
         </button>
-        <div class="tabbit-img-studio-focus-meta">
-          <div class="tabbit-img-studio-focus-title-row">
+        <div class="Yuze-img-studio-focus-meta">
+          <div class="Yuze-img-studio-focus-title-row">
             <span>${escapeHtml(display.title)}</span>
             <span>${index + 1}/${state.outputs.length}</span>
           </div>
-          <div class="tabbit-img-studio-focus-dots">
-            ${state.outputs.map((item, itemIndex) => `<button type="button" class="tabbit-img-studio-focus-dot ${itemIndex === index ? 'is-active' : ''}" data-focus-output-index="${itemIndex}" title="显示第 ${itemIndex + 1} 张结果"></button>`).join('')}
+          <div class="Yuze-img-studio-focus-dots">
+            ${state.outputs.map((item, itemIndex) => `<button type="button" class="Yuze-img-studio-focus-dot ${itemIndex === index ? 'is-active' : ''}" data-focus-output-index="${itemIndex}" title="显示第 ${itemIndex + 1} 张结果"></button>`).join('')}
           </div>
         </div>
       </div>
@@ -4512,17 +4512,17 @@
   function renderResultColumn(title) {
     const isFocusMode = state.resultViewMode === 'focus';
     return `
-      <div class="tabbit-img-studio-result-column ${state.generating ? 'has-generating' : ''} ${state.resultCollapsed ? 'is-collapsed' : ''} is-${escapeHtml(state.resultViewMode)}-mode">
-        <div class="tabbit-img-studio-result-head">
-          <button type="button" class="tabbit-img-studio-icon-button tabbit-img-studio-result-collapse" data-action="toggle-result" title="${state.resultCollapsed ? '展开结果列' : '收起结果列'}">${iconSvg(state.resultCollapsed ? 'chevronLeft' : 'chevronRight')}</button>
-          <span class="tabbit-img-studio-result-title">${escapeHtml(title)}</span>
-          <span class="tabbit-img-studio-result-tools">
-            <button type="button" class="tabbit-img-studio-icon-button tabbit-img-studio-result-view-toggle" data-action="toggle-result-view" title="${isFocusMode ? '切换为列表模式' : '切换为大图模式'}">${iconSvg(isFocusMode ? 'layoutList' : 'focusImage')}</button>
-            <span class="tabbit-img-studio-result-count">${state.outputs.length}</span>
+      <div class="Yuze-img-studio-result-column ${state.generating ? 'has-generating' : ''} ${state.resultCollapsed ? 'is-collapsed' : ''} is-${escapeHtml(state.resultViewMode)}-mode">
+        <div class="Yuze-img-studio-result-head">
+          <button type="button" class="Yuze-img-studio-icon-button Yuze-img-studio-result-collapse" data-action="toggle-result" title="${state.resultCollapsed ? '展开结果列' : '收起结果列'}">${iconSvg(state.resultCollapsed ? 'chevronLeft' : 'chevronRight')}</button>
+          <span class="Yuze-img-studio-result-title">${escapeHtml(title)}</span>
+          <span class="Yuze-img-studio-result-tools">
+            <button type="button" class="Yuze-img-studio-icon-button Yuze-img-studio-result-view-toggle" data-action="toggle-result-view" title="${isFocusMode ? '切换为列表模式' : '切换为大图模式'}">${iconSvg(isFocusMode ? 'layoutList' : 'focusImage')}</button>
+            <span class="Yuze-img-studio-result-count">${state.outputs.length}</span>
           </span>
         </div>
         ${renderGeneratingCard()}
-        <div class="tabbit-img-studio-output-list">${renderResultBody()}</div>
+        <div class="Yuze-img-studio-output-list">${renderResultBody()}</div>
       </div>
     `;
   }
@@ -4598,7 +4598,7 @@
       renderDetachedResultPanel();
       applyPanelPosition();
     });
-    root.querySelector('.tabbit-img-studio-output-focus')?.addEventListener('wheel', (event) => {
+    root.querySelector('.Yuze-img-studio-output-focus')?.addEventListener('wheel', (event) => {
       if (Math.abs(event.deltaY) < 8) return;
       event.preventDefault();
       event.stopPropagation();
@@ -4606,7 +4606,7 @@
     }, { passive: false });
     root.querySelectorAll('[data-focus-output-index]').forEach(button => {
       button.addEventListener('click', (event) => {
-        if (!button.classList.contains('tabbit-img-studio-focus-dot')) return;
+        if (!button.classList.contains('Yuze-img-studio-focus-dot')) return;
         event.preventDefault();
         event.stopPropagation();
         setResultFocusIndex(Number(button.dataset.focusOutputIndex));
@@ -4719,59 +4719,59 @@
     const title = preview.activeTitle || output?.title || '图片预览';
     const branches = output ? (state.outputBranches[preview.outputId] || []) : [];
     const isReadonly = Boolean(preview.readonly || !output);
-    const existing = document.querySelector('.tabbit-img-preview-overlay');
+    const existing = document.querySelector('.Yuze-img-preview-overlay');
 
     const overlay = existing || document.createElement('div');
-    overlay.className = `tabbit-img-preview-overlay${existing ? ' is-visible' : ''}`;
+    overlay.className = `Yuze-img-preview-overlay${existing ? ' is-visible' : ''}`;
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-label', isReadonly ? '历史图片预览' : '生成结果预览');
     overlay.innerHTML = `
-      <div class="tabbit-img-preview-card ${isReadonly ? 'is-readonly' : ''}">
-        <button type="button" class="tabbit-img-preview-close" aria-label="关闭预览">${iconSvg('close')}</button>
-        <div class="tabbit-img-preview-main">
+      <div class="Yuze-img-preview-card ${isReadonly ? 'is-readonly' : ''}">
+        <button type="button" class="Yuze-img-preview-close" aria-label="关闭预览">${iconSvg('close')}</button>
+        <div class="Yuze-img-preview-main">
           <img alt="${escapeHtml(title)}" src="${escapeHtml(imageUrl)}">
-          <div class="tabbit-img-preview-caption">${escapeHtml(title)}</div>
+          <div class="Yuze-img-preview-caption">${escapeHtml(title)}</div>
         </div>
         ${isReadonly ? '' : `
-        <aside class="tabbit-img-preview-side">
+        <aside class="Yuze-img-preview-side">
           <div>
-            <p class="tabbit-img-preview-side-title">基于此图微调</p>
-            <p class="tabbit-img-preview-side-subtitle">输入修改意图，结果只保存在当前图片右侧。</p>
+            <p class="Yuze-img-preview-side-title">基于此图微调</p>
+            <p class="Yuze-img-preview-side-subtitle">输入修改意图，结果只保存在当前图片右侧。</p>
           </div>
-          <div class="tabbit-img-preview-history">
-            <div class="tabbit-img-preview-history-head">
+          <div class="Yuze-img-preview-history">
+            <div class="Yuze-img-preview-history-head">
               <span>微调结果</span>
-              <span class="tabbit-img-preview-history-count">${branches.length}</span>
+              <span class="Yuze-img-preview-history-count">${branches.length}</span>
             </div>
             ${state.refining === preview.outputId ? `
-              <div class="tabbit-img-studio-generating-card" aria-live="polite">
-                <div class="tabbit-img-studio-generating-frame"></div>
-                <div class="tabbit-img-studio-generating-caption">
+              <div class="Yuze-img-studio-generating-card" aria-live="polite">
+                <div class="Yuze-img-studio-generating-frame"></div>
+                <div class="Yuze-img-studio-generating-caption">
                   <span>微调生成中</span>
-                  <span class="tabbit-img-studio-streaming-dots"><i></i><i></i><i></i></span>
+                  <span class="Yuze-img-studio-streaming-dots"><i></i><i></i><i></i></span>
                 </div>
               </div>
             ` : ''}
             ${branches.length ? branches.map(item => {
               const isDisplayed = output?.displayBranchId === item.id;
               return `
-              <div class="tabbit-img-preview-branch-card">
-                <button type="button" class="tabbit-img-preview-branch ${isDisplayed ? 'is-active' : ''}" data-preview-branch-id="${escapeHtml(item.id)}">
+              <div class="Yuze-img-preview-branch-card">
+                <button type="button" class="Yuze-img-preview-branch ${isDisplayed ? 'is-active' : ''}" data-preview-branch-id="${escapeHtml(item.id)}">
                 <img alt="${escapeHtml(item.title)}" src="${escapeHtml(item.url)}">
                 <span>${escapeHtml(item.prompt || item.title)}</span>
                 </button>
-                <button type="button" class="tabbit-img-preview-branch-action ${isDisplayed ? 'is-active' : ''}" data-toggle-result-branch-id="${escapeHtml(item.id)}">
+                <button type="button" class="Yuze-img-preview-branch-action ${isDisplayed ? 'is-active' : ''}" data-toggle-result-branch-id="${escapeHtml(item.id)}">
                   ${isDisplayed ? iconSvg('check') : iconSvg('image')}${isDisplayed ? '取消结果列展示' : '展示到结果列'}
                 </button>
               </div>
             `;
-            }).join('') : '<div class="tabbit-img-preview-empty">微调生成的图片会出现在这里。</div>'}
+            }).join('') : '<div class="Yuze-img-preview-empty">微调生成的图片会出现在这里。</div>'}
           </div>
-          <div class="tabbit-img-preview-composer">
-            <textarea class="tabbit-img-preview-refine-textarea" data-action="preview-refine-prompt" placeholder="描述这次要改哪里，例如：中间变成一个房子，背景更干净，光线更柔和">${escapeHtml(preview.prompt || '')}</textarea>
-            <div class="tabbit-img-preview-composer-actions">
-              <span class="tabbit-img-preview-composer-hint">文本微调</span>
-              <button type="button" class="tabbit-img-studio-primary ${state.refining === preview.outputId ? 'is-loading' : ''}" data-action="preview-generate" ${state.refining ? 'disabled' : ''}>${iconSvg('sparkle')}${state.refining === preview.outputId ? '生成中...' : '生成'}</button>
+          <div class="Yuze-img-preview-composer">
+            <textarea class="Yuze-img-preview-refine-textarea" data-action="preview-refine-prompt" placeholder="描述这次要改哪里，例如：中间变成一个房子，背景更干净，光线更柔和">${escapeHtml(preview.prompt || '')}</textarea>
+            <div class="Yuze-img-preview-composer-actions">
+              <span class="Yuze-img-preview-composer-hint">文本微调</span>
+              <button type="button" class="Yuze-img-studio-primary ${state.refining === preview.outputId ? 'is-loading' : ''}" data-action="preview-generate" ${state.refining ? 'disabled' : ''}>${iconSvg('sparkle')}${state.refining === preview.outputId ? '生成中...' : '生成'}</button>
             </div>
           </div>
         </aside>
@@ -4783,7 +4783,7 @@
       if (event.key === 'Escape') closeImagePreview();
     };
     if (!existing) {
-      overlay.__tabbitKeydown = onKeydown;
+      overlay.__YuzeKeydown = onKeydown;
       overlay.addEventListener('click', (event) => {
         if (event.target === overlay) closeImagePreview();
       });
@@ -4795,9 +4795,9 @@
   }
 
   function closeImagePreview() {
-    const overlay = document.querySelector('.tabbit-img-preview-overlay');
+    const overlay = document.querySelector('.Yuze-img-preview-overlay');
     if (!overlay) return;
-    if (overlay.__tabbitKeydown) document.removeEventListener('keydown', overlay.__tabbitKeydown, true);
+    if (overlay.__YuzeKeydown) document.removeEventListener('keydown', overlay.__YuzeKeydown, true);
     state.preview = null;
     state.refining = null;
     overlay.classList.remove('is-visible');
@@ -4806,7 +4806,7 @@
 
   function bindPreviewEvents(overlay) {
     bindScrollGuards(overlay);
-    overlay.querySelector('.tabbit-img-preview-close')?.addEventListener('click', closeImagePreview);
+    overlay.querySelector('.Yuze-img-preview-close')?.addEventListener('click', closeImagePreview);
     overlay.querySelector('[data-action="preview-refine-prompt"]')?.addEventListener('input', (event) => {
       if (state.preview) state.preview.prompt = event.target.value;
     });
@@ -4838,33 +4838,33 @@
     const isAnalyzing = item?.status === 'analyzing';
     const disableActions = !item || isAnalyzing || item.status === 'error';
     return `
-      <div class="tabbit-img-studio-pane tabbit-img-studio-pane-grid ${state.activeTab === 'prompt' ? 'is-active' : ''}" data-pane="prompt">
-        <div class="tabbit-img-studio-section">
+      <div class="Yuze-img-studio-pane Yuze-img-studio-pane-grid ${state.activeTab === 'prompt' ? 'is-active' : ''}" data-pane="prompt">
+        <div class="Yuze-img-studio-section">
           ${renderPreview(item)}
-          <label class="tabbit-img-studio-upload tabbit-img-studio-prompt-upload">
+          <label class="Yuze-img-studio-upload Yuze-img-studio-prompt-upload">
             <input type="file" accept="image/*" hidden data-action="upload-prompt-image">
             ${iconSvg('image')}
             <span>上传图片提取 Prompt</span>
           </label>
-          <div class="tabbit-img-studio-field">
-            <div class="tabbit-img-studio-field-head">
+          <div class="Yuze-img-studio-field">
+            <div class="Yuze-img-studio-field-head">
               <label>完整复现 Prompt</label>
-              ${isAnalyzing ? `<span class="tabbit-img-studio-streaming-status">${iconSvg('sparkle')}<span class="tabbit-img-studio-streaming-copy">${prompt ? 'Prompt 正在流式输出' : '正在读取图片风格'}</span><span class="tabbit-img-studio-streaming-dots"><i></i><i></i><i></i></span></span>` : ''}
+              ${isAnalyzing ? `<span class="Yuze-img-studio-streaming-status">${iconSvg('sparkle')}<span class="Yuze-img-studio-streaming-copy">${prompt ? 'Prompt 正在流式输出' : '正在读取图片风格'}</span><span class="Yuze-img-studio-streaming-dots"><i></i><i></i><i></i></span></span>` : ''}
             </div>
-            <textarea class="tabbit-img-studio-prompt-textarea ${isAnalyzing ? 'is-streaming' : ''}" data-prompt-kind="recreate" placeholder="识别后的完整复现 Prompt 会出现在这里" ${isAnalyzing ? 'readonly' : ''}>${escapeHtml(prompt)}</textarea>
+            <textarea class="Yuze-img-studio-prompt-textarea ${isAnalyzing ? 'is-streaming' : ''}" data-prompt-kind="recreate" placeholder="识别后的完整复现 Prompt 会出现在这里" ${isAnalyzing ? 'readonly' : ''}>${escapeHtml(prompt)}</textarea>
           </div>
-          <div class="tabbit-img-studio-field">
+          <div class="Yuze-img-studio-field">
             <label>纯风格 Prompt</label>
-            <textarea class="tabbit-img-studio-small-textarea" data-prompt-kind="style" placeholder="只保留风格，不限定具体主体" ${isAnalyzing ? 'readonly' : ''}>${escapeHtml(stylePrompt)}</textarea>
+            <textarea class="Yuze-img-studio-small-textarea" data-prompt-kind="style" placeholder="只保留风格，不限定具体主体" ${isAnalyzing ? 'readonly' : ''}>${escapeHtml(stylePrompt)}</textarea>
           </div>
-          <div class="tabbit-img-studio-field">
+          <div class="Yuze-img-studio-field">
             <label>避免项</label>
-            <textarea class="tabbit-img-studio-small-textarea" data-role="negative" placeholder="低清晰度, 水印, 杂乱背景" ${isAnalyzing ? 'readonly' : ''}>${escapeHtml(negative)}</textarea>
+            <textarea class="Yuze-img-studio-small-textarea" data-role="negative" placeholder="低清晰度, 水印, 杂乱背景" ${isAnalyzing ? 'readonly' : ''}>${escapeHtml(negative)}</textarea>
           </div>
-          <div class="tabbit-img-studio-actions">
-            <button type="button" class="tabbit-img-studio-secondary" data-action="copy-prompt" data-copy-kind="recreate" ${disableActions ? 'disabled' : ''}>${iconSvg('copy')}复制完整</button>
-            <button type="button" class="tabbit-img-studio-secondary" data-action="copy-prompt" data-copy-kind="style" ${disableActions ? 'disabled' : ''}>${iconSvg('copy')}复制风格</button>
-            <button type="button" class="tabbit-img-studio-primary" data-action="tab-t2i" ${disableActions ? 'disabled' : ''}>${iconSvg('sparkle')}去文生图</button>
+          <div class="Yuze-img-studio-actions">
+            <button type="button" class="Yuze-img-studio-secondary" data-action="copy-prompt" data-copy-kind="recreate" ${disableActions ? 'disabled' : ''}>${iconSvg('copy')}复制完整</button>
+            <button type="button" class="Yuze-img-studio-secondary" data-action="copy-prompt" data-copy-kind="style" ${disableActions ? 'disabled' : ''}>${iconSvg('copy')}复制风格</button>
+            <button type="button" class="Yuze-img-studio-primary" data-action="tab-t2i" ${disableActions ? 'disabled' : ''}>${iconSvg('sparkle')}去文生图</button>
           </div>
         </div>
       </div>
@@ -4878,19 +4878,19 @@
     const isGenerating = state.generating?.mode === 't2i';
     const disableGenerate = isGenerating || !item || item.status === 'analyzing' || item.status === 'error';
     return `
-      <div class="tabbit-img-studio-pane tabbit-img-studio-pane-grid ${state.activeTab === 't2i' ? 'is-active' : ''}" data-pane="t2i">
-        <div class="tabbit-img-studio-section">
+      <div class="Yuze-img-studio-pane Yuze-img-studio-pane-grid ${state.activeTab === 't2i' ? 'is-active' : ''}" data-pane="t2i">
+        <div class="Yuze-img-studio-section">
           ${renderPreview(item)}
-          <div class="tabbit-img-studio-field">
-            <div class="tabbit-img-studio-field-head">
+          <div class="Yuze-img-studio-field">
+            <div class="Yuze-img-studio-field-head">
               <label>文生图 Prompt</label>
               ${renderPromptKindControl('t2i')}
             </div>
-            <textarea class="tabbit-img-studio-prompt-textarea" data-role="main-prompt" data-draft-key="${escapeHtml(draftKey)}" placeholder="使用识别出的 Prompt，或直接改成你的创作描述">${escapeHtml(prompt)}</textarea>
+            <textarea class="Yuze-img-studio-prompt-textarea" data-role="main-prompt" data-draft-key="${escapeHtml(draftKey)}" placeholder="使用识别出的 Prompt，或直接改成你的创作描述">${escapeHtml(prompt)}</textarea>
           </div>
-          <div class="tabbit-img-studio-actions">
-            <button type="button" class="tabbit-img-studio-secondary" data-action="copy-prompt">${iconSvg('copy')}复制</button>
-            <button type="button" class="tabbit-img-studio-primary ${isGenerating ? 'is-loading' : ''}" data-action="generate-t2i" ${disableGenerate ? 'disabled' : ''}>${iconSvg('sparkle')}${isGenerating ? '生成中...' : '生成同风格图'}</button>
+          <div class="Yuze-img-studio-actions">
+            <button type="button" class="Yuze-img-studio-secondary" data-action="copy-prompt">${iconSvg('copy')}复制</button>
+            <button type="button" class="Yuze-img-studio-primary ${isGenerating ? 'is-loading' : ''}" data-action="generate-t2i" ${disableGenerate ? 'disabled' : ''}>${iconSvg('sparkle')}${isGenerating ? '生成中...' : '生成同风格图'}</button>
           </div>
         </div>
       </div>
@@ -4904,25 +4904,25 @@
     const isGenerating = state.generating?.mode === 'i2i';
     const disableGenerate = isGenerating || !item || item.status === 'analyzing' || item.status === 'error';
     return `
-      <div class="tabbit-img-studio-pane tabbit-img-studio-pane-grid ${state.activeTab === 'i2i' ? 'is-active' : ''}" data-pane="i2i">
-        <div class="tabbit-img-studio-section">
+      <div class="Yuze-img-studio-pane Yuze-img-studio-pane-grid ${state.activeTab === 'i2i' ? 'is-active' : ''}" data-pane="i2i">
+        <div class="Yuze-img-studio-section">
           ${renderPreview(item)}
-          <label class="tabbit-img-studio-upload">
+          <label class="Yuze-img-studio-upload">
             <input type="file" accept="image/*" hidden data-action="upload-reference">
             ${state.uploadedDataUrl
               ? `<img alt="上传参考图" src="${escapeHtml(state.uploadedDataUrl)}">`
               : '<span>上传自己的图片，可把人物/产品带入已识别风格；不上传则基于左侧历史图做图生图。</span>'}
           </label>
-          <div class="tabbit-img-studio-field">
-            <div class="tabbit-img-studio-field-head">
+          <div class="Yuze-img-studio-field">
+            <div class="Yuze-img-studio-field-head">
               <label>图生图 Prompt</label>
               ${renderPromptKindControl('i2i')}
             </div>
-            <textarea class="tabbit-img-studio-prompt-textarea" data-role="main-prompt" data-draft-key="${escapeHtml(draftKey)}" placeholder="描述你希望如何迁移风格或保留主体">${escapeHtml(prompt)}</textarea>
+            <textarea class="Yuze-img-studio-prompt-textarea" data-role="main-prompt" data-draft-key="${escapeHtml(draftKey)}" placeholder="描述你希望如何迁移风格或保留主体">${escapeHtml(prompt)}</textarea>
           </div>
-          <div class="tabbit-img-studio-actions">
-            <button type="button" class="tabbit-img-studio-secondary" data-action="clear-upload">${iconSvg('close')}清除上传</button>
-            <button type="button" class="tabbit-img-studio-primary ${isGenerating ? 'is-loading' : ''}" data-action="generate-i2i" ${disableGenerate ? 'disabled' : ''}>${iconSvg('image')}${isGenerating ? '生成中...' : '图生图'}</button>
+          <div class="Yuze-img-studio-actions">
+            <button type="button" class="Yuze-img-studio-secondary" data-action="clear-upload">${iconSvg('close')}清除上传</button>
+            <button type="button" class="Yuze-img-studio-primary ${isGenerating ? 'is-loading' : ''}" data-action="generate-i2i" ${disableGenerate ? 'disabled' : ''}>${iconSvg('image')}${isGenerating ? '生成中...' : '图生图'}</button>
           </div>
         </div>
       </div>
@@ -4932,15 +4932,15 @@
   function renderFusionPromptField(tab, label, draftKey, prompt) {
     const collapsed = state.fusionPromptCollapsed;
     return `
-      <div class="tabbit-img-studio-field tabbit-img-studio-fusion-prompt ${collapsed ? 'is-collapsed' : ''}">
-        <div class="tabbit-img-studio-field-head">
+      <div class="Yuze-img-studio-field Yuze-img-studio-fusion-prompt ${collapsed ? 'is-collapsed' : ''}">
+        <div class="Yuze-img-studio-field-head">
           <label>${escapeHtml(label)}</label>
-          <div class="tabbit-img-studio-field-tools">
+          <div class="Yuze-img-studio-field-tools">
             ${renderPromptKindControl(tab)}
-            <button type="button" class="tabbit-img-studio-mini-toggle ${collapsed ? 'is-active' : ''}" data-action="toggle-fusion-prompt" title="${collapsed ? '展开 Prompt' : '收起 Prompt'}">${iconSvg(collapsed ? 'chevronRight' : 'chevronLeft')}</button>
+            <button type="button" class="Yuze-img-studio-mini-toggle ${collapsed ? 'is-active' : ''}" data-action="toggle-fusion-prompt" title="${collapsed ? '展开 Prompt' : '收起 Prompt'}">${iconSvg(collapsed ? 'chevronRight' : 'chevronLeft')}</button>
           </div>
         </div>
-        <textarea class="tabbit-img-studio-prompt-textarea" data-role="main-prompt" data-draft-key="${escapeHtml(draftKey)}" placeholder="选择多张历史图后自动组合风格 Prompt">${escapeHtml(prompt)}</textarea>
+        <textarea class="Yuze-img-studio-prompt-textarea" data-role="main-prompt" data-draft-key="${escapeHtml(draftKey)}" placeholder="选择多张历史图后自动组合风格 Prompt">${escapeHtml(prompt)}</textarea>
       </div>
     `;
   }
@@ -4953,13 +4953,13 @@
     const isGenerating = state.generating?.mode === 'multiT2i';
     const disableGenerate = isGenerating || selected.length < 2;
     return `
-      <div class="tabbit-img-studio-pane tabbit-img-studio-pane-grid ${state.activeTab === 'multiT2i' ? 'is-active' : ''}" data-pane="multiT2i">
-        <div class="tabbit-img-studio-section">
+      <div class="Yuze-img-studio-pane Yuze-img-studio-pane-grid ${state.activeTab === 'multiT2i' ? 'is-active' : ''}" data-pane="multiT2i">
+        <div class="Yuze-img-studio-section">
           ${renderSelectedHistoryStrip(selected)}
           ${renderFusionPromptField('multiT2i', '融合文生图 Prompt', draftKey, prompt)}
-          <div class="tabbit-img-studio-actions">
-            <button type="button" class="tabbit-img-studio-secondary" data-action="copy-prompt" ${selected.length < 2 ? 'disabled' : ''}>${iconSvg('copy')}复制</button>
-            <button type="button" class="tabbit-img-studio-primary ${isGenerating ? 'is-loading' : ''}" data-action="generate-multi-t2i" ${disableGenerate ? 'disabled' : ''}>${iconSvg('sparkle')}${isGenerating ? '生成中...' : '融合文生图'}</button>
+          <div class="Yuze-img-studio-actions">
+            <button type="button" class="Yuze-img-studio-secondary" data-action="copy-prompt" ${selected.length < 2 ? 'disabled' : ''}>${iconSvg('copy')}复制</button>
+            <button type="button" class="Yuze-img-studio-primary ${isGenerating ? 'is-loading' : ''}" data-action="generate-multi-t2i" ${disableGenerate ? 'disabled' : ''}>${iconSvg('sparkle')}${isGenerating ? '生成中...' : '融合文生图'}</button>
           </div>
         </div>
       </div>
@@ -4974,19 +4974,19 @@
     const isGenerating = state.generating?.mode === 'multiI2i';
     const disableGenerate = isGenerating || selected.length < 2;
     return `
-      <div class="tabbit-img-studio-pane tabbit-img-studio-pane-grid ${state.activeTab === 'multiI2i' ? 'is-active' : ''}" data-pane="multiI2i">
-        <div class="tabbit-img-studio-section">
+      <div class="Yuze-img-studio-pane Yuze-img-studio-pane-grid ${state.activeTab === 'multiI2i' ? 'is-active' : ''}" data-pane="multiI2i">
+        <div class="Yuze-img-studio-section">
           ${renderSelectedHistoryStrip(selected)}
-          <label class="tabbit-img-studio-upload">
+          <label class="Yuze-img-studio-upload">
             <input type="file" accept="image/*" hidden data-action="upload-reference">
             ${state.uploadedDataUrl
               ? `<img alt="上传参考图" src="${escapeHtml(state.uploadedDataUrl)}">`
               : '<span>可上传主体图；不上传则以已选历史图中的第一张作为图生图基底，并融合其余历史风格。</span>'}
           </label>
           ${renderFusionPromptField('multiI2i', '融合图生图 Prompt', draftKey, prompt)}
-          <div class="tabbit-img-studio-actions">
-            <button type="button" class="tabbit-img-studio-secondary" data-action="clear-upload">${iconSvg('close')}清除上传</button>
-            <button type="button" class="tabbit-img-studio-primary ${isGenerating ? 'is-loading' : ''}" data-action="generate-multi-i2i" ${disableGenerate ? 'disabled' : ''}>${iconSvg('image')}${isGenerating ? '生成中...' : '融合图生图'}</button>
+          <div class="Yuze-img-studio-actions">
+            <button type="button" class="Yuze-img-studio-secondary" data-action="clear-upload">${iconSvg('close')}清除上传</button>
+            <button type="button" class="Yuze-img-studio-primary ${isGenerating ? 'is-loading' : ''}" data-action="generate-multi-i2i" ${disableGenerate ? 'disabled' : ''}>${iconSvg('image')}${isGenerating ? '生成中...' : '融合图生图'}</button>
           </div>
         </div>
       </div>
@@ -5016,13 +5016,13 @@
   }
 
   function getHistoryScrollTop() {
-    return state.panel?.querySelector('.tabbit-img-studio-history-list')?.scrollTop || 0;
+    return state.panel?.querySelector('.Yuze-img-studio-history-list')?.scrollTop || 0;
   }
 
   function restoreHistoryScrollTop(scrollTop) {
     if (scrollTop == null) return;
     const restore = () => {
-      const list = state.panel?.querySelector('.tabbit-img-studio-history-list');
+      const list = state.panel?.querySelector('.Yuze-img-studio-history-list');
       if (list) list.scrollTop = scrollTop;
     };
     restore();
@@ -5038,41 +5038,41 @@
     state.panel.classList.toggle('is-prompt-mode', isPromptMode);
     state.panel.classList.toggle('is-history-collapsed', state.historyCollapsed);
     const shellClasses = [
-      'tabbit-img-studio-shell',
+      'Yuze-img-studio-shell',
       state.historyCollapsed ? 'is-history-collapsed' : '',
       state.historyRibbonMotion ? `is-history-${state.historyRibbonMotion === 'expand' ? 'expanding' : 'collapsing'}` : ''
     ].filter(Boolean).join(' ');
     state.panel.innerHTML = `
-      <div class="tabbit-img-studio-header">
+      <div class="Yuze-img-studio-header">
         <div>
-          <h2 class="tabbit-img-studio-title">图片 Prompt Studio · 日志版</h2>
+          <h2 class="Yuze-img-studio-title">图片 Prompt Studio · 日志版</h2>
         </div>
-        <button type="button" class="tabbit-img-studio-close" data-action="close" aria-label="关闭">${iconSvg('close')}</button>
+        <button type="button" class="Yuze-img-studio-close" data-action="close" aria-label="关闭">${iconSvg('close')}</button>
       </div>
       <div class="${shellClasses}">
-        <aside class="tabbit-img-studio-history">
-          <div class="tabbit-img-studio-history-head">
-            <span class="tabbit-img-studio-history-title">历史</span>
-            <button type="button" class="tabbit-img-studio-icon-button" data-action="clear-history" title="清空历史">${iconSvg('close')}</button>
+        <aside class="Yuze-img-studio-history">
+          <div class="Yuze-img-studio-history-head">
+            <span class="Yuze-img-studio-history-title">历史</span>
+            <button type="button" class="Yuze-img-studio-icon-button" data-action="clear-history" title="清空历史">${iconSvg('close')}</button>
           </div>
-          <button type="button" class="tabbit-img-studio-history-side-toggle" data-action="toggle-history" title="${state.historyCollapsed ? '展开历史列' : '收起历史列'}">${iconSvg(state.historyCollapsed ? 'chevronRight' : 'chevronLeft')}</button>
-          <div class="tabbit-img-studio-history-rail">历史 ${state.history.length}</div>
-          <div class="tabbit-img-studio-history-list">${renderHistoryList()}</div>
+          <button type="button" class="Yuze-img-studio-history-side-toggle" data-action="toggle-history" title="${state.historyCollapsed ? '展开历史列' : '收起历史列'}">${iconSvg(state.historyCollapsed ? 'chevronRight' : 'chevronLeft')}</button>
+          <div class="Yuze-img-studio-history-rail">历史 ${state.history.length}</div>
+          <div class="Yuze-img-studio-history-list">${renderHistoryList()}</div>
         </aside>
-        <main class="tabbit-img-studio-main">
-          <div class="tabbit-img-studio-tabs">
-            <button type="button" class="tabbit-img-studio-tab ${state.activeTab === 'prompt' ? 'is-active' : ''}" data-tab="prompt">Prompt</button>
-            <button type="button" class="tabbit-img-studio-tab ${state.activeTab === 't2i' ? 'is-active' : ''}" data-tab="t2i">文生图</button>
-            <button type="button" class="tabbit-img-studio-tab ${state.activeTab === 'i2i' ? 'is-active' : ''}" data-tab="i2i">图生图</button>
-            <button type="button" class="tabbit-img-studio-tab ${state.activeTab === 'multiT2i' ? 'is-active' : ''}" data-tab="multiT2i">融合文生图</button>
-            <button type="button" class="tabbit-img-studio-tab ${state.activeTab === 'multiI2i' ? 'is-active' : ''}" data-tab="multiI2i">融合图生图</button>
+        <main class="Yuze-img-studio-main">
+          <div class="Yuze-img-studio-tabs">
+            <button type="button" class="Yuze-img-studio-tab ${state.activeTab === 'prompt' ? 'is-active' : ''}" data-tab="prompt">Prompt</button>
+            <button type="button" class="Yuze-img-studio-tab ${state.activeTab === 't2i' ? 'is-active' : ''}" data-tab="t2i">文生图</button>
+            <button type="button" class="Yuze-img-studio-tab ${state.activeTab === 'i2i' ? 'is-active' : ''}" data-tab="i2i">图生图</button>
+            <button type="button" class="Yuze-img-studio-tab ${state.activeTab === 'multiT2i' ? 'is-active' : ''}" data-tab="multiT2i">融合文生图</button>
+            <button type="button" class="Yuze-img-studio-tab ${state.activeTab === 'multiI2i' ? 'is-active' : ''}" data-tab="multiI2i">融合图生图</button>
           </div>
-          <div class="tabbit-img-studio-content">
+          <div class="Yuze-img-studio-content">
             ${renderActivePane(item)}
           </div>
         </main>
       </div>
-      <button type="button" class="tabbit-img-studio-resize-handle" data-action="resize-panel" aria-label="调整浮窗高度" title="拖动调整浮窗高度"></button>
+      <button type="button" class="Yuze-img-studio-resize-handle" data-action="resize-panel" aria-label="调整浮窗高度" title="拖动调整浮窗高度"></button>
     `;
     bindPanelEvents();
     renderDetachedResultPanel();
@@ -5091,9 +5091,9 @@
     const panel = state.panel;
     if (!panel) return;
     bindScrollGuards(panel);
-    panel.querySelector('.tabbit-img-studio-header')?.addEventListener('mousedown', startPanelDrag);
+    panel.querySelector('.Yuze-img-studio-header')?.addEventListener('mousedown', startPanelDrag);
     panel.querySelector('[data-action="resize-panel"]')?.addEventListener('mousedown', startPanelResize);
-    panel.querySelectorAll('.tabbit-img-studio-prompt-textarea').forEach(textarea => {
+    panel.querySelectorAll('.Yuze-img-studio-prompt-textarea').forEach(textarea => {
       textarea.addEventListener('input', () => {
         state.promptDrafts[textarea.dataset.draftKey || getPromptDraftKey()] = textarea.value;
       });
@@ -5304,7 +5304,7 @@
     const prompt = cleanText(preview.prompt);
     if (!prompt) return;
     if (!config.mockBridge && (!window.LLMBridge || typeof window.LLMBridge.generateImage !== 'function')) {
-      reportStudioError('微调生成图片', new Error('当前页面未检测到 LLMBridge.generateImage，请在 Tabbit 脚本环境运行'), {
+      reportStudioError('微调生成图片', new Error('当前页面未检测到 LLMBridge.generateImage，请在 Yuze 脚本环境运行'), {
         outputId: preview.outputId,
         hasGenerateBridge: false
       });
@@ -5375,7 +5375,7 @@
     }
     if (state.generating) return;
     if (!config.mockBridge && (!window.LLMBridge || typeof window.LLMBridge.generateImage !== 'function')) {
-      const error = new Error('当前页面未检测到 LLMBridge.generateImage，请在 Tabbit 脚本环境运行');
+      const error = new Error('当前页面未检测到 LLMBridge.generateImage，请在 Yuze 脚本环境运行');
       setPanelMessage(`${error.message}。`);
       reportStudioError('生成图片', error, {
         mode,
@@ -5516,7 +5516,7 @@
     document.getElementById(ERROR_DIALOG_ID)?.remove();
     document.querySelectorAll(`.${HOST_CLASS}`).forEach(el => el.remove());
     document.querySelectorAll(`.${STATUS_CLASS}`).forEach(el => el.remove());
-    document.querySelectorAll('.tabbit-img-dock-sprite,.tabbit-img-dock-particle').forEach(el => el.remove());
+    document.querySelectorAll('.Yuze-img-dock-sprite,.Yuze-img-dock-particle').forEach(el => el.remove());
     document.querySelectorAll(`[${PROCESSED_ATTR}]`).forEach(el => el.removeAttribute(PROCESSED_ATTR));
     delete window[CLEANUP_KEY];
   }

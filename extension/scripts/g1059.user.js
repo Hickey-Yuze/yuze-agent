@@ -1,4 +1,4 @@
-// ==TabbitScript==
+// ==YuzeScript==
 // @name         直接下载当前网址
 // @description  Direct Download Current URL 在当前页面添加下载按钮，点击后直接下载当前URL的文件；支持 GitHub 预览页自动获取 Raw 原始文件，解决想下载预览js、txt、md时拿到HTML而不是源文件的问题
 // @author       mr-mihu
@@ -12,7 +12,7 @@
 // @match        *://github.com/*/*/blob/*
 // @match        *://raw.githubusercontent.com/*
 // @grant        none
-// ==/TabbitScript==
+// ==/YuzeScript==
 
 (function () {
     'use strict';

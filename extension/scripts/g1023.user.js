@@ -1,7 +1,7 @@
 // 可直接丢给 AI 的 Prompt 模板 (接入自己的组件统一管理)
 
 // 运行环境
-//- 扩展以 Content Script 形式注入 Tabbit 新标签页
+//- 扩展以 Content Script 形式注入 Yuze 新标签页
 //- 注入前必须检测守卫元素，确认运行环境：
 //  ```js
 //  if (!document.getElementById('__TAB_APP_MOUNTED_GUARD__')) return;

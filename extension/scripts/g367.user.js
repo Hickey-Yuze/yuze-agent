@@ -1,11 +1,11 @@
 async function run(args) {
   // ══════════════════════════════════════════════════════════════════════════
   // ⏳ 今日时光机 v2 — 实时追踪上网时长 + 分享仪表盘图片
-  // Tabbit 妙招大赛 · 脚本赛道参赛作品
+  // Yuze 技炉大赛 · 脚本赛道参赛作品
   // ══════════════════════════════════════════════════════════════════════════
 
   // ── Toggle: re-run closes the panel ──────────────────────────────────────
-  const existing = document.getElementById('tabbit-timemachine');
+  const existing = document.getElementById('Yuze-timemachine');
   if (existing) {
     cleanup();
     return { ok: true, summary: '已关闭时光机' };
@@ -26,8 +26,8 @@ async function run(args) {
   };
 
   const today = todayStr();
-  const STORAGE_KEY = 'tabbit_timemachine_' + today;
-  const POS_KEY = 'tabbit_tm_pos';
+  const STORAGE_KEY = 'Yuze_timemachine_' + today;
+  const POS_KEY = 'Yuze_tm_pos';
 
   // ── Domain classification (120+ domains) ────────────────────────────────
   const siteCategories = {
@@ -52,7 +52,7 @@ async function run(args) {
     ],
     learn: [
       'coursera.org','udemy.com','edx.org','youtube.com','bilibili.com','zhihu.com',
-      'wikipedia.org','khanacademy.org','web.tabbitbrowser.com','tabbitbrowser.com',
+      'wikipedia.org','khanacademy.org','web.Yuzebrowser.com','Yuzebrowser.com',
       'mooc.cn','icourse163.org','xuetangx.com','open.163.com','icloud.uilab.com',
       'segmentfault.com','v2ex.com','discuss.llvm.org','news.ycombinator.com',
       'reddit.com','quora.com','medium.com','dev.to','hashnode.dev','dzone.com',
@@ -134,20 +134,20 @@ async function run(args) {
 
   // ── Styles ───────────────────────────────────────────────────────────────
   const style = document.createElement('style');
-  style.id = 'tabbit-tm-style';
+  style.id = 'Yuze-tm-style';
   style.textContent = `
     @keyframes tmFadeIn { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
-    #tabbit-timemachine { animation: tmFadeIn .3s ease; }
-    #tabbit-timemachine button { transition: opacity .15s, transform .15s; }
-    #tabbit-timemachine button:hover { opacity: .8 !important; }
-    #tabbit-tm-list::-webkit-scrollbar { width: 4px; }
-    #tabbit-tm-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,.2); border-radius: 2px; }
+    #Yuze-timemachine { animation: tmFadeIn .3s ease; }
+    #Yuze-timemachine button { transition: opacity .15s, transform .15s; }
+    #Yuze-timemachine button:hover { opacity: .8 !important; }
+    #Yuze-tm-list::-webkit-scrollbar { width: 4px; }
+    #Yuze-tm-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,.2); border-radius: 2px; }
   `;
   document.head.appendChild(style);
 
   // ── Panel ────────────────────────────────────────────────────────────────
   const panel = document.createElement('div');
-  panel.id = 'tabbit-timemachine';
+  panel.id = 'Yuze-timemachine';
 
   // Restore saved position or use default
   let savedPos = null;
@@ -245,7 +245,7 @@ async function run(args) {
     // Yesterday comparison
     let yesterdayHTML = '';
     try {
-      const yData = JSON.parse(localStorage.getItem('tabbit_timemachine_' + yesterdayStr()) || '{}');
+      const yData = JSON.parse(localStorage.getItem('Yuze_timemachine_' + yesterdayStr()) || '{}');
       const yTotal = Object.values(yData).reduce((s, v) => s + (v.sec || 0), 0);
       if (yTotal > 0) {
         yesterdayHTML = `
@@ -260,7 +260,7 @@ async function run(args) {
       <div style="text-align:center;font-size:12.5px;padding:7px;background:rgba(255,255,255,.07);border-radius:9px;margin-bottom:10px">
         ${badge} &nbsp;·&nbsp; 今日 <strong>${fmt(totalSec)}</strong>
       </div>
-      <div id="tabbit-tm-list" style="max-height:190px;overflow-y:auto;padding-right:2px">${listHTML}</div>
+      <div id="Yuze-tm-list" style="max-height:190px;overflow-y:auto;padding-right:2px">${listHTML}</div>
       ${yesterdayHTML}
     `;
   };
@@ -439,9 +439,9 @@ async function run(args) {
     ctx.fillRect(0, H - 36, W, 36);
     ctx.fillStyle = '#475569';
     ctx.font = '11px -apple-system,sans-serif';
-    ctx.fillText('⏳ 今日时光机  ·  Tabbit', 50, H - 14);
+    ctx.fillText('⏳ 今日时光机  ·  Yuze', 50, H - 14);
     ctx.textAlign = 'right';
-    ctx.fillText('#Tabbit妙招大赛', W - 50, H - 14);
+    ctx.fillText('#Yuze技炉大赛', W - 50, H - 14);
     ctx.textAlign = 'left';
 
     // ── Download + Copy ─────────────────────────────────────────────────

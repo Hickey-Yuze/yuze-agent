@@ -1,28 +1,28 @@
 (function () {
   'use strict';
 
-  const SCRIPT_ID = 'tabbit-poster-diy';
+  const SCRIPT_ID = 'Yuze-poster-diy';
   const HOST_ID = `${SCRIPT_ID}-host`;
   const PAGE_STYLE_ID = `${SCRIPT_ID}-page-style`;
   const PAGE_OVERLAY_ID = `${SCRIPT_ID}-page-overlay`;
   const IMAGE_READY_ATTR = `data-${SCRIPT_ID}-ready`;
   const IMAGE_BUTTON_CLASS = `${SCRIPT_ID}-image-button`;
-  const CLEANUP_KEY = '__tabbitPosterDiyCleanup';
-  const STORAGE_KEY = 'tabbit:poster-diy:preferences:v1';
-  const PROJECT_DB_NAME = 'tabbit-poster-diy-v13';
-  const LEGACY_PROJECT_DB_NAME = 'tabbit-poster-diy';
+  const CLEANUP_KEY = '__YuzePosterDiyCleanup';
+  const STORAGE_KEY = 'Yuze:poster-diy:preferences:v1';
+  const PROJECT_DB_NAME = 'Yuze-poster-diy-v13';
+  const LEGACY_PROJECT_DB_NAME = 'Yuze-poster-diy';
   const PROJECT_DB_VERSION = 2;
   const PROJECT_STORE_NAME = 'projects';
   const ASSET_STORE_NAME = 'assets';
   const PROJECT_CACHE_KEY = 'current-project-v3';
   const LEGACY_PROJECT_CACHE_KEY = 'current-project-v2';
-  const PROJECT_FALLBACK_KEY = 'tabbit:poster-diy:project:v3';
-  const LEGACY_PROJECT_FALLBACK_KEY = 'tabbit:poster-diy:project:v2';
+  const PROJECT_FALLBACK_KEY = 'Yuze:poster-diy:project:v3';
+  const LEGACY_PROJECT_FALLBACK_KEY = 'Yuze:poster-diy:project:v2';
   const ASSET_PREVIEW_LONG_EDGE = 1024;
   const ASSET_THUMB_LONG_EDGE = 384;
   const ORIGINAL_URL_CACHE_LIMIT = 4;
   const MAX_LAYER_REVISIONS = 10;
-  const DEFAULT_STYLE_PREVIEW_BASE_URL = 'https://go.tabbit.site/previews/16fd49e1-191f-413a-9d06-b9c4c2073502';
+  const DEFAULT_STYLE_PREVIEW_BASE_URL = 'https://go.Yuze.site/previews/16fd49e1-191f-413a-9d06-b9c4c2073502';
   const DEFAULT_CUTOUT_RETENTION = 70;
   const SEEDREAM_2K_SIZE_BY_ASPECT_RATIO = Object.freeze({
     '1:1': { width: 2048, height: 2048 },
@@ -41,7 +41,7 @@
 
   if (typeof window[CLEANUP_KEY] === 'function') window[CLEANUP_KEY]();
 
-  const overrides = window.__TABBIT_POSTER_DIY_CONFIG__ || {};
+  const overrides = window.__Yuze_POSTER_DIY_CONFIG__ || {};
   const config = {
     assetBaseUrl: String(overrides.assetBaseUrl || ''),
     generationTimeoutMs: Number(overrides.generationTimeoutMs) || 180000,
@@ -1317,7 +1317,7 @@
 
   function projectData() {
     return {
-      format: 'tabbit-poster-diy-project',
+      format: 'Yuze-poster-diy-project',
       version: 13,
       updatedAt: new Date().toISOString(),
       activeTab: state.activeTab,
@@ -1448,7 +1448,7 @@
   }
 
   async function applyProjectData(project) {
-    if (!project || project.format !== 'tabbit-poster-diy-project' || !Array.isArray(project.layers)) return false;
+    if (!project || project.format !== 'Yuze-poster-diy-project' || !Array.isArray(project.layers)) return false;
     if (
       !project.canvas
       || !Number.isFinite(project.canvas.width)
@@ -1940,7 +1940,7 @@
       if (record?.originalBlob) dataUrl = await fileToDataUrl(record.originalBlob);
     }
     return {
-      format: 'tabbit-poster-diy-custom-style',
+      format: 'Yuze-poster-diy-custom-style',
       version: 1,
       exportedAt: new Date().toISOString(),
       style: {
@@ -1977,7 +1977,7 @@
     }
     try {
       const parsed = JSON.parse(await file.text());
-      const rawStyle = parsed?.format === 'tabbit-poster-diy-custom-style'
+      const rawStyle = parsed?.format === 'Yuze-poster-diy-custom-style'
         ? parsed.style
         : parsed?.style || parsed;
       const style = normalizeCustomStyle(rawStyle, { newId: true });
@@ -5605,7 +5605,7 @@
       }
       if (!manifestLayers.length) throw new Error('没有可读取并导出的图层图片');
       const manifest = {
-        format: 'tabbit-poster-diy-assets',
+        format: 'Yuze-poster-diy-assets',
         version: 3,
         exportedAt: new Date().toISOString(),
         canvas: { ...state.canvas },
@@ -7681,12 +7681,12 @@
     pageOverlay = null;
     document.getElementById(PAGE_STYLE_ID)?.remove();
     host?.remove();
-    delete window.__TABBIT_POSTER_DIY_V13_INSPECT__;
+    delete window.__Yuze_POSTER_DIY_V13_INSPECT__;
     delete window[CLEANUP_KEY];
   }
 
   if (config.debug) {
-    window.__TABBIT_POSTER_DIY_V13_INSPECT__ = async () => {
+    window.__Yuze_POSTER_DIY_V13_INSPECT__ = async () => {
       const db = await openProjectDb();
       const assetCount = await new Promise((resolve, reject) => {
         const request = db.transaction(ASSET_STORE_NAME, 'readonly')

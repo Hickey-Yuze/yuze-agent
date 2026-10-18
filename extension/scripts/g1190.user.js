@@ -3,7 +3,7 @@
 // @namespace    https://github.com/searchguard
 // @version      1.0.0
 // @description  在百度/Google/Bing 搜索结果中自动标记官方网站并识别疑似仿冒网站
-// @author       Tabbit
+// @author       Yuze
 // @license      MIT
 // @match        *://www.baidu.com/*
 // @match        *://www.baidu.com/s?*

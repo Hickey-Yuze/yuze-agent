@@ -230,5 +230,5 @@ function hitokotoNewTab(args) {
   return { status:'ok', message:'一言 v7 已注入', control:'window.__hitokotoInstance' };
 }
 
-/* 自执行调用（妙招"使用"需要这行） */
+/* 自执行调用（技炉"使用"需要这行） */
 hitokotoNewTab(typeof args !== 'undefined' ? args : {});

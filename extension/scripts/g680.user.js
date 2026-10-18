@@ -72,7 +72,7 @@
   root.innerHTML = '<div id="pc-flash"></div>' +
     '<div id="pc-scene">' +
       '<div id="pc-camera">' +
-        '<div id="pc-top"><span id="pc-brand">Tabbit Cam</span><div id="pc-led"></div></div>' +
+        '<div id="pc-top"><span id="pc-brand">Yuze Cam</span><div id="pc-led"></div></div>' +
         '<div id="pc-vf">' +
           '<video id="pc-video" autoplay muted playsinline></video>' +
           '<div id="pc-vf-ui">' +
@@ -535,7 +535,7 @@
     ctx.font         = '11px Courier New, monospace';
     ctx.textAlign    = 'center';
     ctx.textBaseline = 'bottom';
-    ctx.fillText('Tabbit Cam  ·  Daily Polaroid Check-in', CARD_W / 2, CARD_H - 10);
+    ctx.fillText('Yuze Cam  ·  Daily Polaroid Check-in', CARD_W / 2, CARD_H - 10);
     ctx.restore();
   }
 

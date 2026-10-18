@@ -435,7 +435,7 @@
       </div>
       <div class="lzit-body">
         ${sections.join('')}
-        <div class="lzit-footer">兰州工业学院 · 通知重点雷达妙招</div>
+        <div class="lzit-footer">兰州工业学院 · 通知重点雷达技炉</div>
       </div>
     `;
 

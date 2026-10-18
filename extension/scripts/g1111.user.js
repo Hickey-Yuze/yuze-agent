@@ -3,7 +3,7 @@
   const __tabOriginalFunction = (
     async function run(args) {
       // ============================================
-      // Tabbit 录屏工具 v3.2 — 小球界面重设计版
+      // Yuze 录屏工具 v3.2 — 小球界面重设计版
       // 基于 v3.1，重构悬浮小球 UI：
       //   - 72px 球体 + 动态渐变光环边框
       //   - 脉冲动画圆环替代静态红点
@@ -368,7 +368,7 @@
       // 🍎 iOS 26 Liquid Glass 样式系统（保留主面板）
       // ============================================
     
-      var styleId = 'tabbit-recorder-lg-styles-v32';
+      var styleId = 'Yuze-recorder-lg-styles-v32';
       if (!document.getElementById(styleId)) {
         var lgStyle = document.createElement('style');
         lgStyle.id = styleId;
@@ -660,11 +660,11 @@
     
       function createRecorderUI() {
         var R = new EnhancedRecorder();
-        var oldPanel = document.getElementById('tabbit-recorder-panel');
+        var oldPanel = document.getElementById('Yuze-recorder-panel');
         if (oldPanel) oldPanel.remove();
     
         var C = document.createElement('div');
-        C.id = 'tabbit-recorder-panel';
+        C.id = 'Yuze-recorder-panel';
         C.style.cssText = [
           'position:fixed;top:24px;right:24px;',
           'min-width:300px;max-width:340px;',
@@ -712,7 +712,7 @@
         ].join(';');
     
         var T = document.createElement('span');
-        T.textContent = 'Tabbit 录屏工具';
+        T.textContent = 'Yuze 录屏工具';
         T.style.cssText = [
           'font-size:14px;font-weight:700;',
           'background:linear-gradient(135deg, #1a1a2e 0%, #007AFF 50%, #5856D6 100%);',
@@ -1081,7 +1081,7 @@
         var floatMenuVisible = false;
     
         function showFloatingBall() {
-          var oldBall = document.getElementById('tabbit-recorder-float-ball');
+          var oldBall = document.getElementById('Yuze-recorder-float-ball');
           if (oldBall) { oldBall.remove(); }
           var oldMenu = document.getElementById('float-radial-menu');
           if (oldMenu) { oldMenu.remove(); }
@@ -1090,7 +1090,7 @@
           C.style.display = 'none';
     
           floatBall = document.createElement('div');
-          floatBall.id = 'tabbit-recorder-float-ball';
+          floatBall.id = 'Yuze-recorder-float-ball';
           floatBall.style.cssText = [
             'position:fixed;top:24px;right:24px;',
             'width:72px;height:72px;border-radius:50%;',
@@ -1677,7 +1677,7 @@
     
         return {
           ok: true,
-          summary: 'Tabbit 录屏工具 v3.2.1 (文件名中文版) 已启动 — 导出视频文件名格式：录屏_年月日_时分秒',
+          summary: 'Yuze 录屏工具 v3.2.1 (文件名中文版) 已启动 — 导出视频文件名格式：录屏_年月日_时分秒',
           features: [
             'iOS 26 液态玻璃设计系统',
             '标签页/全屏/窗口录制',
@@ -1696,7 +1696,7 @@
             '★ v3.2.1 文件名优化 ★',
             '  - 导出视频自动命名为「录屏_YYYY年MM月DD日_HH时MM分SS秒」'
           ],
-          panelId: 'tabbit-recorder-panel',
+          panelId: 'Yuze-recorder-panel',
           designSystem: 'Apple iOS 26 Liquid Glass + Custom Ball Redesign',
           version: '3.2.1',
           changelog: 'v3.2.1: 导出文件名改为中文时间格式「录屏_年月日_时分秒」，更直观易读'

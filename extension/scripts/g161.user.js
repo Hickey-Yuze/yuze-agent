@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const hostId = "tabbit-word-sprint-app";
+  const hostId = "Yuze-word-sprint-app";
   const previousHost = document.getElementById(hostId);
   if (previousHost) {
     previousHost.__wordSprintCleanup?.();

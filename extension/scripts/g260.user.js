@@ -3,7 +3,7 @@ async function run(args) {
 
   var CONFIG = {
     colors: ['#ffeb3b', '#4caf50', '#2196f3', '#ff9800', '#e91e63'],
-    storageKey: 'tabbit-notes'
+    storageKey: 'Yuze-notes'
   };
 
   /* 清理旧版本 */

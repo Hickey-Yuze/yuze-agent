@@ -1,7 +1,7 @@
 (function () {
   'use strict';
-  if (window.__TABBIT_DISGUISE__) return;
-  window.__TABBIT_DISGUISE__ = true;
+  if (window.__Yuze_DISGUISE__) return;
+  window.__Yuze_DISGUISE__ = true;
 
   /* ── 1. 构建伪装层（预渲染，切换时零延迟）── */
   const overlay = document.createElement('div');

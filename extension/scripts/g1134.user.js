@@ -1,16 +1,16 @@
 (function() {
-  const SCRIPT_ID = 'tabbit-xhs-sneaky-escape-video';
+  const SCRIPT_ID = 'Yuze-xhs-sneaky-escape-video';
   const STYLE_ID = `${SCRIPT_ID}-style`;
-  const READY_ATTR = 'data-tabbit-xhs-sneak-ready';
-  const PREV_POSITION_ATTR = 'data-tabbit-xhs-sneak-prev-position';
-  const HOST_CLASS = 'tabbit-xhs-sneak-host';
-  const BADGE_CLASS = 'tabbit-xhs-sneak-badge';
-  const STATUS_CLASS = 'tabbit-xhs-sneak-status';
-  const VIDEO_CLASS = 'tabbit-xhs-sneak-video';
-  const AURA_CLASS = 'tabbit-xhs-sneak-aura';
+  const READY_ATTR = 'data-Yuze-xhs-sneak-ready';
+  const PREV_POSITION_ATTR = 'data-Yuze-xhs-sneak-prev-position';
+  const HOST_CLASS = 'Yuze-xhs-sneak-host';
+  const BADGE_CLASS = 'Yuze-xhs-sneak-badge';
+  const STATUS_CLASS = 'Yuze-xhs-sneak-status';
+  const VIDEO_CLASS = 'Yuze-xhs-sneak-video';
+  const AURA_CLASS = 'Yuze-xhs-sneak-aura';
 
-  if (window.__tabbitXhsSneakyEscapeCleanup) {
-    window.__tabbitXhsSneakyEscapeCleanup();
+  if (window.__YuzeXhsSneakyEscapeCleanup) {
+    window.__YuzeXhsSneakyEscapeCleanup();
   }
 
   const state = {
@@ -125,7 +125,7 @@
           inset 0 1px 0 rgba(255, 255, 255, 0.90) !important;
       }
 
-      .tabbit-xhs-sneak-icon {
+      .Yuze-xhs-sneak-icon {
         position: relative !important;
         width: 14px !important;
         height: 14px !important;
@@ -135,13 +135,13 @@
         line-height: 1 !important;
       }
 
-      .tabbit-xhs-sneak-icon svg {
+      .Yuze-xhs-sneak-icon svg {
         width: 14px !important;
         height: 14px !important;
         display: block !important;
       }
 
-      .tabbit-xhs-sneak-label {
+      .Yuze-xhs-sneak-label {
         max-width: 82px !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
@@ -152,15 +152,15 @@
         grid-template-columns: 14px auto !important;
       }
 
-      .${BADGE_CLASS}.is-generating .tabbit-xhs-sneak-icon {
+      .${BADGE_CLASS}.is-generating .Yuze-xhs-sneak-icon {
         border-radius: 999px !important;
         border: 1.6px solid rgba(20, 24, 34, 0.16) !important;
         border-top-color: rgba(255, 45, 85, 0.94) !important;
         border-right-color: rgba(0, 122, 255, 0.82) !important;
-        animation: tabbitXhsSneakSpin 820ms linear infinite !important;
+        animation: YuzeXhsSneakSpin 820ms linear infinite !important;
       }
 
-      .${BADGE_CLASS}.is-generating .tabbit-xhs-sneak-icon svg {
+      .${BADGE_CLASS}.is-generating .Yuze-xhs-sneak-icon svg {
         opacity: 0 !important;
       }
 
@@ -171,7 +171,7 @@
           linear-gradient(135deg, rgba(52, 199, 89, 0.25), rgba(0, 122, 255, 0.14)) !important;
       }
 
-      .${BADGE_CLASS}.is-ready .tabbit-xhs-sneak-icon {
+      .${BADGE_CLASS}.is-ready .Yuze-xhs-sneak-icon {
         width: 8px !important;
         height: 8px !important;
         border-radius: 999px !important;
@@ -181,7 +181,7 @@
           0 0 14px rgba(52, 199, 89, 0.52) !important;
       }
 
-      .${BADGE_CLASS}.is-ready .tabbit-xhs-sneak-icon svg {
+      .${BADGE_CLASS}.is-ready .Yuze-xhs-sneak-icon svg {
         display: none !important;
       }
 
@@ -281,7 +281,7 @@
         transform: scale(1) !important;
       }
 
-      .tabbit-xhs-sneak-fade-img {
+      .Yuze-xhs-sneak-fade-img {
         opacity: 0.0 !important;
         transform: scale(1.012) !important;
         transition:
@@ -301,12 +301,12 @@
           padding: 0 9px !important;
         }
 
-        .tabbit-xhs-sneak-label {
+        .Yuze-xhs-sneak-label {
           max-width: 70px !important;
         }
       }
 
-      @keyframes tabbitXhsSneakSpin {
+      @keyframes YuzeXhsSneakSpin {
         to { transform: rotate(360deg); }
       }
     `;
@@ -383,7 +383,7 @@
 
   function iconMarkup() {
     return [
-      '<span class="tabbit-xhs-sneak-icon" aria-hidden="true">',
+      '<span class="Yuze-xhs-sneak-icon" aria-hidden="true">',
       '<svg viewBox="0 0 24 24" fill="none">',
       '<path d="M15.5 5.8c1.4.4 2.7 1.3 3.6 2.5M18.4 14.6c-.7 2.2-2.5 3.9-4.8 4.5M7.9 18.1c-2-1.2-3.2-3.3-3.2-5.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
       '<path d="M9.2 7.7c1.9-1.6 4.8-1.3 6.3.7 1.5 1.9 1.2 4.7-.7 6.2-1.9 1.6-4.8 1.3-6.3-.7-1.5-1.9-1.2-4.7.7-6.2Z" stroke="currentColor" stroke-width="2"/>',
@@ -401,7 +401,7 @@
     badge.classList.toggle('is-playing', mode === 'playing');
     badge.classList.toggle('is-open', mode === 'open');
     badge.classList.toggle('is-error', mode === 'error');
-    badge.querySelector('.tabbit-xhs-sneak-label').textContent = label;
+    badge.querySelector('.Yuze-xhs-sneak-label').textContent = label;
   }
 
   function showStatus(cardState, message, duration = 2200) {
@@ -422,21 +422,21 @@
 
   function setImageSmoothly(img, src) {
     if (!img || !src) return;
-    img.classList.add('tabbit-xhs-sneak-fade-img');
+    img.classList.add('Yuze-xhs-sneak-fade-img');
     window.setTimeout(() => {
       img.src = src;
       img.removeAttribute('srcset');
       img.removeAttribute('data-src');
       img.onload = () => {
-        requestAnimationFrame(() => img.classList.remove('tabbit-xhs-sneak-fade-img'));
+        requestAnimationFrame(() => img.classList.remove('Yuze-xhs-sneak-fade-img'));
       };
-      window.setTimeout(() => img.classList.remove('tabbit-xhs-sneak-fade-img'), 520);
+      window.setTimeout(() => img.classList.remove('Yuze-xhs-sneak-fade-img'), 520);
     }, 120);
   }
 
   function setImageImmediately(img, src) {
     if (!img || !src) return;
-    img.classList.remove('tabbit-xhs-sneak-fade-img');
+    img.classList.remove('Yuze-xhs-sneak-fade-img');
     img.src = src;
     img.removeAttribute('srcset');
     img.removeAttribute('data-src');
@@ -503,7 +503,7 @@
   }
 
   function shouldUseMockBridge() {
-    if (window.__TABBIT_XHS_SNEAK_TEST_MODE__ === true) return true;
+    if (window.__Yuze_XHS_SNEAK_TEST_MODE__ === true) return true;
     return isLocalValidationPage() && !hasRequiredBridgeMethods();
   }
 
@@ -643,7 +643,7 @@
         throw new Error(task?.error_message || '首尾帧视频任务创建失败');
       }
     } catch (error) {
-      console.warn('[Tabbit XHS Sneaky Escape] 首尾帧视频创建失败，降级为单首帧图生视频', error);
+      console.warn('[Yuze XHS Sneaky Escape] 首尾帧视频创建失败，降级为单首帧图生视频', error);
       showStatus(cardState, '首尾帧视频不可用，改用单首帧生成', 0);
       task = await createVideoTask(buildFallbackVideoPrompt(), {
         ...commonVideoOptions,
@@ -691,7 +691,7 @@
       setBadge(cardState, 'ready', result.videoUrl ? '可播放' : '已生成');
       hideStatus(cardState);
     } catch (error) {
-      console.warn('[Tabbit XHS Sneaky Escape] 生成失败', error);
+      console.warn('[Yuze XHS Sneaky Escape] 生成失败', error);
       cardState.phase = 'error';
       setAura(cardState, false);
       setBadge(cardState, 'error', '重试');
@@ -857,7 +857,7 @@
 
     const badge = document.createElement('div');
     badge.className = `${BADGE_CLASS} is-idle`;
-    badge.innerHTML = `${iconMarkup()}<span class="tabbit-xhs-sneak-label">溜走</span>`;
+    badge.innerHTML = `${iconMarkup()}<span class="Yuze-xhs-sneak-label">溜走</span>`;
     host.appendChild(badge);
 
     const aura = document.createElement('div');
@@ -939,7 +939,7 @@
       card.removeAttribute(READY_ATTR);
     });
 
-    delete window.__tabbitXhsSneakyEscapeCleanup;
+    delete window.__YuzeXhsSneakyEscapeCleanup;
   }
 
   injectStyle();
@@ -951,6 +951,6 @@
   });
   state.observer.observe(document.documentElement, { childList: true, subtree: true });
 
-  window.__tabbitXhsSneakyEscapeCleanup = cleanup;
-  console.log('[Tabbit XHS Sneaky Escape] 已启用。本地验证页缺少 LLMBridge 时会自动 mock；真实页面可设置 window.__TABBIT_XHS_SNEAK_TEST_MODE__ = true 强制跳过生图和视频生成。');
+  window.__YuzeXhsSneakyEscapeCleanup = cleanup;
+  console.log('[Yuze XHS Sneaky Escape] 已启用。本地验证页缺少 LLMBridge 时会自动 mock；真实页面可设置 window.__Yuze_XHS_SNEAK_TEST_MODE__ = true 强制跳过生图和视频生成。');
 })();

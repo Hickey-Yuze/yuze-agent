@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         全能助手 - 页面增强与用户分析脚本
-// @namespace    https://tabbit-ai.com/
+// @namespace    https://Yuze-ai.com/
 // @version      1.0.0
 // @description  提供页面颜色切换、B站视频控制、用户意图分析和系统风格切换功能
 // @author       雾起

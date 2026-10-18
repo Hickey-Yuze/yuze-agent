@@ -1,6 +1,6 @@
 /**
  * ECJTU first-use access gate for scholar.edu.cn.
- * The local proxy is applied only to the Tabbit process.
+ * The local proxy is applied only to the Yuze process.
  */
 async function run(args) {
     const CONTAINER_ID = 'ecjtu-access-gate';
@@ -194,11 +194,11 @@ async function run(args) {
 
     function buildResourcePrompt(resource, topic) {
         const target = topic || '未提供具体关键词，请先根据当前门户的资源分类判断最合适入口';
-        return `【ECJTU 学术资源任务】\n任务类型：资源定位。\n你是 Tabbit 中的严谨学术资源导航 Agent。用户需求：${target}。资源方向：${resource}。先在当前 ECJTU 学术资源门户中定位最合适的真实入口，再打开并核验目标页面。页面结构变化时先读取页面，再寻找资源卡片、搜索框或导航项；每次最多打开一个外部资源，返回后再决定下一步。只报告页面可见或可核验的资源名称、机构或出版方、覆盖内容、与需求的匹配理由、入口 URL、可访问状态和未核验项。不得把门户首页、图标或单条日志当成访问成功，不得编造资源、权限、数据覆盖范围、全文状态或功能。默认中文输出，最后推荐一个最值得优先打开的入口和下一步操作。`;
+        return `【ECJTU 学术资源任务】\n任务类型：资源定位。\n你是 Yuze 中的严谨学术资源导航 Agent。用户需求：${target}。资源方向：${resource}。先在当前 ECJTU 学术资源门户中定位最合适的真实入口，再打开并核验目标页面。页面结构变化时先读取页面，再寻找资源卡片、搜索框或导航项；每次最多打开一个外部资源，返回后再决定下一步。只报告页面可见或可核验的资源名称、机构或出版方、覆盖内容、与需求的匹配理由、入口 URL、可访问状态和未核验项。不得把门户首页、图标或单条日志当成访问成功，不得编造资源、权限、数据覆盖范围、全文状态或功能。默认中文输出，最后推荐一个最值得优先打开的入口和下一步操作。`;
     }
 
     function buildResearchPrompt(mode, topic, options) {
-        const common = `【ECJTU 学术资源任务】\n任务类型：文献研究。\n你是 Tabbit 中的严谨学术检索 Agent。研究主题：${topic}\n筛选条件：时间=${options.period}；语言=${options.language}；全文偏好=${options.fullText ? '优先可获取全文' : '不限'}。\n先使用当前 ECJTU 学术资源门户定位合适入口，再读取真实结果页面。每次最多打开一个外部资源，返回结果页后再决定下一步。只记录可见或可核验的题名、作者、年份、来源、DOI/URL、摘要和全文状态；缺失字段写“未核验”。不得编造文献、引用次数、结论或访问状态。默认中文回答，题名与检索式保留原语言。`;
+        const common = `【ECJTU 学术资源任务】\n任务类型：文献研究。\n你是 Yuze 中的严谨学术检索 Agent。研究主题：${topic}\n筛选条件：时间=${options.period}；语言=${options.language}；全文偏好=${options.fullText ? '优先可获取全文' : '不限'}。\n先使用当前 ECJTU 学术资源门户定位合适入口，再读取真实结果页面。每次最多打开一个外部资源，返回结果页后再决定下一步。只记录可见或可核验的题名、作者、年份、来源、DOI/URL、摘要和全文状态；缺失字段写“未核验”。不得编造文献、引用次数、结论或访问状态。默认中文回答，题名与检索式保留原语言。`;
         const tasks = {
             locate: '任务：精准找论文。拆分核心概念、对象、方法和场景，给出中英文关键词、缩写、同义词和排除词；生成宽、平衡、精准三条布尔检索式；从可见结果中筛选最多 8 篇候选论文，用表格列出证据字段和匹配理由，最后推荐一篇最值得继续核验的论文。',
             review: '任务：建立主题综述路线。定义范围、时间边界和纳入/排除标准；拆分 3-5 个子方向；定位高质量综述、经典研究、近年进展和方法论文；区分一致结论、冲突结论和证据不足，并给出研究空白与下一轮检索式。',
@@ -218,7 +218,7 @@ async function run(args) {
             <ol class="ecjtu-guide-list">
                 <li>下载 ECJTU 官方“Git/Docker 工具 for Windows”（文件名：<code>scholartools.exe</code>）。</li>
                 <li>按官方页面或工具中的步骤用管理员身份打开输入1完成配置。</li>
-                <li>在 Tabbit 中打开 Google Scholar，确认搜索框和正文正常加载。</li>
+                <li>在 Yuze 中打开 Google Scholar，确认搜索框和正文正常加载。</li>
                 <li>返回本面板，点击“开始网页验证”。</li>
             </ol>
             <div class="ecjtu-actions">
@@ -226,9 +226,9 @@ async function run(args) {
                 <button type="button" class="ecjtu-action" data-action="official-page">查看官方下载页</button>
                 <button type="button" class="ecjtu-action" data-action="begin-verify">开始网页验证</button>
             </div>
-            <p class="ecjtu-subtitle">💡 关于本妙招</p>
+            <p class="ecjtu-subtitle">💡 关于本技炉</p>
             <ul class="ecjtu-facts">
-                <li>本妙招旨在为花椒学生快速配置该学术网站，同时结合Tabbit的agent功能，快速检索到学术资源。大家可以放心使用。</li>
+                <li>本技炉旨在为花椒学生快速配置该学术网站，同时结合Yuze的agent功能，快速检索到学术资源。大家可以放心使用。</li>
                 <li>下载按钮只在用户点击后打开学校官方下载地址,输入1启动配置，输入2关闭配置。</li>
                 <li>启动配置后，需访问相应网站时请先确认校园网环境！如需切换校园网访问，请再次打开科研工具输入2关闭配置即可！</li>
                 <li>仅在当前网页中生成资源定位与检索任务，并在获得许可时写入剪贴板。</li>
@@ -359,7 +359,7 @@ async function run(args) {
             })));
         });
         body.querySelector('[data-action="analyze"]').addEventListener('click', async () => {
-            const prompt = `【ECJTU 学术资源任务】\n任务类型：当前页面分析。\n你是 Tabbit 中的严谨学术资源 Agent。请打开并分析页面：${location.href}\n页面标题：${document.title}\n用户需求：${getTopic() || '未指定'}。只使用页面可见信息，不得编造资源名称、题名、作者、年份、摘要、引用次数或全文状态。按“资源或论文、相关性、可见证据、可访问状态、未核验字段、下一步”输出表格；若没有可分析的结果，给出最合适的检索词和一个应继续打开的入口。每次最多打开一个外部资源。`;
+            const prompt = `【ECJTU 学术资源任务】\n任务类型：当前页面分析。\n你是 Yuze 中的严谨学术资源 Agent。请打开并分析页面：${location.href}\n页面标题：${document.title}\n用户需求：${getTopic() || '未指定'}。只使用页面可见信息，不得编造资源名称、题名、作者、年份、摘要、引用次数或全文状态。按“资源或论文、相关性、可见证据、可访问状态、未核验字段、下一步”输出表格；若没有可分析的结果，给出最合适的检索词和一个应继续打开的入口。每次最多打开一个外部资源。`;
             showCopied('当前页面分析任务', await copyText(prompt));
         });
         body.querySelector('[data-action="recheck"]').addEventListener('click', detectAndRender);
@@ -381,7 +381,7 @@ async function run(args) {
             return result?.status === 'ready' &&
                 result?.service === 'ecjtu-access-helper' &&
                 result?.version === HELPER_VERSION &&
-                result?.proxyScope === 'tabbit-process-only'
+                result?.proxyScope === 'Yuze-process-only'
                 ? result
                 : null;
         } catch (_) {

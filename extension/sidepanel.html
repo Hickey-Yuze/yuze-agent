@@ -46,7 +46,7 @@
       <div class="set-group">
         <button id="btnSkillsManage" class="set-row" type="button">
           <span class="set-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.4 5.4 1.8-5.4 1.8L12 17.4l-1.8-5.4L4.8 10.2l5.4-1.8z"/></svg></span>
-          <span class="set-row-txt"><b>妙招</b><i>管理快捷指令与自动化</i></span>
+          <span class="set-row-txt"><b>技炉</b><i>管理快捷指令与自动化</i></span>
           <svg class="set-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
         </button>
         <button id="btnMcpManage" class="set-row" type="button">
@@ -221,33 +221,33 @@
 
 
 
-  <!-- 妙招面板 -->
+  <!-- 技炉面板 -->
   <section id="skillPanel" class="sheet hidden">
     <div class="sheet-head">
-      <div class="sheet-title">妙招</div>
+      <div class="sheet-title">技炉</div>
       <button id="btnSkillClose" class="icon-btn" aria-label="关闭">×</button>
     </div>
     <div class="sk-wrap">
       <aside class="sk-side">
-        <div class="sk-side-title">妙招库</div>
+        <div class="sk-side-title">技炉库</div>
         <nav class="sk-nav">
           <button class="sk-src active" data-src="all">全部<em id="nAll">0</em></button>
-          <button class="sk-src" data-src="official">官方妙招<em id="nOfficial">0</em></button>
-          <button class="sk-src" data-src="installed">已安装妙招<em id="nInstalled">0</em></button>
-          <button class="sk-src" data-src="custom">自定义妙招<em id="nCustom">0</em></button>
+          <button class="sk-src" data-src="official">官方技炉<em id="nOfficial">0</em></button>
+          <button class="sk-src" data-src="installed">已安装技炉<em id="nInstalled">0</em></button>
+          <button class="sk-src" data-src="custom">自定义技炉<em id="nCustom">0</em></button>
         </nav>
-        <button id="btnSkillNew" class="sk-create">+ 创建妙招</button>
-        <button id="btnSkillDiscover" class="sk-discover">发现妙招 ↗</button>
+        <button id="btnSkillNew" class="sk-create">+ 创建技炉</button>
+        <button id="btnSkillDiscover" class="sk-discover">发现技炉 ↗</button>
       </aside>
       <main class="sk-main">
         <div class="sk-main-head">
           <div id="skMainTitle" class="sk-main-title">全部</div>
-          <div id="skMainSub" class="sk-main-sub">管理官方妙招、已安装妙招和你创建的妙招</div>
+          <div id="skMainSub" class="sk-main-sub">管理官方技炉、已安装技炉和你创建的技炉</div>
         </div>
         <div class="sk-toolbar">
-          <div class="sk-search"><input id="skillSearch" type="search" placeholder="搜索妙招…" spellcheck="false"></div>
-          <button id="btnSkillNewTop" class="ghost-btn">+ 创建妙招</button>
-          <button id="btnSkillDiscoverTop" class="primary-btn">发现妙招</button>
+          <div class="sk-search"><input id="skillSearch" type="search" placeholder="搜索技炉…" spellcheck="false"></div>
+          <button id="btnSkillNewTop" class="ghost-btn">+ 创建技炉</button>
+          <button id="btnSkillDiscoverTop" class="primary-btn">发现技炉</button>
         </div>
         <div class="sk-tabs">
           <button class="sk-tab active" data-cat="all">全部</button>
@@ -255,16 +255,16 @@
           <button class="sk-tab" data-cat="script">网页脚本</button>
           <button class="sk-tab" data-cat="task">任务</button>
         </div>
-        <div class="sk-group-title" id="skGroupTitle">官方妙招 <em>0</em></div>
+        <div class="sk-group-title" id="skGroupTitle">官方技炉 <em>0</em></div>
         <div id="skillGrid" class="skill-grid"></div>
       </main>
     </div>
   </section>
 
-  <!-- 妙招详情 -->
+  <!-- 技炉详情 -->
   <section id="skillDetail" class="sheet hidden">
     <div class="sd-top">
-      <button id="btnSkillBack" class="sd-back">← 返回妙招管理</button>
+      <button id="btnSkillBack" class="sd-back">← 返回技炉管理</button>
       <button id="btnSkillDetailClose" class="icon-btn" aria-label="关闭">×</button>
     </div>
     <div class="sd-scroll">
@@ -285,7 +285,7 @@
         <button type="button" class="sd-mode active" data-mode="manual">手动运行</button>
         <button type="button" class="sd-mode" data-mode="auto">自动运行</button>
       </div>
-      <div class="sd-label">妙招内容</div>
+      <div class="sd-label">技炉内容</div>
       <div class="sd-sub">描述</div>
       <div id="sdSkillDesc" class="sd-block" style="padding:12px 14px;"></div>
       <div class="sd-sec" style="display:flex;align-items:center;gap:10px;margin:28px 0 12px;font-size:12.5px;font-weight:600;color:#1d1d1f;"><span>SKILL.md</span><span style="flex:1 1 auto;height:1px;background:rgba(0,0,0,.08);"></span></div>
@@ -299,11 +299,11 @@
     </div>
   </section>
 
-  <!-- 创建妙招：类型选择 -->
+  <!-- 创建技炉：类型选择 -->
   <div id="skillTypeModal" class="modal-mask hidden">
-    <div class="modal sm-modal" role="dialog" aria-label="创建妙招">
+    <div class="modal sm-modal" role="dialog" aria-label="创建技炉">
       <div class="modal-head">
-        <span>创建妙招</span>
+        <span>创建技炉</span>
         <button id="btnSkillTypeClose" class="icon-btn" aria-label="关闭">×</button>
       </div>
       <p class="sm-sub">选择类型后进入对应的空白编辑表单。</p>
@@ -311,7 +311,7 @@
         <button class="sm-type" type="button" data-type="prompt">
           <span class="sm-ico">📄</span>
           <span class="sm-body">
-            <b>提示词妙招</b>
+            <b>提示词技炉</b>
             <em>创建可复用的提示词、变量和一键发送配置。</em>
           </span>
           <span class="sm-go">›</span>
@@ -319,7 +319,7 @@
         <button class="sm-type" type="button" data-type="script">
           <span class="sm-ico">&lt;/&gt;</span>
           <span class="sm-body">
-            <b>网页脚本妙招</b>
+            <b>网页脚本技炉</b>
             <em>编写 JavaScript，并配置适用网站和运行方式。</em>
           </span>
           <span class="sm-go">›</span>
@@ -336,10 +336,10 @@
     </div>
   </div>
 
-  <!-- 妙招编辑器 -->
+  <!-- 技炉编辑器 -->
   <section id="skillEdit" class="sheet hidden">
     <div class="se-top">
-      <button id="btnSkillEditBack" class="sd-back">← 返回自定义妙招</button>
+      <button id="btnSkillEditBack" class="sd-back">← 返回自定义技炉</button>
       <div class="se-acts">
         <button id="btnSkillEditCancel" class="ghost-btn">取消</button>
         <button id="btnSkillEditSave" class="primary-btn se-save">保存</button>
@@ -348,7 +348,7 @@
     <div class="se-scroll">
       <div class="se-head">
         <div id="seIcon" class="se-ico">💡</div>
-        <input id="seName" class="se-name" placeholder="未命名妙招" spellcheck="false">
+        <input id="seName" class="se-name" placeholder="未命名技炉" spellcheck="false">
       </div>
       <div id="seMeta" class="se-meta"></div>
 
@@ -358,7 +358,7 @@
           <button class="seg on" type="button" data-v="0">关闭</button>
           <button class="seg" type="button" data-v="1">开启</button>
         </div>
-        <div class="se-hint">选择妙招后填入输入框，由用户确认发送</div>
+        <div class="se-hint">选择技炉后填入输入框，由用户确认发送</div>
       </div>
 
       <div class="se-group" data-for="script">
@@ -378,22 +378,22 @@
       </div>
 
       <div class="se-group" data-for="prompt">
-        <div class="se-label">妙招内容</div>
+        <div class="se-label">技炉内容</div>
         <div class="se-sub">提示词内容</div>
-        <textarea id="sePrompt" rows="9" placeholder="输入调用妙招时使用的提示词，可通过 {{变量名}} 引用变量。" spellcheck="false"></textarea>
+        <textarea id="sePrompt" rows="9" placeholder="输入调用技炉时使用的提示词，可通过 {{变量名}} 引用变量。" spellcheck="false"></textarea>
       </div>
 
       <div class="se-group" data-for="task">
-        <div class="se-label">妙招内容</div>
+        <div class="se-label">技炉内容</div>
         <div class="se-sub">描述 <span id="seDescCount" class="se-count">0/1000</span></div>
-        <textarea id="seDesc" rows="4" maxlength="1000" placeholder="描述模型应在什么情况下调用这个任务妙招" spellcheck="false"></textarea>
+        <textarea id="seDesc" rows="4" maxlength="1000" placeholder="描述模型应在什么情况下调用这个任务技炉" spellcheck="false"></textarea>
         <div class="se-sub">SKILL.md</div>
         <textarea id="seMd" rows="9" class="se-md" placeholder="---&#10;name: custom-skill&#10;description: &quot;...&quot;&#10;---" spellcheck="false"></textarea>
         <div class="se-hint">请填写完整的 SKILL.md 内容；名称和描述不会自动改写该字段</div>
       </div>
 
       <div class="se-group" data-for="script">
-        <div class="se-label">妙招内容</div>
+        <div class="se-label">技炉内容</div>
         <div class="se-sub">脚本代码</div>
         <textarea id="seCode" rows="12" class="se-md" placeholder="输入将在网页中执行的脚本代码" spellcheck="false"></textarea>
       </div>

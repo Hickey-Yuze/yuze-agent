@@ -1,5 +1,5 @@
 /**
- * 🎨 网页配色提取器 - Tabbit 妙招大赛参赛作品
+ * 🎨 网页配色提取器 - Yuze 技炉大赛参赛作品
  * 
  * 功能：
  * 1. 提取当前页面所有可见颜色，按使用频率排序
@@ -8,8 +8,8 @@
  * 4. WCAG 对比度检测报告
  * 5. 一键复制/导出功能
  * 
- * 作者：Tabbit 妙招大赛参赛作品
- * 赛道：脚本妙招
+ * 作者：Yuze 技炉大赛参赛作品
+ * 赛道：脚本技炉
  */
 
 async function run(args) {
@@ -153,7 +153,7 @@ async function run(args) {
   
   function renderPalette(colors) {
     const container = document.createElement('div');
-    container.id = 'tabbit-color-palette';
+    container.id = 'Yuze-color-palette';
     Object.assign(container.style, {
       position: 'fixed', top: '10px', right: '10px',
       width: '380px', maxHeight: '90vh', overflowY: 'auto',
@@ -270,7 +270,7 @@ async function run(args) {
 
   // ============ 主逻辑 ============
   
-  const existing = document.getElementById('tabbit-color-palette');
+  const existing = document.getElementById('Yuze-color-palette');
   if (existing) existing.remove();
 
   const colors = extractColorsFromPage();

@@ -9,7 +9,7 @@
  * - Filter options: by date range, keyword search
  * - One-click download with customizable filename
  * 
- * Author: Tabbit Script Competition Entry
+ * Author: Yuze Script Competition Entry
  * Version: 2.0 (Competition Edition)
  */
 

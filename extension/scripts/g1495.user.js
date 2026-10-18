@@ -250,7 +250,7 @@
         { text: '%^&', cls: 'hk-err hk-glitch', cpc: 70, pauseAfter: 0 },
         { text: '请按照提示', cls: 'hk-white', cpc: 58, pauseAfter: 0 },
         { text: '寻找', cls: 'hk-warn', cpc: 55, pauseAfter: 0 },
-        { text: '埋藏在妙招guang场里的', cls: 'hk-white', cpc: 58, pauseAfter: 0 },
+        { text: '埋藏在技炉guang场里的', cls: 'hk-white', cpc: 58, pauseAfter: 0 },
         { text: '4', cls: 'hk-err', cpc: 90, pauseAfter: 0 },
         { text: '个宝藏...\n', cls: 'hk-white', cpc: 58, pauseAfter: 300 },
     
@@ -258,7 +258,7 @@
         { text: '??', cls: 'hk-err hk-glitch', cpc: 80, pauseAfter: 0 },
         { text: '就藏在', cls: 'hk-white', cpc: 58, pauseAfter: 0 },
         { text: ':)', cls: 'hk-warn', cpc: 70, pauseAfter: 0 },
-        { text: '妙招生效后的界面里...\n', cls: 'hk-white', cpc: 56, pauseAfter: 350 },
+        { text: '技炉生效后的界面里...\n', cls: 'hk-white', cpc: 56, pauseAfter: 350 },
     
         { text: 'error', cls: 'hk-err hk-glitch', cpc: 85, pauseAfter: 0 },
         { text: '祝你找到最后的彩蛋...\n', cls: 'hk-white', cpc: 58, pauseAfter: 400 },

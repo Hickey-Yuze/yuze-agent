@@ -1,14 +1,14 @@
 // 小红书网页端「收藏 → 专辑」批量删除按钮。
 // 默认不选择任何专辑；执行前必须二次勾选并输入精确确认短语。
-// 可在注入脚本前通过 window.__tabbitXhsAlbumBatchDeleteConfig 覆盖节流配置。
+// 可在注入脚本前通过 window.__YuzeXhsAlbumBatchDeleteConfig 覆盖节流配置。
 (function() {
-  const SCRIPT_ID = 'tabbit-xhs-album-batch-delete';
+  const SCRIPT_ID = 'Yuze-xhs-album-batch-delete';
   const STYLE_ID = `${SCRIPT_ID}-style`;
   const HOST_ID = `${SCRIPT_ID}-host`;
   const BUTTON_ID = `${SCRIPT_ID}-button`;
   const OVERLAY_ID = `${SCRIPT_ID}-overlay`;
-  const READY_ATTR = 'data-tabbit-xhs-album-batch-delete-ready';
-  const CLEANUP_KEY = '__tabbitXhsAlbumBatchDeleteCleanup';
+  const READY_ATTR = 'data-Yuze-xhs-album-batch-delete-ready';
+  const CLEANUP_KEY = '__YuzeXhsAlbumBatchDeleteCleanup';
 
   if (window[CLEANUP_KEY]) {
     window[CLEANUP_KEY]();
@@ -32,7 +32,7 @@
     pageTimeout: 9000,
     actionDelay: 900,
   };
-  const configOverrides = window.__tabbitXhsAlbumBatchDeleteConfig || {};
+  const configOverrides = window.__YuzeXhsAlbumBatchDeleteConfig || {};
   const config = {
     ...defaultConfig,
     ...configOverrides,
@@ -295,7 +295,7 @@
         -webkit-backdrop-filter: blur(12px) !important;
         font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif !important;
       }
-      .tabbit-xhs-delete-sheet {
+      .Yuze-xhs-delete-sheet {
         width: min(680px, 94vw) !important;
         max-height: min(760px, 90vh) !important;
         overflow: hidden !important;
@@ -304,26 +304,26 @@
         background: rgba(252, 252, 253, .96) !important;
         box-shadow: 0 30px 100px rgba(0, 0, 0, .24) !important;
       }
-      .tabbit-xhs-delete-head {
+      .Yuze-xhs-delete-head {
         display: flex !important;
         align-items: flex-start !important;
         justify-content: space-between !important;
         gap: 18px !important;
         padding: 24px 24px 16px !important;
       }
-      .tabbit-xhs-delete-title {
+      .Yuze-xhs-delete-title {
         margin: 0 !important;
         font-size: 22px !important;
         line-height: 1.25 !important;
         font-weight: 760 !important;
       }
-      .tabbit-xhs-delete-subtitle {
+      .Yuze-xhs-delete-subtitle {
         margin: 7px 0 0 !important;
         color: rgba(60, 60, 67, .68) !important;
         font-size: 13px !important;
         line-height: 1.55 !important;
       }
-      .tabbit-xhs-delete-close {
+      .Yuze-xhs-delete-close {
         width: 34px !important;
         height: 34px !important;
         flex: 0 0 auto !important;
@@ -334,14 +334,14 @@
         cursor: pointer !important;
         font-size: 20px !important;
       }
-      .tabbit-xhs-delete-toolbar {
+      .Yuze-xhs-delete-toolbar {
         display: flex !important;
         flex-wrap: wrap !important;
         align-items: center !important;
         gap: 8px !important;
         padding: 0 24px 14px !important;
       }
-      .tabbit-xhs-delete-search {
+      .Yuze-xhs-delete-search {
         min-width: 190px !important;
         height: 36px !important;
         flex: 1 1 220px !important;
@@ -352,7 +352,7 @@
         background: #fff !important;
         font-size: 13px !important;
       }
-      .tabbit-xhs-delete-chip {
+      .Yuze-xhs-delete-chip {
         height: 34px !important;
         padding: 0 12px !important;
         border: 1px solid rgba(60, 60, 67, .12) !important;
@@ -363,15 +363,15 @@
         font-size: 12px !important;
         font-weight: 650 !important;
       }
-      .tabbit-xhs-delete-chip:hover { background: #f2f2f7 !important; }
-      .tabbit-xhs-delete-list {
+      .Yuze-xhs-delete-chip:hover { background: #f2f2f7 !important; }
+      .Yuze-xhs-delete-list {
         max-height: 390px !important;
         overflow: auto !important;
         padding: 0 18px !important;
         border-top: 1px solid rgba(60, 60, 67, .08) !important;
         border-bottom: 1px solid rgba(60, 60, 67, .08) !important;
       }
-      .tabbit-xhs-delete-row {
+      .Yuze-xhs-delete-row {
         position: relative !important;
         display: grid !important;
         grid-template-columns: 28px minmax(0, 1fr) auto !important;
@@ -384,20 +384,20 @@
         cursor: pointer !important;
         transition: background .16s ease, box-shadow .16s ease !important;
       }
-      .tabbit-xhs-delete-row:last-child { border-bottom: 0 !important; }
-      .tabbit-xhs-delete-row.is-hidden { display: none !important; }
-      .tabbit-xhs-delete-row input {
+      .Yuze-xhs-delete-row:last-child { border-bottom: 0 !important; }
+      .Yuze-xhs-delete-row.is-hidden { display: none !important; }
+      .Yuze-xhs-delete-row input {
         position: absolute !important;
         width: 1px !important;
         height: 1px !important;
         opacity: 0 !important;
         pointer-events: none !important;
       }
-      .tabbit-xhs-delete-row.is-selected {
+      .Yuze-xhs-delete-row.is-selected {
         background: rgba(255, 36, 66, .075) !important;
         box-shadow: inset 0 0 0 1px rgba(255, 36, 66, .16) !important;
       }
-      .tabbit-xhs-delete-check {
+      .Yuze-xhs-delete-check {
         width: 22px !important;
         height: 22px !important;
         display: inline-flex !important;
@@ -412,42 +412,42 @@
         line-height: 1 !important;
         transition: all .16s ease !important;
       }
-      .tabbit-xhs-delete-row.is-selected .tabbit-xhs-delete-check {
+      .Yuze-xhs-delete-row.is-selected .Yuze-xhs-delete-check {
         border-color: #ff2442 !important;
         color: #fff !important;
         background: #ff2442 !important;
         box-shadow: 0 4px 12px rgba(255, 36, 66, .24) !important;
       }
-      .tabbit-xhs-delete-name {
+      .Yuze-xhs-delete-name {
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         white-space: nowrap !important;
         font-size: 14px !important;
         font-weight: 650 !important;
       }
-      .tabbit-xhs-delete-count {
+      .Yuze-xhs-delete-count {
         padding: 4px 8px !important;
         border-radius: 999px !important;
         color: rgba(60, 60, 67, .68) !important;
         background: rgba(118, 118, 128, .09) !important;
         font-size: 12px !important;
       }
-      .tabbit-xhs-delete-foot {
+      .Yuze-xhs-delete-foot {
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
         gap: 14px !important;
         padding: 16px 24px 22px !important;
       }
-      .tabbit-xhs-delete-summary {
+      .Yuze-xhs-delete-summary {
         color: rgba(60, 60, 67, .70) !important;
         font-size: 13px !important;
       }
-      .tabbit-xhs-delete-actions {
+      .Yuze-xhs-delete-actions {
         display: flex !important;
         gap: 9px !important;
       }
-      .tabbit-xhs-delete-action {
+      .Yuze-xhs-delete-action {
         min-width: 94px !important;
         height: 38px !important;
         padding: 0 16px !important;
@@ -457,22 +457,22 @@
         font-size: 13px !important;
         font-weight: 700 !important;
       }
-      .tabbit-xhs-delete-action.secondary {
+      .Yuze-xhs-delete-action.secondary {
         color: #343438 !important;
         background: rgba(118, 118, 128, .12) !important;
       }
-      .tabbit-xhs-delete-action.danger {
+      .Yuze-xhs-delete-action.danger {
         color: #fff !important;
         background: #ff2442 !important;
       }
-      .tabbit-xhs-delete-action:disabled {
+      .Yuze-xhs-delete-action:disabled {
         opacity: .4 !important;
         cursor: not-allowed !important;
       }
-      .tabbit-xhs-delete-confirm {
+      .Yuze-xhs-delete-confirm {
         padding: 0 24px 22px !important;
       }
-      .tabbit-xhs-delete-warning {
+      .Yuze-xhs-delete-warning {
         margin: 0 0 14px !important;
         padding: 13px 14px !important;
         border: 1px solid rgba(255, 36, 66, .16) !important;
@@ -482,7 +482,7 @@
         font-size: 13px !important;
         line-height: 1.55 !important;
       }
-      .tabbit-xhs-delete-selected-names {
+      .Yuze-xhs-delete-selected-names {
         max-height: 170px !important;
         overflow: auto !important;
         margin: 0 0 14px !important;
@@ -493,7 +493,7 @@
         font-size: 12px !important;
         line-height: 1.65 !important;
       }
-      .tabbit-xhs-delete-ack {
+      .Yuze-xhs-delete-ack {
         position: relative !important;
         display: flex !important;
         align-items: center !important;
@@ -502,14 +502,14 @@
         font-size: 13px !important;
         cursor: pointer !important;
       }
-      .tabbit-xhs-delete-ack input {
+      .Yuze-xhs-delete-ack input {
         position: absolute !important;
         width: 1px !important;
         height: 1px !important;
         opacity: 0 !important;
         pointer-events: none !important;
       }
-      .tabbit-xhs-delete-ack-check {
+      .Yuze-xhs-delete-ack-check {
         width: 20px !important;
         height: 20px !important;
         display: inline-flex !important;
@@ -525,12 +525,12 @@
         line-height: 1 !important;
         transition: all .16s ease !important;
       }
-      .tabbit-xhs-delete-ack input:checked + .tabbit-xhs-delete-ack-check {
+      .Yuze-xhs-delete-ack input:checked + .Yuze-xhs-delete-ack-check {
         border-color: #ff2442 !important;
         color: #fff !important;
         background: #ff2442 !important;
       }
-      .tabbit-xhs-delete-phrase {
+      .Yuze-xhs-delete-phrase {
         width: 100% !important;
         height: 40px !important;
         padding: 0 12px !important;
@@ -540,14 +540,14 @@
         background: #fff !important;
         font-size: 13px !important;
       }
-      .tabbit-xhs-delete-progress-wrap { padding: 4px 24px 24px !important; }
-      .tabbit-xhs-delete-progress {
+      .Yuze-xhs-delete-progress-wrap { padding: 4px 24px 24px !important; }
+      .Yuze-xhs-delete-progress {
         height: 8px !important;
         overflow: hidden !important;
         border-radius: 999px !important;
         background: rgba(118, 118, 128, .12) !important;
       }
-      .tabbit-xhs-delete-progress > span {
+      .Yuze-xhs-delete-progress > span {
         display: block !important;
         width: 0;
         height: 100% !important;
@@ -555,7 +555,7 @@
         background: linear-gradient(90deg, #ff2442, #ff6b81) !important;
         transition: width .25s ease !important;
       }
-      .tabbit-xhs-delete-log {
+      .Yuze-xhs-delete-log {
         max-height: 300px !important;
         overflow: auto !important;
         margin-top: 16px !important;
@@ -564,23 +564,23 @@
         background: #f5f5f7 !important;
         font: 12px/1.7 ui-monospace, SFMono-Regular, Menlo, monospace !important;
       }
-      .tabbit-xhs-delete-log div { margin: 0 0 4px !important; }
-      .tabbit-xhs-delete-log .success { color: #18783a !important; }
-      .tabbit-xhs-delete-log .failed { color: #b01932 !important; }
+      .Yuze-xhs-delete-log div { margin: 0 0 4px !important; }
+      .Yuze-xhs-delete-log .success { color: #18783a !important; }
+      .Yuze-xhs-delete-log .failed { color: #b01932 !important; }
       @media (max-width: 640px) {
         #${OVERLAY_ID} { padding: 10px !important; }
-        .tabbit-xhs-delete-sheet { border-radius: 18px !important; }
-        .tabbit-xhs-delete-head { padding: 19px 18px 13px !important; }
-        .tabbit-xhs-delete-toolbar { padding: 0 18px 12px !important; }
-        .tabbit-xhs-delete-list { padding: 0 12px !important; }
-        .tabbit-xhs-delete-foot {
+        .Yuze-xhs-delete-sheet { border-radius: 18px !important; }
+        .Yuze-xhs-delete-head { padding: 19px 18px 13px !important; }
+        .Yuze-xhs-delete-toolbar { padding: 0 18px 12px !important; }
+        .Yuze-xhs-delete-list { padding: 0 12px !important; }
+        .Yuze-xhs-delete-foot {
           align-items: stretch !important;
           flex-direction: column !important;
           padding: 14px 18px 18px !important;
         }
-        .tabbit-xhs-delete-actions { width: 100% !important; }
-        .tabbit-xhs-delete-action { flex: 1 !important; }
-        .tabbit-xhs-delete-confirm { padding: 0 18px 18px !important; }
+        .Yuze-xhs-delete-actions { width: 100% !important; }
+        .Yuze-xhs-delete-action { flex: 1 !important; }
+        .Yuze-xhs-delete-confirm { padding: 0 18px 18px !important; }
       }
     `;
     document.head.appendChild(style);
@@ -596,7 +596,7 @@
     }
 
     if (window.getComputedStyle(bar).position === 'static') {
-      bar.dataset.tabbitBatchDeletePrevPosition = 'static';
+      bar.dataset.YuzeBatchDeletePrevPosition = 'static';
       bar.style.position = 'relative';
     }
 
@@ -745,7 +745,7 @@
       (sum, album) => sum + (Number.isFinite(album.count) ? album.count : 0),
       0,
     );
-    const summary = overlay.querySelector('.tabbit-xhs-delete-summary');
+    const summary = overlay.querySelector('.Yuze-xhs-delete-summary');
     if (summary) {
       summary.textContent = `已选 ${selected.length}/${state.albums.length} 个专辑 · 含 ${totalNotes} 篇笔记`;
     }
@@ -764,7 +764,7 @@
     overlay?.querySelectorAll('input[data-album-id]').forEach(input => {
       input.checked = state.selectedIds.has(input.dataset.albumId);
       input
-        .closest('.tabbit-xhs-delete-row')
+        .closest('.Yuze-xhs-delete-row')
         ?.classList.toggle('is-selected', input.checked);
     });
     updateSelectionSummary();
@@ -775,43 +775,43 @@
     const rows = state.albums
       .map(
         album => `
-          <label class="tabbit-xhs-delete-row" data-search="${escapeHtml(album.name.toLowerCase())}">
+          <label class="Yuze-xhs-delete-row" data-search="${escapeHtml(album.name.toLowerCase())}">
             <input type="checkbox" data-album-id="${escapeHtml(album.id)}">
-            <span class="tabbit-xhs-delete-check" aria-hidden="true">✓</span>
-            <span class="tabbit-xhs-delete-name" title="${escapeHtml(album.name)}">${escapeHtml(album.name)}</span>
-            <span class="tabbit-xhs-delete-count">${Number.isFinite(album.count) ? `笔记・${album.count}` : '数量未知'}</span>
+            <span class="Yuze-xhs-delete-check" aria-hidden="true">✓</span>
+            <span class="Yuze-xhs-delete-name" title="${escapeHtml(album.name)}">${escapeHtml(album.name)}</span>
+            <span class="Yuze-xhs-delete-count">${Number.isFinite(album.count) ? `笔记・${album.count}` : '数量未知'}</span>
           </label>
         `,
       )
       .join('');
     const overlay = createOverlay(`
-      <section class="tabbit-xhs-delete-sheet" role="dialog" aria-modal="true" aria-label="批量删除专辑">
-        <header class="tabbit-xhs-delete-head">
+      <section class="Yuze-xhs-delete-sheet" role="dialog" aria-modal="true" aria-label="批量删除专辑">
+        <header class="Yuze-xhs-delete-head">
           <div>
-            <h2 class="tabbit-xhs-delete-title">选择要删除的专辑</h2>
-            <p class="tabbit-xhs-delete-subtitle">删除专辑不会取消收藏其中的笔记。默认不勾选，选好后还需进行二次确认。</p>
+            <h2 class="Yuze-xhs-delete-title">选择要删除的专辑</h2>
+            <p class="Yuze-xhs-delete-subtitle">删除专辑不会取消收藏其中的笔记。默认不勾选，选好后还需进行二次确认。</p>
           </div>
-          <button class="tabbit-xhs-delete-close" type="button" aria-label="关闭">×</button>
+          <button class="Yuze-xhs-delete-close" type="button" aria-label="关闭">×</button>
         </header>
-        <div class="tabbit-xhs-delete-toolbar">
-          <input class="tabbit-xhs-delete-search" type="search" placeholder="搜索专辑名称">
-          <button class="tabbit-xhs-delete-chip" type="button" data-select="empty">选择空专辑</button>
-          <button class="tabbit-xhs-delete-chip" type="button" data-select="visible">选择当前筛选</button>
-          <button class="tabbit-xhs-delete-chip" type="button" data-select="clear">清空</button>
+        <div class="Yuze-xhs-delete-toolbar">
+          <input class="Yuze-xhs-delete-search" type="search" placeholder="搜索专辑名称">
+          <button class="Yuze-xhs-delete-chip" type="button" data-select="empty">选择空专辑</button>
+          <button class="Yuze-xhs-delete-chip" type="button" data-select="visible">选择当前筛选</button>
+          <button class="Yuze-xhs-delete-chip" type="button" data-select="clear">清空</button>
         </div>
-        <div class="tabbit-xhs-delete-list">${rows}</div>
-        <footer class="tabbit-xhs-delete-foot">
-          <div class="tabbit-xhs-delete-summary">已选 0/${state.albums.length} 个专辑 · 含 0 篇笔记</div>
-          <div class="tabbit-xhs-delete-actions">
-            <button class="tabbit-xhs-delete-action secondary" type="button" data-action="cancel">取消</button>
-            <button class="tabbit-xhs-delete-action danger" type="button" data-action="confirm" disabled>下一步</button>
+        <div class="Yuze-xhs-delete-list">${rows}</div>
+        <footer class="Yuze-xhs-delete-foot">
+          <div class="Yuze-xhs-delete-summary">已选 0/${state.albums.length} 个专辑 · 含 0 篇笔记</div>
+          <div class="Yuze-xhs-delete-actions">
+            <button class="Yuze-xhs-delete-action secondary" type="button" data-action="cancel">取消</button>
+            <button class="Yuze-xhs-delete-action danger" type="button" data-action="confirm" disabled>下一步</button>
           </div>
         </footer>
       </section>
     `);
 
     overlay
-      .querySelector('.tabbit-xhs-delete-close')
+      .querySelector('.Yuze-xhs-delete-close')
       ?.addEventListener('click', closeOverlay);
     overlay
       .querySelector('[data-action="cancel"]')
@@ -824,16 +824,16 @@
         if (input.checked) state.selectedIds.add(input.dataset.albumId);
         else state.selectedIds.delete(input.dataset.albumId);
         input
-          .closest('.tabbit-xhs-delete-row')
+          .closest('.Yuze-xhs-delete-row')
           ?.classList.toggle('is-selected', input.checked);
         updateSelectionSummary();
       });
     });
     overlay
-      .querySelector('.tabbit-xhs-delete-search')
+      .querySelector('.Yuze-xhs-delete-search')
       ?.addEventListener('input', event => {
         const keyword = cleanText(event.target.value).toLowerCase();
-        overlay.querySelectorAll('.tabbit-xhs-delete-row').forEach(row => {
+        overlay.querySelectorAll('.Yuze-xhs-delete-row').forEach(row => {
           row.classList.toggle(
             'is-hidden',
             !!keyword && !row.dataset.search.includes(keyword),
@@ -850,7 +850,7 @@
       .querySelector('[data-select="visible"]')
       ?.addEventListener('click', () => {
         const ids = Array.from(
-          overlay.querySelectorAll('.tabbit-xhs-delete-row:not(.is-hidden)'),
+          overlay.querySelectorAll('.Yuze-xhs-delete-row:not(.is-hidden)'),
         ).map(row => row.querySelector('input').dataset.albumId);
         setAlbumSelection(ids, true);
       });
@@ -868,38 +868,38 @@
     const phrase = `删除 ${selected.length} 个专辑`;
     const names = selected.map(album => escapeHtml(album.name)).join('、');
     const overlay = createOverlay(`
-      <section class="tabbit-xhs-delete-sheet" role="dialog" aria-modal="true" aria-label="确认批量删除专辑">
-        <header class="tabbit-xhs-delete-head">
+      <section class="Yuze-xhs-delete-sheet" role="dialog" aria-modal="true" aria-label="确认批量删除专辑">
+        <header class="Yuze-xhs-delete-head">
           <div>
-            <h2 class="tabbit-xhs-delete-title">最后确认</h2>
-            <p class="tabbit-xhs-delete-subtitle">将按顺序删除 ${selected.length} 个专辑。</p>
+            <h2 class="Yuze-xhs-delete-title">最后确认</h2>
+            <p class="Yuze-xhs-delete-subtitle">将按顺序删除 ${selected.length} 个专辑。</p>
           </div>
-          <button class="tabbit-xhs-delete-close" type="button" aria-label="返回">×</button>
+          <button class="Yuze-xhs-delete-close" type="button" aria-label="返回">×</button>
         </header>
-        <div class="tabbit-xhs-delete-confirm">
-          <p class="tabbit-xhs-delete-warning"><strong>此操作无法恢复。</strong>专辑中的笔记会继续保持收藏，不会被删除或取消收藏。</p>
-          <div class="tabbit-xhs-delete-selected-names">${names}</div>
-          <label class="tabbit-xhs-delete-ack">
+        <div class="Yuze-xhs-delete-confirm">
+          <p class="Yuze-xhs-delete-warning"><strong>此操作无法恢复。</strong>专辑中的笔记会继续保持收藏，不会被删除或取消收藏。</p>
+          <div class="Yuze-xhs-delete-selected-names">${names}</div>
+          <label class="Yuze-xhs-delete-ack">
             <input type="checkbox" data-confirm-ack>
-            <span class="tabbit-xhs-delete-ack-check" aria-hidden="true">✓</span>
+            <span class="Yuze-xhs-delete-ack-check" aria-hidden="true">✓</span>
             <span>我已核对以上专辑，并了解删除不可恢复</span>
           </label>
-          <input class="tabbit-xhs-delete-phrase" type="text" autocomplete="off" placeholder="请输入：删除${selected.length}个专辑（空格可省略）">
+          <input class="Yuze-xhs-delete-phrase" type="text" autocomplete="off" placeholder="请输入：删除${selected.length}个专辑（空格可省略）">
         </div>
-        <footer class="tabbit-xhs-delete-foot">
-          <div class="tabbit-xhs-delete-summary">还需勾选确认并输入指定文字</div>
-          <div class="tabbit-xhs-delete-actions">
-            <button class="tabbit-xhs-delete-action secondary" type="button" data-action="back">返回选择</button>
-            <button class="tabbit-xhs-delete-action danger" type="button" data-action="delete" disabled>开始删除</button>
+        <footer class="Yuze-xhs-delete-foot">
+          <div class="Yuze-xhs-delete-summary">还需勾选确认并输入指定文字</div>
+          <div class="Yuze-xhs-delete-actions">
+            <button class="Yuze-xhs-delete-action secondary" type="button" data-action="back">返回选择</button>
+            <button class="Yuze-xhs-delete-action danger" type="button" data-action="delete" disabled>开始删除</button>
           </div>
         </footer>
       </section>
     `);
     const ack = overlay.querySelector('[data-confirm-ack]');
-    const input = overlay.querySelector('.tabbit-xhs-delete-phrase');
+    const input = overlay.querySelector('.Yuze-xhs-delete-phrase');
     const deleteButton = overlay.querySelector('[data-action="delete"]');
     const confirmationSummary = overlay.querySelector(
-      '.tabbit-xhs-delete-summary',
+      '.Yuze-xhs-delete-summary',
     );
     const refreshDeleteState = () => {
       const phraseMatches =
@@ -917,7 +917,7 @@
     ack.addEventListener('change', refreshDeleteState);
     input.addEventListener('input', refreshDeleteState);
     overlay
-      .querySelector('.tabbit-xhs-delete-close')
+      .querySelector('.Yuze-xhs-delete-close')
       ?.addEventListener('click', renderAlbumPickerPreservingSelection);
     overlay
       .querySelector('[data-action="back"]')
@@ -1010,21 +1010,21 @@
 
   function renderProgress(selected) {
     return createOverlay(`
-      <section class="tabbit-xhs-delete-sheet" role="dialog" aria-modal="true" aria-label="正在批量删除专辑">
-        <header class="tabbit-xhs-delete-head">
+      <section class="Yuze-xhs-delete-sheet" role="dialog" aria-modal="true" aria-label="正在批量删除专辑">
+        <header class="Yuze-xhs-delete-head">
           <div>
-            <h2 class="tabbit-xhs-delete-title">正在删除专辑</h2>
-            <p class="tabbit-xhs-delete-subtitle" data-progress-message>准备处理 ${selected.length} 个专辑</p>
+            <h2 class="Yuze-xhs-delete-title">正在删除专辑</h2>
+            <p class="Yuze-xhs-delete-subtitle" data-progress-message>准备处理 ${selected.length} 个专辑</p>
           </div>
         </header>
-        <div class="tabbit-xhs-delete-progress-wrap">
-          <div class="tabbit-xhs-delete-progress"><span></span></div>
-          <div class="tabbit-xhs-delete-log" aria-live="polite"></div>
+        <div class="Yuze-xhs-delete-progress-wrap">
+          <div class="Yuze-xhs-delete-progress"><span></span></div>
+          <div class="Yuze-xhs-delete-log" aria-live="polite"></div>
         </div>
-        <footer class="tabbit-xhs-delete-foot">
-          <div class="tabbit-xhs-delete-summary">删除期间请不要刷新或关闭当前页面</div>
-          <div class="tabbit-xhs-delete-actions">
-            <button class="tabbit-xhs-delete-action secondary" type="button" data-action="stop">处理完当前专辑后停止</button>
+        <footer class="Yuze-xhs-delete-foot">
+          <div class="Yuze-xhs-delete-summary">删除期间请不要刷新或关闭当前页面</div>
+          <div class="Yuze-xhs-delete-actions">
+            <button class="Yuze-xhs-delete-action secondary" type="button" data-action="stop">处理完当前专辑后停止</button>
           </div>
         </footer>
       </section>
@@ -1034,12 +1034,12 @@
   function updateDeleteProgress(index, total, message, logItem) {
     const overlay = document.getElementById(OVERLAY_ID);
     if (!overlay) return;
-    const bar = overlay.querySelector('.tabbit-xhs-delete-progress > span');
+    const bar = overlay.querySelector('.Yuze-xhs-delete-progress > span');
     if (bar) bar.style.width = `${Math.round((index / Math.max(1, total)) * 100)}%`;
     const messageElement = overlay.querySelector('[data-progress-message]');
     if (messageElement) messageElement.textContent = message;
     if (logItem) {
-      const log = overlay.querySelector('.tabbit-xhs-delete-log');
+      const log = overlay.querySelector('.Yuze-xhs-delete-log');
       const row = document.createElement('div');
       row.className = logItem.type;
       row.textContent = logItem.text;
@@ -1104,7 +1104,7 @@
           try {
             await returnToAlbumList();
           } catch (error) {
-            console.warn('[Tabbit] 返回小红书专辑列表失败:', error);
+            console.warn('[Yuze] 返回小红书专辑列表失败:', error);
           }
           await sleep(config.actionDelay);
         }
@@ -1113,7 +1113,7 @@
       try {
         if (!isFavoriteAlbumPage()) await returnToAlbumList();
       } catch (error) {
-        console.warn('[Tabbit] 删除完成后返回专辑列表失败:', error);
+        console.warn('[Yuze] 删除完成后返回专辑列表失败:', error);
       }
       state.running = false;
       setButtonLoading(false);
@@ -1135,27 +1135,27 @@
       ? `，未处理 ${result.unprocessed.length} 个`
       : '';
     const overlay = createOverlay(`
-      <section class="tabbit-xhs-delete-sheet" role="dialog" aria-modal="true" aria-label="批量删除完成">
-        <header class="tabbit-xhs-delete-head">
+      <section class="Yuze-xhs-delete-sheet" role="dialog" aria-modal="true" aria-label="批量删除完成">
+        <header class="Yuze-xhs-delete-head">
           <div>
-            <h2 class="tabbit-xhs-delete-title">批量删除已结束</h2>
-            <p class="tabbit-xhs-delete-subtitle">成功 ${result.deleted.length} 个，失败 ${result.failed.length} 个${unprocessedText}。</p>
+            <h2 class="Yuze-xhs-delete-title">批量删除已结束</h2>
+            <p class="Yuze-xhs-delete-subtitle">成功 ${result.deleted.length} 个，失败 ${result.failed.length} 个${unprocessedText}。</p>
           </div>
-          <button class="tabbit-xhs-delete-close" type="button" aria-label="关闭">×</button>
+          <button class="Yuze-xhs-delete-close" type="button" aria-label="关闭">×</button>
         </header>
-        <div class="tabbit-xhs-delete-progress-wrap">
-          <div class="tabbit-xhs-delete-log">${deletedRows}${failedRows || ''}</div>
+        <div class="Yuze-xhs-delete-progress-wrap">
+          <div class="Yuze-xhs-delete-log">${deletedRows}${failedRows || ''}</div>
         </div>
-        <footer class="tabbit-xhs-delete-foot">
-          <div class="tabbit-xhs-delete-summary">笔记仍保持收藏状态</div>
-          <div class="tabbit-xhs-delete-actions">
-            <button class="tabbit-xhs-delete-action secondary" type="button" data-action="close">关闭</button>
+        <footer class="Yuze-xhs-delete-foot">
+          <div class="Yuze-xhs-delete-summary">笔记仍保持收藏状态</div>
+          <div class="Yuze-xhs-delete-actions">
+            <button class="Yuze-xhs-delete-action secondary" type="button" data-action="close">关闭</button>
           </div>
         </footer>
       </section>
     `);
     overlay
-      .querySelector('.tabbit-xhs-delete-close')
+      .querySelector('.Yuze-xhs-delete-close')
       ?.addEventListener('click', closeOverlay);
     overlay
       .querySelector('[data-action="close"]')
@@ -1164,24 +1164,24 @@
 
   function renderError(error) {
     const overlay = createOverlay(`
-      <section class="tabbit-xhs-delete-sheet" role="alertdialog" aria-modal="true" aria-label="批量删除专辑出错">
-        <header class="tabbit-xhs-delete-head">
+      <section class="Yuze-xhs-delete-sheet" role="alertdialog" aria-modal="true" aria-label="批量删除专辑出错">
+        <header class="Yuze-xhs-delete-head">
           <div>
-            <h2 class="tabbit-xhs-delete-title">暂时无法开始</h2>
-            <p class="tabbit-xhs-delete-subtitle">${escapeHtml(error.message || String(error))}</p>
+            <h2 class="Yuze-xhs-delete-title">暂时无法开始</h2>
+            <p class="Yuze-xhs-delete-subtitle">${escapeHtml(error.message || String(error))}</p>
           </div>
-          <button class="tabbit-xhs-delete-close" type="button" aria-label="关闭">×</button>
+          <button class="Yuze-xhs-delete-close" type="button" aria-label="关闭">×</button>
         </header>
-        <footer class="tabbit-xhs-delete-foot">
-          <div class="tabbit-xhs-delete-summary">请确认已登录，并停留在“收藏 → 专辑”页面</div>
-          <div class="tabbit-xhs-delete-actions">
-            <button class="tabbit-xhs-delete-action secondary" type="button" data-action="close">关闭</button>
+        <footer class="Yuze-xhs-delete-foot">
+          <div class="Yuze-xhs-delete-summary">请确认已登录，并停留在“收藏 → 专辑”页面</div>
+          <div class="Yuze-xhs-delete-actions">
+            <button class="Yuze-xhs-delete-action secondary" type="button" data-action="close">关闭</button>
           </div>
         </footer>
       </section>
     `);
     overlay
-      .querySelector('.tabbit-xhs-delete-close')
+      .querySelector('.Yuze-xhs-delete-close')
       ?.addEventListener('click', closeOverlay);
     overlay
       .querySelector('[data-action="close"]')
@@ -1208,7 +1208,7 @@
       });
       renderAlbumPicker();
     } catch (error) {
-      console.error('[Tabbit] 小红书批量删除专辑初始化失败:', error);
+      console.error('[Yuze] 小红书批量删除专辑初始化失败:', error);
       renderError(error);
     } finally {
       state.running = false;
@@ -1225,7 +1225,7 @@
     state.observer.observe(document.body, { childList: true, subtree: true });
     window.addEventListener('popstate', mountButton);
     window.addEventListener('hashchange', mountButton);
-    console.log('[Tabbit] 小红书批量删除专辑按钮已启用');
+    console.log('[Yuze] 小红书批量删除专辑按钮已启用');
   }
 
   window[CLEANUP_KEY] = function cleanup() {
@@ -1239,9 +1239,9 @@
     window.removeEventListener('hashchange', mountButton);
     document.querySelectorAll(`[${READY_ATTR}]`).forEach(element => {
       element.removeAttribute(READY_ATTR);
-      if (element.dataset.tabbitBatchDeletePrevPosition === 'static') {
+      if (element.dataset.YuzeBatchDeletePrevPosition === 'static') {
         element.style.position = '';
-        delete element.dataset.tabbitBatchDeletePrevPosition;
+        delete element.dataset.YuzeBatchDeletePrevPosition;
       }
     });
     delete window[CLEANUP_KEY];

@@ -1,10 +1,10 @@
-(async function runSmartSpeederTabbitSkill() {
+(async function runSmartSpeederYuzeSkill() {
   "use strict";
 
-  const GLOBAL_KEY = "__smartSpeederTabbitSkill";
-  const STYLE_ID = "smartspeeder-tabbit-style";
-  const PANEL_ID = "smartspeeder-tabbit-panel";
-  const CACHE_PREFIX = "smartspeeder-tabbit:";
+  const GLOBAL_KEY = "__smartSpeederYuzeSkill";
+  const STYLE_ID = "smartspeeder-Yuze-style";
+  const PANEL_ID = "smartspeeder-Yuze-panel";
+  const CACHE_PREFIX = "smartspeeder-Yuze:";
   const DEFAULT_GOAL = "在不影响理解核心内容的前提下尽量节省时间；重点内容正常播放，重复、铺垫和过渡内容加速。";
   const ALLOWED_SPEEDS = [1, 1.25, 1.5, 1.75, 2, 2.5, 3, 5];
 
@@ -14,7 +14,7 @@
   }
 
   if (location.hostname !== "www.bilibili.com" || !location.pathname.startsWith("/video/")) {
-    throw new Error("SmartSpeeder 妙招目前只支持 Bilibili 视频详情页");
+    throw new Error("SmartSpeeder 技炉目前只支持 Bilibili 视频详情页");
   }
 
   const state = {
@@ -821,7 +821,7 @@
   async function analyze() {
     if (state.analyzing) return;
     if (typeof globalThis.LLMBridge?.chat !== "function") {
-      throw new Error("当前环境没有 LLMBridge.chat()，请在 Tabbit 脚本妙招中运行");
+      throw new Error("当前环境没有 LLMBridge.chat()，请在 Yuze 脚本技炉中运行");
     }
     state.video = chooseVideo();
     if (!state.video) throw new Error("页面中没有找到视频播放器");
@@ -914,6 +914,6 @@
   loadCachedResult(initialIdentity);
   setInterval(synchronizePage, 1000);
 })().catch((error) => {
-  console.error("SmartSpeeder 妙招初始化失败", error);
-  alert(`SmartSpeeder 妙招初始化失败：${error.message}`);
+  console.error("SmartSpeeder 技炉初始化失败", error);
+  alert(`SmartSpeeder 技炉初始化失败：${error.message}`);
 });

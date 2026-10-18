@@ -7,15 +7,15 @@
 
 ## 1. 项目概览
 
-Chrome MV3 侧边栏 AI agent。核心思想：**所有逻辑跑在侧边栏页面**（不受 service worker 休眠影响），LLM 走 OpenAI 兼容 `/chat/completions`（SSE 流式 + tools），浏览器操控走 `chrome.debugger`（原生 CDP），扩展性走 MCP 与妙招脚本。
+Chrome MV3 侧边栏 AI agent。核心思想：**所有逻辑跑在侧边栏页面**（不受 service worker 休眠影响），LLM 走 OpenAI 兼容 `/chat/completions`（SSE 流式 + tools），浏览器操控走 `chrome.debugger`（原生 CDP），扩展性走 MCP 与技炉脚本。
 
 ```
 extension/                Chrome 扩展本体（加载这个目录）
   manifest.json           MV3 清单：permissions 含 debugger/scripting/tabs/storage/downloads；host_permissions <all_urls>
   sidepanel.html/.css/.js 侧边栏 UI + 全部业务逻辑（单文件 ~3000 行）
-  background.js           仅一件事：监听 tabs.onUpdated，按 autoSkills 注入脚本类妙招
+  background.js           仅一件事：监听 tabs.onUpdated，按 autoSkills 注入脚本类技炉
   icons/ brand.png        图标与品牌图（源图 logo.jpg 1080×1080 生成 16/32/48/128）
-  scripts/*.user.js       妙招脚本（b15–b19 及 index.json 元数据）
+  scripts/*.user.js       技炉脚本（b15–b19 及 index.json 元数据）
 server/                   本地辅助服务（filegen MCP: 127.0.0.1:8950/mcp）
   server.mjs              MCP server：gen_pdf/gen_pptx/gen_xlsx/gen_docx
   chrome-pdf.mjs          headless Chrome Page.printToPDF 单实例（空闲 5 分钟回收，失败回退 pdf-lib）
@@ -47,7 +47,7 @@ node test-b15-restore.mjs  # b15 脚本注入验证
 
 | 区块 | 内容 |
 |---|---|
-| 常量区（~1-60 行） | `MAX_STEPS=300`、`SYSTEM_PROMPT`（任务模式注入，强制 `mcp_gen_*`）、`BUILTIN_SKILLS`（33 个妙招）、`TASK_ICONS` |
+| 常量区（~1-60 行） | `MAX_STEPS=300`、`SYSTEM_PROMPT`（任务模式注入，强制 `mcp_gen_*`）、`BUILTIN_SKILLS`（33 个技炉）、`TASK_ICONS` |
 | LLM | `callLLM(onDelta)`：SSE 流式（`data:` 逐行，跳过 `[DONE]`），累积 `delta.reasoning_content` / `delta.content` / `delta.tool_calls`（按 index 合并） |
 | Agent 循环 | `runAgent()`：push live 消息 → 流式回填 → 工具调用 → `sig`（name+args 前 160 字）判进展，连续 4 轮无新进展即停 |
 | 渲染 | `render()` 全量、`updateLive(msg)` 增量（流式期间只更新最后一条 `.msg-bot` 的 `.think-body` 与 `.bot-md`，避免动画重播闪烁） |
@@ -55,7 +55,7 @@ node test-b15-restore.mjs  # b15 脚本注入验证
 | 工具实现 | `TOOL_IMPL`：browser_*（CDP）、`save_js`（data URL + downloads）、`toolReadTabText` 等 |
 | 引用 | `quoteRefs[]` + `renderQuoteBar()`（控制 `#quoteWrap` 显隐）；`syncAutoQuote()`（`tabs.onActivated`/`onUpdated` 触发）；`readTabText(tabId)`：attach debugger → Runtime.evaluate（选区或正文前 3000 字）→ detach |
 | MCP | `mcpServers[]`（storage.mcp = [{name,url,headers}]）；`mcpRpc(server,method,params)` 支持 headers、JSON 与 SSE 双响应；工具名 `mcp_<slug>` 冲突加序号 |
-| 妙招 | `skillSites[id]`（适用网站）、`chrome.storage.autoSkills`（自动运行清单）、详情页加载 `codeFile` 显示脚本源码 |
+| 技炉 | `skillSites[id]`（适用网站）、`chrome.storage.autoSkills`（自动运行清单）、详情页加载 `codeFile` 显示脚本源码 |
 | 会话 | `sessions` 键（≤100 条，300ms 防抖）；`persist()` 记录 `host`；抽屉按 `pageHost()` 分组 |
 
 ## 4. 存储结构（chrome.storage.local）
@@ -68,7 +68,7 @@ node test-b15-restore.mjs  # b15 脚本注入验证
 | `mcp` | MCP 服务器数组 [{name,url,headers}] |
 | `quoteAuto` | 自动引用开关 |
 | `quoteBookmarks` | 引用收藏 |
-| `autoSkills` | 自动运行妙招 [{id,name,codeFile,match}] |
+| `autoSkills` | 自动运行技炉 [{id,name,codeFile,match}] |
 
 ## 5. 关键设计决策（为什么这么写）
 
@@ -87,15 +87,15 @@ node test-b15-restore.mjs  # b15 脚本注入验证
 
 1. 受保护页面（`chrome://`、Web Store）无法 attach debugger。
 2. 文件卡片重开侧边栏后打不开（Blob URL 释放）——重新生成即可。
-3. b15 等移植脚本依赖原站结构（Tabbit 页面 + `p0.meituan.net` 图片），原站改版失效；原版备份在 `extension/scripts/b15.orig.user.js`。
+3. b15 等移植脚本依赖原站结构（Yuze 页面 + `p0.meituan.net` 图片），原站改版失效；原版备份在 `extension/scripts/b15.orig.user.js`。
 4. reasoning 未在发送历史时剥离（若上游对 reasoning 字段报错需处理）。
 
 **待办（PRD 范围外延）**
 
-- 自定义妙招：编辑、上传文件、对话创建。
+- 自定义技炉：编辑、上传文件、对话创建。
 - `save_js` → `save_file` 泛化（任意扩展名）。
-- filegen 开机自启；其余分类妙招脚本抓取（页面懒加载待处理）。
-- 12 个内置妙招描述是否按四段式重写，待拍板。
+- filegen 开机自启；其余分类技炉脚本抓取（页面懒加载待处理）。
+- 12 个内置技炉描述是否按四段式重写，待拍板。
 
 ## 7. 测试资产
 

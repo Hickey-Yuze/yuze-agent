@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         Tabbit智能工作流引擎 - 一体化网页操作中心
+// @name         Yuze智能工作流引擎 - 一体化网页操作中心
 // @namespace    http://tampermonkey.net/
 // @version      1.0.0
 // @description  🚀 你的全能网页助手！集成阅读增强、视频控制、笔记整合、效率工具于一体的智能工作平台。毛玻璃UI、模块化设计、零配置启动。
-// @author       Tabbit智能团队
+// @author       Yuze智能团队
 // @match        *://*/*
 // @grant        GM_addStyle
 // @grant        GM_setValue
@@ -16,7 +16,7 @@
 
     const CONFIG = {
         version: '1.0.0',
-        name: 'Tabbit智能工作流引擎',
+        name: 'Yuze智能工作流引擎',
         primaryColor: '#6366f1',
         accentColor: '#8b5cf6',
         glassBg: 'rgba(255, 255, 255, 0.72)',
@@ -218,7 +218,7 @@
     function createPanel() {
         const panel = createElement('div', 'twe-panel');
         panel.id = 'twe-main-panel';
-        panel.innerHTML = `<div class="twe-panel-header"><div class="twe-panel-title">⚡ <span>Tabbit</span> 智能工作台</div><div class="twe-panel-actions"><button class="twe-btn-icon" id="twe-minimize" title="最小化">−</button><button class="twe-btn-icon" id="twe-close-panel" title="关闭">×</button></div></div>
+        panel.innerHTML = `<div class="twe-panel-header"><div class="twe-panel-title">⚡ <span>Yuze</span> 智能工作台</div><div class="twe-panel-actions"><button class="twe-btn-icon" id="twe-minimize" title="最小化">−</button><button class="twe-btn-icon" id="twe-close-panel" title="关闭">×</button></div></div>
 <div class="twe-tabs"><button class="twe-tab twe-active" data-tab="read">📖 阅读</button><button class="twe-tab" data-tab="video">🎬 视频</button><button class="twe-tab" data-tab="notes">📝 笔记</button><button class="twe-tab" data-tab="tools">⏱️ 效率</button><button class="twe-tab" data-tab="stats">📊 数据</button></div>
 <div class="twe-tab-content twe-active" data-tab="read">${buildReadTab()}</div>
 <div class="twe-tab-content" data-tab="video">${buildVideoTab()}</div>

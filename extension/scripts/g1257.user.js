@@ -1,5 +1,5 @@
 (function () {
-  if (document.getElementById('__tabbit_img_picker')) return;
+  if (document.getElementById('__Yuze_img_picker')) return;
 
   // ========== 收集图片 ==========
   const images = [...document.querySelectorAll('img')].filter(img => {
@@ -22,7 +22,7 @@
 
   // ========== 面板 ==========
   const panel = document.createElement('div');
-  panel.id = '__tabbit_img_picker';
+  panel.id = '__Yuze_img_picker';
   panel.style.cssText = `
     position:fixed;top:0;right:0;width:420px;height:100vh;z-index:99999;
     background:#1a1a2e;color:#eee;font:13px -apple-system,sans-serif;

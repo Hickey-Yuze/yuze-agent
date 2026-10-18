@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      2.0
 // @description  自动识别网页中的直播视频并开始录制（iOS黑白现代风格 / 支持拖动）
-// @author       Tabbit
+// @author       Yuze
 // @match        *://*/*
 // @grant        none
 // ==/UserScript==

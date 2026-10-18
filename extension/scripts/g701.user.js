@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         悬浮目录面板 Floating TOC
-// @namespace    https://tabbit-ai.com
+// @namespace    https://Yuze-ai.com
 // @version      1.9.9
 // @description  任意网页悬浮目录：设置独立滚动与滚轮隔离/完全贴边隐藏/AI长页面防崩/目录滚轮双保险/位置模式/贴边间距微调/层级编号/缩放防遮盖/圆钮双模/字体控制/三色主题/流光动画/翻译插件免疫
 // @match        *://*/*

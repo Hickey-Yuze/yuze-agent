@@ -1,7 +1,7 @@
 (function () {
   // 移除旧实例
-  const old = document.getElementById('tabbit-magnifier');
-  const oldStyle = document.getElementById('tabbit-magnifier-style');
+  const old = document.getElementById('Yuze-magnifier');
+  const oldStyle = document.getElementById('Yuze-magnifier-style');
   if (old) old.remove();
   if (oldStyle) oldStyle.remove();
   if (window.__removeMagnifier) window.__removeMagnifier();
@@ -12,10 +12,10 @@
 
   // ── 样式注入 ──────────────────────────────────────────
   const style = document.createElement('style');
-  style.id = 'tabbit-magnifier-style';
+  style.id = 'Yuze-magnifier-style';
   style.textContent = `
     body { cursor: crosshair !important; }
-    #tabbit-magnifier {
+    #Yuze-magnifier {
       position: fixed;
       width: ${SIZE}px;
       height: ${SIZE}px;
@@ -28,14 +28,14 @@
       display: none;
       background: #fff;
     }
-    #tabbit-magnifier-canvas {
+    #Yuze-magnifier-canvas {
       position: absolute;
       top: 0; left: 0;
       width: ${SIZE}px;
       height: ${SIZE}px;
       pointer-events: none;
     }
-    #tabbit-magnifier::after {
+    #Yuze-magnifier::after {
       content: '';
       position: absolute;
       inset: 0;
@@ -49,7 +49,7 @@
 
   // ── 放大镜容器 ────────────────────────────────────────
   const lens = document.createElement('div');
-  lens.id = 'tabbit-magnifier';
+  lens.id = 'Yuze-magnifier';
 
   // 用一个 div 作为"视口层"，通过 transform 映射真实页面坐标
   const viewport = document.createElement('div');
@@ -73,7 +73,7 @@
     // 克隆 body 的直接子节点（排除放大镜本身）
     const frag = document.createDocumentFragment();
     Array.from(document.body.children).forEach(child => {
-      if (child.id === 'tabbit-magnifier') return;
+      if (child.id === 'Yuze-magnifier') return;
       frag.appendChild(child.cloneNode(true));
     });
     viewport.appendChild(frag);

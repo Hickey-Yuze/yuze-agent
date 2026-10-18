@@ -5,7 +5,7 @@ if (window[GLOBAL_KEY]) { console.log('[RepoLens] 已安装，跳过。'); retur
 window[GLOBAL_KEY] = true;
 
 /**
- * llm.js — Tabbit 内置 AI 调用封装（LLMBridge）
+ * llm.js — Yuze 内置 AI 调用封装（LLMBridge）
  *
  * 基于官方《LLMBridge 对话指南》（llm-bridge-chat-guidance）：
  *
@@ -29,14 +29,14 @@ window[GLOBAL_KEY] = true;
 
 /**
  * 获取可用的 LLMBridge 调用入口。
- * 优先官方全局对象 LLMBridge；测试环境兜底 window.__TABBIT_LLM__。
+ * 优先官方全局对象 LLMBridge；测试环境兜底 window.__Yuze_LLM__。
  */
 function getBridge() {
   if (typeof LLMBridge === 'object' && typeof LLMBridge.chat === 'function') {
     return LLMBridge.chat.bind(LLMBridge);
   }
   // 测试 mock 兜底：兼容旧的 messages 数组形态
-  const mock = window.__TABBIT_LLM__?.llm?.chat;
+  const mock = window.__Yuze_LLM__?.llm?.chat;
   if (typeof mock === 'function') {
     return async (prompt, options) => {
       const messages = [
@@ -63,7 +63,7 @@ function resolveBridge() {
 // ---------------------------------------------------------------------------
 
 /**
- * 调用 Tabbit 内置 AI。
+ * 调用 Yuze 内置 AI。
  *
  * @param {Object}   opts
  * @param {string}   opts.system          系统提示词（角色与任务定义）
@@ -95,7 +95,7 @@ async function askLLM({
 
   const bridge = resolveBridge();
   if (!bridge) {
-    throw new Error('未检测到 LLMBridge，请在 Tabbit 浏览器中运行本脚本。');
+    throw new Error('未检测到 LLMBridge，请在 Yuze 浏览器中运行本脚本。');
   }
 
   const hasOptions = Object.keys(options).length > 0;
@@ -1658,7 +1658,7 @@ function initUI({ onOpen } = {}) {
 
   // delegatesFocus: true 让 Shadow DOM 内部的输入框获得焦点时，
   // document.activeElement 正确指向 host（可聚焦宿主），
-  // 避免 Tabbit 误判「用户没在输入框打字」而把焦点抢到地址栏。
+  // 避免 Yuze 误判「用户没在输入框打字」而把焦点抢到地址栏。
   const root = host.attachShadow({ mode: 'open', delegatesFocus: true });
   const styleEl = document.createElement('style');
   styleEl.textContent = CSS;
@@ -1923,14 +1923,14 @@ function initUI({ onOpen } = {}) {
     };
 
     send.addEventListener('click', (e) => {
-      // 阻止默认行为与事件继续冒泡，避免 Tabbit 全局监听器抢焦点
+      // 阻止默认行为与事件继续冒泡，避免 Yuze 全局监听器抢焦点
       e.preventDefault();
       e.stopPropagation();
       doSend();
     });
 
     input.addEventListener('keydown', (e) => {
-      // 屏蔽 Tabbit「任意按键聚焦地址栏」等全局快捷键的干扰
+      // 屏蔽 Yuze「任意按键聚焦地址栏」等全局快捷键的干扰
       e.stopPropagation();
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -1939,7 +1939,7 @@ function initUI({ onOpen } = {}) {
       }
     });
 
-    // 输入/点击输入框时都阻止事件穿透 Shadow DOM，防止焦点被宿主页面/Tabbit 抢走
+    // 输入/点击输入框时都阻止事件穿透 Shadow DOM，防止焦点被宿主页面/Yuze 抢走
     input.addEventListener('keyup', (e) => e.stopPropagation());
     input.addEventListener('keypress', (e) => e.stopPropagation());
     input.addEventListener('input', (e) => e.stopPropagation());
@@ -2433,7 +2433,7 @@ async function run(ctx, promptDef, snippet, opts = {}) {
     }
   } catch (err) {
     ui.showError(
-      `分析失败：${err?.message || err}\n\n请确认：\n1. 已安装最新版 Tabbit 浏览器；\n2. 已登录并具备 AI 调用权限。`
+      `分析失败：${err?.message || err}\n\n请确认：\n1. 已安装最新版 Yuze 浏览器；\n2. 已登录并具备 AI 调用权限。`
     );
   }
 }

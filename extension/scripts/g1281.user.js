@@ -488,7 +488,7 @@
     if (!selectedElement) return;
     
     try {
-      // 使用Tabbit API下载文件
+      // 使用Yuze API下载文件
       const response = await fetch(selectedElement.src);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);

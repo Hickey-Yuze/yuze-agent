@@ -676,7 +676,7 @@
             <div class="egg-banner" id="egg-banner">
               <div class="egg-icon">🥚✨</div>
               <div class="egg-text">
-                恭喜你已经找到了3个妙招彩蛋！第4个彩蛋依然藏在妙招广场中，是一个测试MBTI的妙招哦！
+                恭喜你已经找到了3个技炉彩蛋！第4个彩蛋依然藏在技炉广场中，是一个测试MBTI的技炉哦！
               </div>
             </div>
     

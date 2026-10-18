@@ -2,7 +2,7 @@
   const __tabScriptArgs = null;
   const __tabOriginalFunction = (
     /**
-     * 🐾 Tabbit 桌宠 v6.0 — 随机功能版
+     * 🐾 Yuze 桌宠 v6.0 — 随机功能版
      * 
      * v6 新增：
      * ✅ 🎲 丢色子 — 随机1-6点，色子旋转动画+大字显示结果
@@ -39,16 +39,16 @@
       const DIALOGUES={
         idle:[
           '今天天气真好~ ☀️','要不要一起玩呀？ 🎮','我在这里陪你哦~ 💛',
-          '摸摸我吧~ ✋','无聊了...转个圈~ 🔄','Tabbit真好用！🚀',
+          '摸摸我吧~ ✋','无聊了...转个圈~ 🔄','Yuze真好用！🚀',
           '双击我可以变小哦~ 📦','你今天看起来不错哦！✨',
-          '要不要我帮你写个Hello World？ 💻','听说你在做妙招？加油鸭！🦆',
+          '要不要我帮你写个Hello World？ 💻','听说你在做技炉？加油鸭！🦆',
           '我是不是全网最可爱的桌宠？🤔','今天写了多少行代码？📝',
           '我的bug比你的少哦~ 😜','要不要听我讲个冷笑话？❄️',
           '我觉得这个网页可以再好看点...🎨','要不要一起去钓鱼？🎣',
           'Ctrl+C Ctrl+V 是我的超能力 🧬','你 debug 了吗？还是直接重写？🔄',
           '今天的咖啡好喝吗？☕','要不要来段BGM？🎵',
-          '我在想下一个妙招做什么...💡','这个网页加载得好快啊~ ⚡',
-          '要不要我帮你整理标签页？📑','我觉得你可以去参加妙招大赛！🏆',
+          '我在想下一个技炉做什么...💡','这个网页加载得好快啊~ ⚡',
+          '要不要我帮你整理标签页？📑','我觉得你可以去参加技炉大赛！🏆',
           '今天也是元气满满的一天！🌈','要不要给我起个名字？🏷️',
           '不知道做什么的话，让我帮你丢个色子吧~ 🎲',
           '犹豫不决？我可以帮你做决定！⚖️',
@@ -65,7 +65,7 @@
           '让我来写段代码... ⌨️','console.log("Hello World!"); 🖥️',
           '正在debug中... 🔍','这个bug好难找... 😫','编译通过了！🎉',
           'Segmentation fault! 💀','正在import各种库... 📦',
-          'TODO: 写完这个妙招 ✏️','git push --force 💪',
+          'TODO: 写完这个技炉 ✏️','git push --force 💪',
           '我在想变量名叫什么好... 🤔','function doMagic() { ... } ✨',
           '这代码谁写的？！哦是我自己... 😅','终于跑通了！！！🏃💨',
           '又是一个 warning 忽略掉 ⚠️','npm install 几乎所有东西... 📦',
@@ -136,9 +136,9 @@
     
       // ========== 创建 DOM ==========
       function createPetDOM(){
-        const ex=document.getElementById('tabbit-desktop-pet');if(ex)ex.remove();
+        const ex=document.getElementById('Yuze-desktop-pet');if(ex)ex.remove();
         const c=document.createElement('div');
-        c.id='tabbit-desktop-pet';
+        c.id='Yuze-desktop-pet';
         c.style.cssText=`position:fixed;z-index:2147483647;width:${CONFIG.normalSize}px;height:${CONFIG.normalSize}px;left:${currentX}px;top:${currentY}px;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none;font-family:ui-sans-serif,system-ui,-apple-system,sans-serif;filter:drop-shadow(0 3px 10px rgba(0,0,0,.15));transition:width .3s ease,height .3s ease,opacity .25s ease;`;
         c.innerHTML=`
     <svg id="pet-svg" viewBox="0 0 100 100" width="100%" height="100%" style="display:block;transition:transform .25s ease;">
@@ -345,7 +345,7 @@
       // ========== 最小化 ==========
       function toggleMini(){
         isMini=!isMini;
-        const pet=document.getElementById('tabbit-desktop-pet');
+        const pet=document.getElementById('Yuze-desktop-pet');
         const dot=document.getElementById('pet-mini-dot');
         if(isMini){
           pet.style.width=CONFIG.miniSize+'px';pet.style.height=CONFIG.miniSize+'px';
@@ -799,7 +799,7 @@
       }
     
       function updatePosition(animated){
-        const p=document.getElementById('tabbit-desktop-pet');if(!p)return;
+        const p=document.getElementById('Yuze-desktop-pet');if(!p)return;
         p.style.left=currentX+'px';p.style.top=currentY+'px';
       }
     
@@ -897,7 +897,7 @@
       // ========== 销毁 ==========
       function destroyPet(){
         stopIdleBehavior();if(blinkTimer)clearInterval(blinkTimer);
-        const pet=document.getElementById('tabbit-desktop-pet');
+        const pet=document.getElementById('Yuze-desktop-pet');
         if(pet){pet.style.transform='scale(0)';pet.style.opacity='0';pet.style.transition='all .35s ease';setTimeout(()=>pet.remove(),350);}
         const m=document.getElementById('pet-context-menu');if(m)m.remove();
         const dc=document.getElementById('pet-doodle-canvas');if(dc)dc.remove();
@@ -906,7 +906,7 @@
       // ========== 初始化 ==========
       function init(){
         createPetDOM();createContextMenu();
-        const pet=document.getElementById('tabbit-desktop-pet');
+        const pet=document.getElementById('Yuze-desktop-pet');
         bindEvents(pet);startAutoBlink();startIdleBehavior();
     
         const svg=document.getElementById('pet-svg');if(svg)svg.style.transformOrigin='center center';
@@ -925,7 +925,7 @@
     
       return {
         ok:true,
-        summary:'🐾 Tabbit桌宠 v6.0 已创建！（随机功能版）\n\n✅ v6新增：\n• 🎲 丢色子 — 色子旋转动画 + 1-6点大字显示 + 评价\n• ⚖️ 做决定 — 硬币翻转动画 + 做/不做/看心情 三种结果\n• 🎵 推荐歌曲 — 音符飘出 + 20首精选歌曲 + 摇摆听歌\n\n保留全部v5功能：敲代码/画画/钓鱼/自由放置/眼球防越界\n\n操作：拖拽(自由)/单击/双击最小化/右键菜单(含6个动作)',
+        summary:'🐾 Yuze桌宠 v6.0 已创建！（随机功能版）\n\n✅ v6新增：\n• 🎲 丢色子 — 色子旋转动画 + 1-6点大字显示 + 评价\n• ⚖️ 做决定 — 硬币翻转动画 + 做/不做/看心情 三种结果\n• 🎵 推荐歌曲 — 音符飘出 + 20首精选歌曲 + 摇摆听歌\n\n保留全部v5功能：敲代码/画画/钓鱼/自由放置/眼球防越界\n\n操作：拖拽(自由)/单击/双击最小化/右键菜单(含6个动作)',
         data:{version:'6.0.0',features:['丢色子','做决定','推荐歌曲','敲代码(粒子)','画画(图形)','钓鱼(波纹)','自由放置','眼球防越界','自动眨眼','丰富台词']},
         warnings:[]
       };

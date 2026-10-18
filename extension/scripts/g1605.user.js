@@ -1,11 +1,11 @@
 (function () {
   'use strict';
 
-  const SCRIPT_ID = 'tabbit-douyin-competitor-account-analyzer';
+  const SCRIPT_ID = 'Yuze-douyin-competitor-account-analyzer';
   const HOST_ID = `${SCRIPT_ID}-host`;
-  const CLEANUP_KEY = '__tabbitDouyinCompetitorAnalyzerCleanup';
-  const API_KEY = '__tabbitDouyinCompetitorAnalyzerApi';
-  const STORAGE_PREFIX = 'tabbit:douyin-competitor:v2:';
+  const CLEANUP_KEY = '__YuzeDouyinCompetitorAnalyzerCleanup';
+  const API_KEY = '__YuzeDouyinCompetitorAnalyzerApi';
+  const STORAGE_PREFIX = 'Yuze:douyin-competitor:v2:';
   const COVER_ASPECT_RATIOS = ['1:1', '16:9', '9:16', '4:3', '3:4', '3:2', '2:3', '21:9'];
 
   if (typeof window[CLEANUP_KEY] === 'function') window[CLEANUP_KEY]();
@@ -30,7 +30,7 @@
     preferDirectVideo: false,
     testMode: false
   };
-  const overrides = window.__tabbitDouyinCompetitorAnalyzerConfig || {};
+  const overrides = window.__YuzeDouyinCompetitorAnalyzerConfig || {};
   const config = {
     ...defaults,
     ...overrides,
@@ -124,7 +124,7 @@
       };
       localStorage.setItem(storageKey(), JSON.stringify(payload));
     } catch (error) {
-      console.warn('[Tabbit Competitor Analyzer] 工作区持久化失败', error);
+      console.warn('[Yuze Competitor Analyzer] 工作区持久化失败', error);
     }
   }
 
@@ -144,7 +144,7 @@
       state.accountChat = Array.isArray(parsed.accountChat) ? parsed.accountChat : [];
       state.chatSelectedWorkIds = new Set(Array.isArray(parsed.chatSelectedWorkIds) ? parsed.chatSelectedWorkIds.map(String) : []);
     } catch (error) {
-      console.warn('[Tabbit Competitor Analyzer] 工作区恢复失败', error);
+      console.warn('[Yuze Competitor Analyzer] 工作区恢复失败', error);
     }
   }
 
@@ -506,7 +506,7 @@
   }
 
   async function deepScanWork(work, mode = 'full', captureMedia = false) {
-    const mock = window.__tabbitDouyinCompetitorAnalyzerTestDetails?.[work.id];
+    const mock = window.__YuzeDouyinCompetitorAnalyzerTestDetails?.[work.id];
     if (mock) return { ...work, ...mock, metricsFetched: true, deepScanned: mode === 'full' || work.deepScanned, mediaUrl: captureMedia ? mock.mediaUrl || '' : work.mediaUrl };
     const iframe = document.createElement('iframe');
     iframe.setAttribute('aria-hidden', 'true');
@@ -555,7 +555,7 @@
       try {
         updated.set(selected[index].id, await deepScanWork(selected[index]));
       } catch (error) {
-        console.warn('[Tabbit Competitor Analyzer] 深度扫描失败', selected[index].href, error);
+        console.warn('[Yuze Competitor Analyzer] 深度扫描失败', selected[index].href, error);
         updated.set(selected[index].id, { ...selected[index], deepError: cleanText(error?.message || error) });
       }
     }
@@ -737,9 +737,9 @@
 
   async function requestDouyinVideoAi(work) {
     if (!config.preferDouyinAi || work.kind !== '视频') return '';
-    const mockSse = window.__tabbitDouyinCompetitorAnalyzerTestDouyinAiSse;
+    const mockSse = window.__YuzeDouyinCompetitorAnalyzerTestDouyinAiSse;
     if (config.testMode && mockSse) return readDouyinAiSse(new Response(typeof mockSse === 'function' ? await mockSse(work) : String(mockSse), { status: 200, headers: { 'content-type': 'text/event-stream' } }));
-    const mock = window.__tabbitDouyinCompetitorAnalyzerTestDouyinAi;
+    const mock = window.__YuzeDouyinCompetitorAnalyzerTestDouyinAi;
     if (config.testMode && mock) return typeof mock === 'function' ? mock(work) : String(mock);
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), config.douyinAiTimeoutMs);
@@ -854,7 +854,7 @@
     } catch (error) {
       if (!isRetryableVideoBridgeError(error)) throw error;
       const videoFallbackError = cleanText(error?.message || error);
-      console.warn('[Tabbit Competitor Analyzer] 视频直传理解失败，移除视频后使用抖音 AI/封面/页面证据重试', { error: videoFallbackError });
+      console.warn('[Yuze Competitor Analyzer] 视频直传理解失败，移除视频后使用抖音 AI/封面/页面证据重试', { error: videoFallbackError });
       state.detailAnalyses.set(enriched.id, {
         status: 'running',
         stage: '视频源无法被模型读取，正在使用抖音 AI、封面与页面证据重试',
@@ -903,7 +903,7 @@
         douyinAiText = await requestDouyinVideoAi(enriched);
       } catch (error) {
         douyinAiError = cleanText(error?.message || error);
-        console.warn('[Tabbit Competitor Analyzer] 抖音 AI 不可用，使用侧栏或多模态回退', error);
+        console.warn('[Yuze Competitor Analyzer] 抖音 AI 不可用，使用侧栏或多模态回退', error);
       }
       enriched.nativeAiText = douyinAiText || sidebarText;
       enriched.douyinAiSource = douyinAiText ? 'api' : sidebarText ? 'sidebar' : '';
@@ -1011,7 +1011,7 @@
           const parsed = parseJson(raw);
           (Array.isArray(parsed.items) ? parsed.items : []).forEach(item => results.set(String(item.id), item));
         } catch (error) {
-          console.warn('[Tabbit Competitor Analyzer] 逐条 AI 拆解失败，保留本地结果', error);
+          console.warn('[Yuze Competitor Analyzer] 逐条 AI 拆解失败，保留本地结果', error);
         }
       }
     };
@@ -1141,7 +1141,7 @@
       const raw = await withTimeout(window.LLMBridge.chat(aggregatePrompt(profile, works, fallback), { response_format: 'json' }), config.llmTimeoutMs, '账号聚合分析超时');
       return normalizeReport(parseJson(raw), fallback);
     } catch (error) {
-      console.warn('[Tabbit Competitor Analyzer] 聚合分析失败，使用本地报告', error);
+      console.warn('[Yuze Competitor Analyzer] 聚合分析失败，使用本地报告', error);
       return fallback;
     }
   }
@@ -2127,7 +2127,7 @@
       downloadCsv: () => downloadBlob(new Blob([csvReport()], { type: 'text/csv;charset=utf-8' }), filename('csv')),
       cleanup
     };
-    console.log('[Tabbit] 抖音对标账号分析已启动。使用 window.__tabbitDouyinCompetitorAnalyzerApi.start() 开始。');
+    console.log('[Yuze] 抖音对标账号分析已启动。使用 window.__YuzeDouyinCompetitorAnalyzerApi.start() 开始。');
   }
 
   if (document.body) init();

@@ -1,8 +1,8 @@
 (function() {
-const old = document.getElementById('tabbit-fx-overlay');
+const old = document.getElementById('Yuze-fx-overlay');
 if (old) old.remove();
 const overlay = document.createElement('div');
-overlay.id = 'tabbit-fx-overlay';
+overlay.id = 'Yuze-fx-overlay';
 Object.assign(overlay.style, {
 position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
 zIndex: 999999, pointerEvents: 'none', overflow: 'hidden'
@@ -345,14 +345,14 @@ ctx.fillRect(0, scanY - 30, W, 60);
 // --- HOLOGRAPHIC TEXT ---
 function showHoloMessage() {
 const wrapper = document.createElement('div');
-wrapper.id = 'tabbit-holo-msg';
+wrapper.id = 'Yuze-holo-msg';
 Object.assign(wrapper.style, {
 position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
 display: 'flex', alignItems: 'center', justifyContent: 'center',
 zIndex: 1000000, pointerEvents: 'none', perspective: '900px'
 });
 const card = document.createElement('div');
-card.id = 'tabbit-holo-card';
+card.id = 'Yuze-holo-card';
 Object.assign(card.style, {
 position: 'relative', padding: '40px 70px', textAlign: 'center',
 background: 'linear-gradient(135deg, rgba(139, 69, 19, 0.05) 0%, rgba(180, 150, 120, 0.08) 50%, rgba(200, 170, 140, 0.05) 100%)',
@@ -399,7 +399,7 @@ card.appendChild(d);
 });
 // main text - 使用logo的黑色主文字风格
 const mainT = document.createElement('div');
-mainT.id = 'tabbit-holo-main';
+mainT.id = 'Yuze-holo-main';
 mainT.innerHTML = '云组会的同学们！';
 Object.assign(mainT.style, {
 fontFamily: '"PingFang SC","Microsoft YaHei",sans-serif',
@@ -413,7 +413,7 @@ transition: 'opacity 0.5s ease 0.3s, transform 0.5s ease 0.3s'
 card.appendChild(mainT);
 // sub text - 使用logo的灰色副文字风格
 const subT = document.createElement('div');
-subT.id = 'tabbit-holo-sub';
+subT.id = 'Yuze-holo-sub';
 subT.innerHTML = 'This is for you！！！';
 Object.assign(subT.style, {
 fontFamily: '"SF Pro Display","PingFang SC",sans-serif',
@@ -429,7 +429,7 @@ card.appendChild(subT);
 wrapper.appendChild(card);
 document.body.appendChild(wrapper);
 const styleEl = document.createElement('style');
-styleEl.id = 'tabbit-holo-style';
+styleEl.id = 'Yuze-holo-style';
 styleEl.textContent = '@keyframes glitchOut{0%,80%{opacity:1;transform:translate(0) scale(1)}82%{transform:translate(-3px,2px) scale(1.01)}85%{opacity:0.6;transform:translate(4px,-1px) scale(0.99)}88%{transform:translate(-2px,3px)}90%{opacity:0.3;transform:translate(3px,-2px) scale(1.02)}93%{opacity:0.15;transform:translate(-1px,1px) scale(0.98)}100%{opacity:0;transform:scale(0.6) rotateY(90deg)}}';
 document.head.appendChild(styleEl);
 // animate in

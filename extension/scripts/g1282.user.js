@@ -25,7 +25,7 @@
   const adRule = AD_SELECTORS.join(',') + '{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;margin:0!important;padding:0!important;}';
 
   const style = document.createElement('style');
-  style.id = 'tabbit-sohu-clean';
+  style.id = 'Yuze-sohu-clean';
   style.textContent = adRule + `
     body, .wrapper-box {
       background-color: ${BEAN_GREEN} !important;
@@ -67,7 +67,7 @@
     }
   `;
 
-  if (!document.getElementById('tabbit-sohu-clean')) {
+  if (!document.getElementById('Yuze-sohu-clean')) {
     document.head.appendChild(style);
   }
 

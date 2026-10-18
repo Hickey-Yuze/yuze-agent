@@ -1,8 +1,8 @@
 // ==UserScript==
-// @namespace    https://tabbit-ai.com
+// @namespace    https://Yuze-ai.com
 // @version      3.0
 // @description  全方位隐藏各大平台推广广告，覆盖 B站/小红书/知乎/微博/豆瓣/CSDN/贴吧/头条及搜索/电商/视频/新闻等 50+ 站点
-// @author       Tabbit
+// @author       Yuze
 // @match        *://*/*
 // @grant        none
 // @run-at       document-end
@@ -214,7 +214,7 @@
   ];
 
   // ==================== 工具函数 ====================
-  const HIDDEN_ATTR = 'data-tabbit-ad-hidden';
+  const HIDDEN_ATTR = 'data-Yuze-ad-hidden';
 
   function isHidden(el) {
     return el && el.hasAttribute && el.hasAttribute(HIDDEN_ATTR);

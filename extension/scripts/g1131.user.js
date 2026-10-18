@@ -1,7 +1,7 @@
 (function() {
     // ================ 配置 ================
     const CONFIG = {
-        STORAGE_KEY: 'tabbit_safe_mode_state',
+        STORAGE_KEY: 'Yuze_safe_mode_state',
         INDICATOR_ID: 'safe-mode-indicator',
         NOTICE_ID: 'safe-mode-notice',
         STYLE_ID: 'safe-mode-styles'
@@ -465,13 +465,13 @@
         
         if (wasActive) {
             // 显示恢复提示
-            showNotice('⏸️ 安全模式已暂停\n\n上一页面曾开启安全模式\n点击右下角按钮重新开启\n或执行妙招恢复专注模式', 5000);
+            showNotice('⏸️ 安全模式已暂停\n\n上一页面曾开启安全模式\n点击右下角按钮重新开启\n或执行技炉恢复专注模式', 5000);
             
             // 添加关闭状态的指示器
             addIndicator(false);
         } else {
             // 显示欢迎提示
-            showNotice('👋 欢迎使用安全专注模式\n\n点击右下角按钮开启\n或执行妙招屏蔽干扰内容', 4000);
+            showNotice('👋 欢迎使用安全专注模式\n\n点击右下角按钮开启\n或执行技炉屏蔽干扰内容', 4000);
             
             // 添加关闭状态的指示器
             addIndicator(false);
@@ -493,7 +493,7 @@
         checkAndShowStatus();
         
         // 导出API
-        window.tabbitSafeMode = {
+        window.YuzeSafeMode = {
             enable: enableSafeMode,
             disable: disableSafeMode,
             isActive: () => isActive
@@ -511,10 +511,10 @@
         setTimeout(initialize, 100);
     }
     
-    // ================ 妙招执行入口 ================
+    // ================ 技炉执行入口 ================
     
     function executeSkill() {
-        console.log('🎯 执行安全模式妙招...');
+        console.log('🎯 执行安全模式技炉...');
         
         // 确保已初始化
         if (!hasInitialized) {
@@ -525,7 +525,7 @@
             // 当前已开启，询问是否关闭
             const result = disableSafeMode();
             if (result) {
-                return '🔓 安全专注模式已关闭\n\n⚠️ 请手动刷新页面（按F5）恢复原始内容\n\n下次需要时请重新执行此妙招';
+                return '🔓 安全专注模式已关闭\n\n⚠️ 请手动刷新页面（按F5）恢复原始内容\n\n下次需要时请重新执行此技炉';
             }
         } else {
             // 当前未开启，开启它
@@ -541,14 +541,14 @@
     // 执行并返回结果
     try {
         const result = executeSkill();
-        console.log('📋 妙招执行结果:', result);
+        console.log('📋 技炉执行结果:', result);
         
         // 显示结果提示
         showNotice(result.split('\n')[0], 5000);
         
         return result;
     } catch (error) {
-        console.error('❌ 妙招执行错误:', error);
+        console.error('❌ 技炉执行错误:', error);
         showNotice('执行出错: ' + error.message, 4000);
         return '执行出错: ' + error.message;
     }

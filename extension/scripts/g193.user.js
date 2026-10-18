@@ -4,15 +4,15 @@
   /* ============================================================
    *  SuiyeNote 随页摘录 — 代码基线
    *  ----------------------------------------------------------
-   *  TABBIT 适配版（inject_tabbit.js）：
-   *  - 目标环境：Tabbit AI 浏览器「脚本妙招」/ DevTools 控制台
+   *  Yuze 适配版（inject_Yuze.js）：
+   *  - 目标环境：Yuze AI 浏览器「脚本技炉」/ DevTools 控制台
    *    （evaluate_script 不可用时的替代注入通道）
    *  - 与 inject_v1.8.6.js 完全同源，仅增量：
    *      a. 注入后页面右下角提示条「随页摘录已注入 ✓」（可见反馈，
-   *         因为 Tabbit 执行环境无返回值通道）
+   *         因为 Yuze 执行环境无返回值通道）
    *      b. init 失败同样以提示条 + console.error 呈现
    *      c. IIFE 返回值保留但不再依赖（语义上无宿主消费）
-   *  - 使用方式：整段复制 → Tabbit 脚本妙招或控制台执行；
+   *  - 使用方式：整段复制 → Yuze 脚本技炉或控制台执行；
    *    刷新页面后重新执行一次即可（数据在 localStorage，不丢）
    *  ----------------------------------------------------------
    *  五层架构：
@@ -21,7 +21,7 @@
    *    编辑层   工具栏插入器 + 快捷键 + 语法高亮 overlay
    *    语义核心 DataPipe（唯一数据源）/ DirtyGuard（唯一脏状态）
    *             Lifecycle（唯一生命周期，三钩子落盘）/ scheduleSave（唯一持久化调度）
-   *    可靠性   四级状态栏 + 容量监控 + 备份提醒 + 数据迁移（nb_notes → tabbit_nb_v2）
+   *    可靠性   四级状态栏 + 容量监控 + 备份提醒 + 数据迁移（nb_notes → Yuze_nb_v2）
    *  ----------------------------------------------------------
    *  版本史流水账已外移：docm/随页摘录-V1.8-问题清单与排期.md
    *  ============================================================ */
@@ -30,7 +30,7 @@
   if (window.__NB_INJECTED__) return;
   window.__NB_INJECTED__ = true;
 
-  // ---------- Tabbit 适配：可见反馈（执行环境无返回值通道） ----------
+  // ---------- Yuze 适配：可见反馈（执行环境无返回值通道） ----------
   function notify(msg, ms) {
     try {
       if (typeof console !== 'undefined') console.log('[SuiyeNote]', msg);
@@ -58,28 +58,28 @@
     } catch (err) { }
     return '1.8.8.01';  // V1.8.8.01 用户拍板：与 manifest 同步（P2-34 单源纪律）
   })();
-  var STORAGE_KEY = 'tabbit_nb_v2';          // 决策 D：v2 key
+  var STORAGE_KEY = 'Yuze_nb_v2';          // 决策 D：v2 key
   // FB_ENDPOINT：反馈直接投递端点（2026-08-11 渠道拍板=嵌入浏览器直投，推荐 Formspree 免费档
   // https://formspree.io/f/xxxx，注册后取 form id 填此常量，反馈落作者邮箱）。留空=发送按钮降级为复制（未配置态）。
   var FB_ENDPOINT = '';
-  var CUR_KEY = 'tabbit_nb_v2_cur';
-  var BACKUP_KEY = 'tabbit_nb_backup_at';    // 上次导出时间戳
-  var DISK_KEY = 'tabbit_nb_disk_v1';        // P0.5 自动落盘开关记忆（'1'=开）
-  var IDB_NAME = 'tabbit_nb_idb';            // P1-29 方案 A：IndexedDB 句柄持久化库名（FileSystemFileHandle 结构化可克隆）
+  var CUR_KEY = 'Yuze_nb_v2_cur';
+  var BACKUP_KEY = 'Yuze_nb_backup_at';    // 上次导出时间戳
+  var DISK_KEY = 'Yuze_nb_disk_v1';        // P0.5 自动落盘开关记忆（'1'=开）
+  var IDB_NAME = 'Yuze_nb_idb';            // P1-29 方案 A：IndexedDB 句柄持久化库名（FileSystemFileHandle 结构化可克隆）
   var IDB_STORE = 'handles';                 // P1-29 方案 A：objectStore（key='disk' 存磁盘句柄）
-  var STATS_KEY = 'tabbit_nb_stats_v2';      // V1.8.6.4 埋点（本机无痕计数，不上报）
-  var OLD_KEYS = [['nb_notes', 'nb_cur'], ['tabbit_nb_v1', null]]; // 兼容旧数据源
+  var STATS_KEY = 'Yuze_nb_stats_v2';      // V1.8.6.4 埋点（本机无痕计数，不上报）
+  var OLD_KEYS = [['nb_notes', 'nb_cur'], ['Yuze_nb_v1', null]]; // 兼容旧数据源
   var SAVE_DEBOUNCE = 700;                   // 防抖 ms
   var CAP_LIMIT = 5 * 1024 * 1024;           // 容量基准 5MB
   var CAP_WARN = CAP_LIMIT * 0.8;            // 80% 预警阈值
   var BACKUP_DAYS = 7;                       // 导出提醒天数
   var PANEL_MIN_W = 320, PANEL_MAX_W = 560;  // 宽度拖拽范围（默认 360px 见 CSS .nb-panel）
-  var FAB_KEY = 'tabbit_nb_fab_pos';         // V1.8.6.6 mini FAB 拖拽位置持久化
-  var TRANS_KEY = 'tabbit_nb_trans_v2';      // V1.8.6.14 面板透明度档位持久化（0=不透明 1=50% 2=18%）
-  var FONT_KEY = 'tabbit_nb_font_v2';        // V1.8.6.20 编辑器字号档位持久化（0=12px 1=14px 2=16px）
-  var W_KEY = 'tabbit_nb_dock_w_v1';         // V1.8.7.6 P0-1 停靠态左缘拖拽宽度持久化（px，320~560）
-  var H_KEY = 'tabbit_nb_h_v1';              // V1.8.7.1 P2-30 悬浮态高度持久化（px，240~视口钳制）
-  var PANEL_RECT_KEY = 'tabbit_nb_rect_v1';  // V1.8.7.1 P2-30 悬浮态位置/尺寸持久化（拉伸与移动共用）
+  var FAB_KEY = 'Yuze_nb_fab_pos';         // V1.8.6.6 mini FAB 拖拽位置持久化
+  var TRANS_KEY = 'Yuze_nb_trans_v2';      // V1.8.6.14 面板透明度档位持久化（0=不透明 1=50% 2=18%）
+  var FONT_KEY = 'Yuze_nb_font_v2';        // V1.8.6.20 编辑器字号档位持久化（0=12px 1=14px 2=16px）
+  var W_KEY = 'Yuze_nb_dock_w_v1';         // V1.8.7.6 P0-1 停靠态左缘拖拽宽度持久化（px，320~560）
+  var H_KEY = 'Yuze_nb_h_v1';              // V1.8.7.1 P2-30 悬浮态高度持久化（px，240~视口钳制）
+  var PANEL_RECT_KEY = 'Yuze_nb_rect_v1';  // V1.8.7.1 P2-30 悬浮态位置/尺寸持久化（拉伸与移动共用）
   var EDGE_DIRS = ['N', 'S', 'E', 'W', 'NW', 'NE', 'SW', 'SE'];  // V1.8.7.1 P2-30 八方向拉伸（模块级，buildUI 外引用）
   var EDGE_TIPS = { N: '拖拽调整上边', S: '拖拽调整高度', E: '拖拽调整右边', W: '拖拽调整左边', NW: '拖拽对角拉伸', NE: '拖拽对角拉伸', SW: '拖拽对角拉伸', SE: '拖拽对角拉伸' };
 
@@ -1180,7 +1180,7 @@
   };
 
   /* ============================================================
-   *  数据迁移（决策 D：nb_notes/nb_cur(+tabbit_nb_v1) → tabbit_nb_v2）
+   *  数据迁移（决策 D：nb_notes/nb_cur(+Yuze_nb_v1) → Yuze_nb_v2）
    * ============================================================ */
   function migrate() {
     var raw = null;
@@ -1222,7 +1222,7 @@
         localStorage.setItem(CUR_KEY, String(oldCur || 0));
         localStorage.removeItem('nb_notes');
         localStorage.removeItem('nb_cur');
-        localStorage.removeItem('tabbit_nb_v1');
+        localStorage.removeItem('Yuze_nb_v1');
       } catch (e) { storageOK = false; }
       return notes;
     }
@@ -1270,7 +1270,7 @@
 
   function buildUI() {
     host = document.createElement('div');
-    host.id = 'tabbit-nb-host';
+    host.id = 'Yuze-nb-host';
     // .nb-root 同理；此处直接内联 fixed，面板 absolute 以 host 为定位祖先，滚动时贴合视口
     host.style.cssText = 'position:fixed;top:0;right:0;bottom:0;left:0;z-index:99999;pointer-events:none';
     root = host.attachShadow({ mode: 'open' });

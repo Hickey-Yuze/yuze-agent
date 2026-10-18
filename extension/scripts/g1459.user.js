@@ -3,18 +3,18 @@
 // @name:zh-CN   QQ 音乐歌词翻译按钮
 // @namespace    skill-create
 // @match        https://y.qq.com/n/ryqq_v2/player*
-// @description  在 QQ 音乐播放器进度条旁添加玻璃质感“翻译”按钮，点击后通过 Tabbit LLMBridge 将歌词逐句翻译成中文，并展示在原歌词下方。
+// @description  在 QQ 音乐播放器进度条旁添加玻璃质感“翻译”按钮，点击后通过 Yuze LLMBridge 将歌词逐句翻译成中文，并展示在原歌词下方。
 // ==/UserScript==
 // 白名单：LLMbridge为官方插件，可以不审核
 
 (function () {
   'use strict';
 
-  const STATE_KEY = '__tabbitQqMusicLyricTranslator__';
-  const STYLE_ID = 'tabbit-qq-lyric-translator-style';
-  const BUTTON_ID = 'tabbit-qq-lyric-translator-button';
-  const TOAST_ID = 'tabbit-qq-lyric-translator-toast';
-  const TRANSLATION_CLASS = 'tabbit-qq-lyric-translation';
+  const STATE_KEY = '__YuzeQqMusicLyricTranslator__';
+  const STYLE_ID = 'Yuze-qq-lyric-translator-style';
+  const BUTTON_ID = 'Yuze-qq-lyric-translator-button';
+  const TOAST_ID = 'Yuze-qq-lyric-translator-toast';
+  const TRANSLATION_CLASS = 'Yuze-qq-lyric-translation';
   const POLL_INTERVAL_MS = 700;
 
   if (window[STATE_KEY] && typeof window[STATE_KEY].destroy === 'function') {
@@ -76,7 +76,7 @@
           box-shadow 220ms ease;
       }
 
-      #${BUTTON_ID}.tabbit-ready {
+      #${BUTTON_ID}.Yuze-ready {
         opacity: 1;
         transform: translate3d(0, 0, 0) scale(1);
       }
@@ -99,14 +99,14 @@
         transform: translate3d(0, 1px, 0) scale(0.985);
       }
 
-      #${BUTTON_ID} .tabbit-translator-icon {
+      #${BUTTON_ID} .Yuze-translator-icon {
         flex: 0 0 auto;
         font-size: 14px;
         font-weight: 650;
         text-shadow: 0 1px 8px rgba(0, 0, 0, 0.24);
       }
 
-      #${BUTTON_ID} .tabbit-translator-label {
+      #${BUTTON_ID} .Yuze-translator-label {
         max-width: 0;
         opacity: 0;
         white-space: nowrap;
@@ -117,30 +117,30 @@
           transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
       }
 
-      #${BUTTON_ID}:hover .tabbit-translator-label,
-      #${BUTTON_ID}:focus-visible .tabbit-translator-label,
-      #${BUTTON_ID}.tabbit-loading .tabbit-translator-label {
+      #${BUTTON_ID}:hover .Yuze-translator-label,
+      #${BUTTON_ID}:focus-visible .Yuze-translator-label,
+      #${BUTTON_ID}.Yuze-loading .Yuze-translator-label {
         max-width: 38px;
         opacity: 1;
         transform: translateX(0);
       }
 
-      #${BUTTON_ID}.tabbit-loading {
+      #${BUTTON_ID}.Yuze-loading {
         width: 78px;
         pointer-events: none;
       }
 
-      #${BUTTON_ID}.tabbit-loading .tabbit-translator-icon {
+      #${BUTTON_ID}.Yuze-loading .Yuze-translator-icon {
         width: 13px;
         height: 13px;
         border-radius: 50%;
         border: 1.5px solid rgba(255, 255, 255, 0.38);
         border-top-color: rgba(255, 255, 255, 0.96);
         color: transparent;
-        animation: tabbitTranslatorSpin 820ms linear infinite;
+        animation: YuzeTranslatorSpin 820ms linear infinite;
       }
 
-      #${BUTTON_ID}.tabbit-done {
+      #${BUTTON_ID}.Yuze-done {
         border-color: rgba(91, 214, 162, 0.48);
         color: rgba(223, 255, 240, 0.98);
         background:
@@ -148,7 +148,7 @@
           rgba(40, 180, 126, 0.16);
       }
 
-      @keyframes tabbitTranslatorSpin {
+      @keyframes YuzeTranslatorSpin {
         to { transform: rotate(360deg); }
       }
 
@@ -172,13 +172,13 @@
         pointer-events: none;
       }
 
-      .${TRANSLATION_CLASS}.tabbit-show {
+      .${TRANSLATION_CLASS}.Yuze-show {
         opacity: 1;
         transform: translate3d(0, 0, 0);
         max-height: 72px;
       }
 
-      .${TRANSLATION_CLASS}.tabbit-hidden {
+      .${TRANSLATION_CLASS}.Yuze-hidden {
         opacity: 0;
         max-height: 0;
         margin-top: 0;
@@ -206,7 +206,7 @@
         pointer-events: none;
       }
 
-      #${TOAST_ID}.tabbit-show {
+      #${TOAST_ID}.Yuze-show {
         opacity: 1;
         transform: translate3d(0, 0, 0);
       }
@@ -219,7 +219,7 @@
 
         #${BUTTON_ID}:hover,
         #${BUTTON_ID}:focus-visible,
-        #${BUTTON_ID}.tabbit-loading {
+        #${BUTTON_ID}.Yuze-loading {
           width: 70px;
         }
       }
@@ -234,12 +234,12 @@
     button.title = '翻译歌词';
     button.setAttribute('aria-label', '翻译歌词');
     button.innerHTML = [
-      '<span class="tabbit-translator-icon" aria-hidden="true">译</span>',
-      '<span class="tabbit-translator-label">翻译</span>',
+      '<span class="Yuze-translator-icon" aria-hidden="true">译</span>',
+      '<span class="Yuze-translator-label">翻译</span>',
     ].join('');
     button.addEventListener('click', handleTranslateClick);
     document.body.appendChild(button);
-    requestAnimationFrame(() => button.classList.add('tabbit-ready'));
+    requestAnimationFrame(() => button.classList.add('Yuze-ready'));
     return button;
   }
 
@@ -299,7 +299,7 @@
     }
 
     const rect = progress.rect;
-    const buttonWidth = button.classList.contains('tabbit-loading') ? 78 : 48;
+    const buttonWidth = button.classList.contains('Yuze-loading') ? 78 : 48;
     const buttonHeight = 36;
     const nextControlLeft = getFooterControlLeft(rect.right);
     const inlineLeft = rect.right + 14;
@@ -340,19 +340,19 @@
     if (!toast) return;
     toast.textContent = message;
     positionFloatingUi();
-    toast.classList.add('tabbit-show');
-    window.clearTimeout(toast._tabbitTimer);
-    toast._tabbitTimer = window.setTimeout(() => {
-      toast.classList.remove('tabbit-show');
+    toast.classList.add('Yuze-show');
+    window.clearTimeout(toast._YuzeTimer);
+    toast._YuzeTimer = window.setTimeout(() => {
+      toast.classList.remove('Yuze-show');
     }, timeout);
   }
 
   function setButtonState(nextState) {
     const button = getButton();
     if (!button) return;
-    button.classList.toggle('tabbit-loading', nextState === 'loading');
-    button.classList.toggle('tabbit-done', nextState === 'done');
-    const label = button.querySelector('.tabbit-translator-label');
+    button.classList.toggle('Yuze-loading', nextState === 'loading');
+    button.classList.toggle('Yuze-done', nextState === 'done');
+    const label = button.querySelector('.Yuze-translator-label');
     if (label) {
       label.textContent = nextState === 'loading' ? '翻译中' : '翻译';
     }
@@ -418,7 +418,7 @@
 
       textLines.forEach((text) => {
         const virtualLine = document.createElement('p');
-        virtualLine.className = 'tabbit-qq-virtual-lyric-line';
+        virtualLine.className = 'Yuze-qq-virtual-lyric-line';
         virtualLine.textContent = text;
         virtualLine.style.cssText = 'margin: 0 0 14px; color: rgba(255,255,255,.9); text-align: center;';
         root.appendChild(virtualLine);
@@ -440,8 +440,8 @@
   function setTranslationsVisible(visible) {
     state.isVisible = visible;
     document.querySelectorAll(`.${TRANSLATION_CLASS}`).forEach((element) => {
-      element.classList.toggle('tabbit-hidden', !visible);
-      element.classList.toggle('tabbit-show', visible);
+      element.classList.toggle('Yuze-hidden', !visible);
+      element.classList.toggle('Yuze-show', visible);
     });
   }
 
@@ -455,7 +455,7 @@
       node.className = TRANSLATION_CLASS;
       node.textContent = translated;
       line.element.insertAdjacentElement('afterend', node);
-      requestAnimationFrame(() => node.classList.add('tabbit-show'));
+      requestAnimationFrame(() => node.classList.add('Yuze-show'));
     });
   }
 
@@ -511,7 +511,7 @@
 
   async function translateLyrics(lines) {
     if (!window.LLMBridge || typeof window.LLMBridge.chat !== 'function') {
-      throw new Error('当前页面没有可用的 LLMBridge.chat，请在 Tabbit 的脚本执行环境中运行。');
+      throw new Error('当前页面没有可用的 LLMBridge.chat，请在 Yuze 的脚本执行环境中运行。');
     }
 
     const payload = lines.map((line, index) => ({
@@ -570,7 +570,7 @@
       setButtonState('done');
       showToast('中文翻译已添加到歌词下方');
     } catch (error) {
-      console.error('[Tabbit] QQ Music lyric translation failed:', error);
+      console.error('[Yuze] QQ Music lyric translation failed:', error);
       setButtonState('idle');
       showToast(error && error.message ? error.message : '翻译失败，请稍后重试', 3600);
     } finally {
@@ -640,7 +640,7 @@
     startObservers();
     schedulePosition();
     window.setTimeout(watchLyricChanges, 600);
-    console.log('[Tabbit] QQ Music lyric translator is ready.');
+    console.log('[Yuze] QQ Music lyric translator is ready.');
   }
 
   if (document.readyState === 'loading') {

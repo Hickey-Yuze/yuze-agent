@@ -27,9 +27,10 @@ for (const item of all) {
   const mk = d.marketplace || {};
   const sn = d.publication_snapshot || {};
   const cat = catMap[item.type] || 'prompt';
-  const name = String(det.original_title || det.title || item.name || '').slice(0, 80);
-  if (DUP_NO.has(item.no) || isDup(name)) { dup++; continue; }
-  const desc = String(det.original_description || sn.original_introduction || det.description || item.desc || '来自妙招广场。').slice(0, 300);
+  const name = tf(String(det.original_title || det.title || item.name || '').slice(0, 80));
+  const tf = (t) => String(t || '').replace(/TABBIT/g, 'Yuze').replace(/Tabbit/g, 'Yuze').replace(/tabbit/g, 'Yuze').replace(/\u5999\u62db/g, '\u6280\u7089');
+  if (DUP_NO.has(item.no) || isDup(tf(name))) { dup++; continue; }
+  const desc = tf(String(det.original_description || sn.original_introduction || det.description || item.desc || '来自技炉广场。').slice(0, 300));
   const code = String(ed.code || '');
   const content = String(ed.content || '');
   const entry = {
@@ -51,13 +52,13 @@ for (const item of all) {
     try { execFileSync(process.execPath, ['--check', tmp], { stdio: 'pipe' }); ok = true; } catch (_) { ok = false; }
     if (!ok) { badScript++; continue; }
     if (hasSecret(code) || hasSecret(desc) || hasSecret(content)) { secret++; continue; }
-    writeFileSync(join(SCRIPTS, 'g' + item.no + '.user.js'), code);
+    writeFileSync(join(SCRIPTS, 'g' + item.no + '.user.js'), tf(code));
     entry.codeFile = 'scripts/g' + item.no + '.user.js';
     if (ed.bind_url && ed.bind_url !== '*') entry.site = String(ed.bind_url).slice(0, 120);
     okScript++;
   } else {
     if (hasSecret(content) || hasSecret(desc)) { secret++; continue; }
-    entry.prompt = (content || desc || '按照妙招描述执行任务。').slice(0, 4000);
+    entry.prompt = tf((content || desc || '按照技炉描述执行任务。').slice(0, 4000));
     if (content) promptWithContent++;
   }
   out.push(entry);

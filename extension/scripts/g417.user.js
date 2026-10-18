@@ -13,7 +13,7 @@
      * - PPT知识点自动总结
      * 
      * @version 1.0.0
-     * @author Tabbit Script Generator
+     * @author Yuze Script Generator
      */
     
     async function run(args) {

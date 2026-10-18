@@ -1,5 +1,5 @@
 /*
- * Tabbit 妙招：假装在写报告的键盘阅读器（透明可审计版）
+ * Yuze 技炉：假装在写报告的键盘阅读器（透明可审计版）
  *
  * 安全说明：
  * 1. 本脚本不发起网络请求，不包含 fetch、XHR、WebSocket 或 sendBeacon。
@@ -7,12 +7,12 @@
  * 3. 用户选择的 TXT 仅由 FileReader 在本地读取，并存入当前浏览器的 IndexedDB。
  * 4. 不使用 eval、Function、iframe、Base64+gzip 可执行载荷或远程代码。
  * 5. 代码中的 Base64 长字符串仅为用户提供的 PNG 界面图标，不是可执行代码。
- * 6. 再次运行本妙招会刷新 Tabbit 首页并退出阅读器。
+ * 6. 再次运行本技炉会刷新 Yuze 首页并退出阅读器。
  */
 (() => {
   'use strict';
 
-  const ACTIVE_MARK = 'tabbitKeyboardReaderActive';
+  const ACTIVE_MARK = 'YuzeKeyboardReaderActive';
   if (document.documentElement.dataset[ACTIVE_MARK] === '1') {
     location.reload();
     return;

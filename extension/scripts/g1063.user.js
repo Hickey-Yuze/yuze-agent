@@ -1,13 +1,13 @@
 (function () {
   'use strict';
 
-  const SCRIPT_ID = 'tabbit-douyin-favorites-organizer';
+  const SCRIPT_ID = 'Yuze-douyin-favorites-organizer';
   const STYLE_ID = `${SCRIPT_ID}-style`;
   const HOST_ID = `${SCRIPT_ID}-host`;
   const BUTTON_ID = `${SCRIPT_ID}-button`;
   const OVERLAY_ID = `${SCRIPT_ID}-overlay`;
-  const CLEANUP_KEY = '__tabbitDouyinFavoritesOrganizerCleanup';
-  const API_KEY = '__tabbitDouyinFavoritesOrganizerApi';
+  const CLEANUP_KEY = '__YuzeDouyinFavoritesOrganizerCleanup';
+  const API_KEY = '__YuzeDouyinFavoritesOrganizerApi';
 
   if (typeof window[CLEANUP_KEY] === 'function') window[CLEANUP_KEY]();
 
@@ -30,7 +30,7 @@
     defaultAutoGranularity: 'coarse',
     testMode: false
   };
-  const overrides = window.__tabbitDouyinFavoritesOrganizerConfig || {};
+  const overrides = window.__YuzeDouyinFavoritesOrganizerConfig || {};
   const config = {
     ...defaults,
     ...overrides,
@@ -139,7 +139,7 @@
         position: relative !important;
         z-index: 20 !important;
       }
-      #${HOST_ID}.tabbit-dy-fixed {
+      #${HOST_ID}.Yuze-dy-fixed {
         position: fixed !important;
         top: 92px !important;
         right: 26px !important;
@@ -177,7 +177,7 @@
         font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", sans-serif !important;
       }
       #${OVERLAY_ID} * { box-sizing: border-box !important; }
-      .tabbit-dy-card {
+      .Yuze-dy-card {
         width: min(820px, calc(100vw - 32px)) !important;
         max-height: min(760px, calc(100vh - 32px)) !important;
         display: flex !important;
@@ -188,19 +188,19 @@
         background: linear-gradient(150deg, rgba(37, 39, 47, .98), rgba(18, 19, 24, .99)) !important;
         box-shadow: 0 30px 90px rgba(0, 0, 0, .48) !important;
       }
-      .tabbit-dy-head { display: flex !important; align-items: flex-start !important; justify-content: space-between !important; gap: 16px !important; padding: 23px 24px 15px !important; }
-      .tabbit-dy-kicker { margin: 0 0 7px !important; color: #25f4ee !important; font-size: 12px !important; font-weight: 750 !important; letter-spacing: .08em !important; }
-      .tabbit-dy-head h2 { margin: 0 !important; color: #fff !important; font-size: 22px !important; line-height: 1.25 !important; }
-      .tabbit-dy-head p { margin: 8px 0 0 !important; max-width: 570px !important; color: rgba(255,255,255,.62) !important; font-size: 13px !important; line-height: 1.6 !important; }
-      .tabbit-dy-close { appearance: none !important; width: 34px !important; height: 34px !important; border: 0 !important; border-radius: 50% !important; background: rgba(255,255,255,.08) !important; color: #fff !important; font-size: 22px !important; cursor: pointer !important; }
-      .tabbit-dy-body { min-height: 0 !important; overflow: auto !important; padding: 8px 24px 24px !important; }
-      .tabbit-dy-mode-tabs { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 6px !important; margin: 0 0 18px !important; padding: 5px !important; border-radius: 14px !important; background: rgba(255,255,255,.055) !important; }
-      .tabbit-dy-mode-tab { appearance: none !important; height: 46px !important; border: 0 !important; border-radius: 11px !important; background: transparent !important; color: rgba(255,255,255,.53) !important; font-size: 14px !important; font-weight: 680 !important; cursor: pointer !important; }
-      .tabbit-dy-mode-tab[aria-selected="true"] { background: rgba(255,255,255,.11) !important; color: #fff !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.09) !important; }
-      .tabbit-dy-mode-pane[hidden] { display: none !important; }
-      .tabbit-dy-auto-intro { margin: 0 0 14px !important; padding: 13px 14px !important; border: 1px solid rgba(37,244,238,.13) !important; border-radius: 13px !important; background: rgba(37,244,238,.055) !important; color: rgba(255,255,255,.68) !important; font-size: 13px !important; line-height: 1.65 !important; }
-      .tabbit-dy-label { display: block !important; margin: 0 0 9px !important; color: rgba(255,255,255,.82) !important; font-size: 14px !important; font-weight: 650 !important; }
-      .tabbit-dy-query, .tabbit-dy-input, .tabbit-dy-select {
+      .Yuze-dy-head { display: flex !important; align-items: flex-start !important; justify-content: space-between !important; gap: 16px !important; padding: 23px 24px 15px !important; }
+      .Yuze-dy-kicker { margin: 0 0 7px !important; color: #25f4ee !important; font-size: 12px !important; font-weight: 750 !important; letter-spacing: .08em !important; }
+      .Yuze-dy-head h2 { margin: 0 !important; color: #fff !important; font-size: 22px !important; line-height: 1.25 !important; }
+      .Yuze-dy-head p { margin: 8px 0 0 !important; max-width: 570px !important; color: rgba(255,255,255,.62) !important; font-size: 13px !important; line-height: 1.6 !important; }
+      .Yuze-dy-close { appearance: none !important; width: 34px !important; height: 34px !important; border: 0 !important; border-radius: 50% !important; background: rgba(255,255,255,.08) !important; color: #fff !important; font-size: 22px !important; cursor: pointer !important; }
+      .Yuze-dy-body { min-height: 0 !important; overflow: auto !important; padding: 8px 24px 24px !important; }
+      .Yuze-dy-mode-tabs { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 6px !important; margin: 0 0 18px !important; padding: 5px !important; border-radius: 14px !important; background: rgba(255,255,255,.055) !important; }
+      .Yuze-dy-mode-tab { appearance: none !important; height: 46px !important; border: 0 !important; border-radius: 11px !important; background: transparent !important; color: rgba(255,255,255,.53) !important; font-size: 14px !important; font-weight: 680 !important; cursor: pointer !important; }
+      .Yuze-dy-mode-tab[aria-selected="true"] { background: rgba(255,255,255,.11) !important; color: #fff !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.09) !important; }
+      .Yuze-dy-mode-pane[hidden] { display: none !important; }
+      .Yuze-dy-auto-intro { margin: 0 0 14px !important; padding: 13px 14px !important; border: 1px solid rgba(37,244,238,.13) !important; border-radius: 13px !important; background: rgba(37,244,238,.055) !important; color: rgba(255,255,255,.68) !important; font-size: 13px !important; line-height: 1.65 !important; }
+      .Yuze-dy-label { display: block !important; margin: 0 0 9px !important; color: rgba(255,255,255,.82) !important; font-size: 14px !important; font-weight: 650 !important; }
+      .Yuze-dy-query, .Yuze-dy-input, .Yuze-dy-select {
         width: 100% !important;
         border: 1px solid rgba(255,255,255,.13) !important;
         border-radius: 13px !important;
@@ -209,62 +209,62 @@
         color: #fff !important;
         font: 14px/1.55 -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif !important;
       }
-      .tabbit-dy-query { min-height: 112px !important; resize: vertical !important; padding: 13px 14px !important; }
-      .tabbit-dy-input, .tabbit-dy-select { height: 50px !important; padding: 0 14px !important; font-size: 15px !important; }
-      .tabbit-dy-query:focus, .tabbit-dy-input:focus, .tabbit-dy-select:focus { border-color: rgba(37,244,238,.72) !important; box-shadow: 0 0 0 3px rgba(37,244,238,.09) !important; }
-      .tabbit-dy-query::placeholder, .tabbit-dy-input::placeholder { color: rgba(255,255,255,.34) !important; }
-      .tabbit-dy-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 12px !important; margin-top: 15px !important; }
-      .tabbit-dy-option { padding: 16px !important; border: 1px solid rgba(255,255,255,.10) !important; border-radius: 16px !important; background: rgba(255,255,255,.035) !important; }
-      .tabbit-dy-choice-group { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 9px !important; }
-      .tabbit-dy-choice { appearance: none !important; min-height: 68px !important; padding: 11px 14px !important; border: 1px solid rgba(255,255,255,.11) !important; border-radius: 13px !important; background: rgba(255,255,255,.045) !important; color: rgba(255,255,255,.64) !important; text-align: left !important; cursor: pointer !important; transition: border-color .16s ease, background .16s ease, transform .16s ease !important; }
-      .tabbit-dy-choice:hover { transform: translateY(-1px) !important; border-color: rgba(37,244,238,.30) !important; }
-      .tabbit-dy-choice[aria-pressed="true"] { border-color: rgba(37,244,238,.62) !important; background: linear-gradient(135deg, rgba(37,244,238,.15), rgba(254,44,85,.08)) !important; color: #fff !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 8px 22px rgba(0,0,0,.14) !important; }
-      .tabbit-dy-choice strong { display: block !important; font-size: 14px !important; line-height: 1.25 !important; }
-      .tabbit-dy-choice span { display: block !important; margin-top: 5px !important; color: rgba(255,255,255,.48) !important; font-size: 11px !important; line-height: 1.35 !important; }
-      .tabbit-dy-choice[aria-pressed="true"] span { color: rgba(255,255,255,.68) !important; }
-      .tabbit-dy-switch { display: flex !important; align-items: center !important; gap: 9px !important; min-height: 42px !important; color: rgba(255,255,255,.78) !important; font-size: 13px !important; }
-      .tabbit-dy-switch input { accent-color: #25f4ee !important; width: 16px !important; height: 16px !important; }
-      .tabbit-dy-actions { display: flex !important; justify-content: flex-end !important; gap: 10px !important; padding: 16px 24px 22px !important; border-top: 1px solid rgba(255,255,255,.08) !important; }
-      .tabbit-dy-action { appearance: none !important; min-width: 116px !important; height: 48px !important; padding: 0 20px !important; border: 0 !important; border-radius: 13px !important; color: #fff !important; background: rgba(255,255,255,.09) !important; font-size: 15px !important; font-weight: 650 !important; cursor: pointer !important; }
-      .tabbit-dy-action.primary { color: #090a0c !important; background: linear-gradient(135deg, #25f4ee, #75fff8) !important; }
-      .tabbit-dy-action.danger { background: rgba(254,44,85,.16) !important; color: #ff8ca3 !important; }
-      .tabbit-dy-action:disabled { opacity: .45 !important; cursor: default !important; }
-      .tabbit-dy-progress { height: 8px !important; overflow: hidden !important; border-radius: 999px !important; background: rgba(255,255,255,.08) !important; }
-      .tabbit-dy-progress span { display: block !important; width: var(--tabbit-progress, 8%) !important; height: 100% !important; border-radius: inherit !important; background: linear-gradient(90deg, #25f4ee, #fe2c55) !important; transition: width .25s ease !important; }
-      .tabbit-dy-progress-log { margin: 13px 0 0 !important; color: rgba(255,255,255,.68) !important; font-size: 13px !important; line-height: 1.6 !important; }
-      .tabbit-dy-stats { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important; margin-bottom: 15px !important; }
-      .tabbit-dy-stat { padding: 12px !important; border-radius: 14px !important; background: rgba(255,255,255,.055) !important; }
-      .tabbit-dy-stat span { display: block !important; color: rgba(255,255,255,.46) !important; font-size: 11px !important; }
-      .tabbit-dy-stat b { display: block !important; margin-top: 4px !important; color: #fff !important; font-size: 21px !important; }
-      .tabbit-dy-folder-row { display: grid !important; grid-template-columns: minmax(0, 1fr) auto !important; gap: 12px !important; align-items: end !important; margin-bottom: 14px !important; }
-      .tabbit-dy-summary { margin: 0 0 14px !important; color: rgba(255,255,255,.65) !important; font-size: 13px !important; line-height: 1.6 !important; }
-      .tabbit-dy-list { display: grid !important; grid-template-columns: minmax(0, 1fr) !important; gap: 8px !important; margin: 0 !important; padding: 0 !important; list-style: none !important; }
-      .tabbit-dy-item { display: grid !important; grid-template-columns: minmax(0, 1fr) auto !important; gap: 12px !important; align-items: center !important; padding: 12px 13px !important; border: 1px solid rgba(255,255,255,.08) !important; border-radius: 14px !important; background: rgba(255,255,255,.035) !important; }
-      .tabbit-dy-item h4 { margin: 0 !important; color: rgba(255,255,255,.92) !important; font-size: 13px !important; line-height: 1.5 !important; }
-      .tabbit-dy-item p { margin: 4px 0 0 !important; color: rgba(255,255,255,.46) !important; font-size: 12px !important; line-height: 1.45 !important; }
-      .tabbit-dy-category-item { align-items: start !important; }
-      .tabbit-dy-category-item.is-deselected { opacity: .48 !important; background: rgba(255,255,255,.018) !important; }
-      .tabbit-dy-category-select { display: grid !important; grid-template-columns: 20px minmax(0, 1fr) !important; gap: 11px !important; align-items: start !important; min-width: 0 !important; cursor: pointer !important; }
-      .tabbit-dy-category-select input { width: 18px !important; height: 18px !important; margin: 2px 0 0 !important; accent-color: #25f4ee !important; cursor: pointer !important; }
-      .tabbit-dy-category-select input:disabled { cursor: default !important; }
-      .tabbit-dy-category-item h4 { display: flex !important; align-items: center !important; gap: 8px !important; }
-      .tabbit-dy-category-examples { margin-top: 7px !important; color: rgba(255,255,255,.48) !important; }
-      .tabbit-dy-selection-tools { display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 12px !important; margin: 0 0 12px !important; }
-      .tabbit-dy-selection-tools p { margin: 0 !important; color: rgba(255,255,255,.62) !important; font-size: 13px !important; }
-      .tabbit-dy-selection-actions { display: flex !important; gap: 7px !important; }
-      .tabbit-dy-mini-action { appearance: none !important; min-height: 32px !important; padding: 0 11px !important; border: 1px solid rgba(255,255,255,.10) !important; border-radius: 9px !important; background: rgba(255,255,255,.055) !important; color: rgba(255,255,255,.72) !important; font-size: 12px !important; cursor: pointer !important; }
-      .tabbit-dy-mini-action:hover { border-color: rgba(37,244,238,.32) !important; color: #fff !important; }
-      .tabbit-dy-remove { appearance: none !important; border: 0 !important; background: transparent !important; color: rgba(255,255,255,.42) !important; cursor: pointer !important; font-size: 18px !important; }
-      .tabbit-dy-badge { display: inline-flex !important; align-items: center !important; min-height: 26px !important; padding: 0 9px !important; border-radius: 999px !important; background: rgba(37,244,238,.10) !important; color: #7cfbf6 !important; font-size: 11px !important; white-space: nowrap !important; }
-      .tabbit-dy-note { margin-top: 12px !important; padding: 11px 12px !important; border-radius: 12px !important; background: rgba(255,255,255,.04) !important; color: rgba(255,255,255,.48) !important; font-size: 12px !important; line-height: 1.55 !important; }
+      .Yuze-dy-query { min-height: 112px !important; resize: vertical !important; padding: 13px 14px !important; }
+      .Yuze-dy-input, .Yuze-dy-select { height: 50px !important; padding: 0 14px !important; font-size: 15px !important; }
+      .Yuze-dy-query:focus, .Yuze-dy-input:focus, .Yuze-dy-select:focus { border-color: rgba(37,244,238,.72) !important; box-shadow: 0 0 0 3px rgba(37,244,238,.09) !important; }
+      .Yuze-dy-query::placeholder, .Yuze-dy-input::placeholder { color: rgba(255,255,255,.34) !important; }
+      .Yuze-dy-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 12px !important; margin-top: 15px !important; }
+      .Yuze-dy-option { padding: 16px !important; border: 1px solid rgba(255,255,255,.10) !important; border-radius: 16px !important; background: rgba(255,255,255,.035) !important; }
+      .Yuze-dy-choice-group { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 9px !important; }
+      .Yuze-dy-choice { appearance: none !important; min-height: 68px !important; padding: 11px 14px !important; border: 1px solid rgba(255,255,255,.11) !important; border-radius: 13px !important; background: rgba(255,255,255,.045) !important; color: rgba(255,255,255,.64) !important; text-align: left !important; cursor: pointer !important; transition: border-color .16s ease, background .16s ease, transform .16s ease !important; }
+      .Yuze-dy-choice:hover { transform: translateY(-1px) !important; border-color: rgba(37,244,238,.30) !important; }
+      .Yuze-dy-choice[aria-pressed="true"] { border-color: rgba(37,244,238,.62) !important; background: linear-gradient(135deg, rgba(37,244,238,.15), rgba(254,44,85,.08)) !important; color: #fff !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 8px 22px rgba(0,0,0,.14) !important; }
+      .Yuze-dy-choice strong { display: block !important; font-size: 14px !important; line-height: 1.25 !important; }
+      .Yuze-dy-choice span { display: block !important; margin-top: 5px !important; color: rgba(255,255,255,.48) !important; font-size: 11px !important; line-height: 1.35 !important; }
+      .Yuze-dy-choice[aria-pressed="true"] span { color: rgba(255,255,255,.68) !important; }
+      .Yuze-dy-switch { display: flex !important; align-items: center !important; gap: 9px !important; min-height: 42px !important; color: rgba(255,255,255,.78) !important; font-size: 13px !important; }
+      .Yuze-dy-switch input { accent-color: #25f4ee !important; width: 16px !important; height: 16px !important; }
+      .Yuze-dy-actions { display: flex !important; justify-content: flex-end !important; gap: 10px !important; padding: 16px 24px 22px !important; border-top: 1px solid rgba(255,255,255,.08) !important; }
+      .Yuze-dy-action { appearance: none !important; min-width: 116px !important; height: 48px !important; padding: 0 20px !important; border: 0 !important; border-radius: 13px !important; color: #fff !important; background: rgba(255,255,255,.09) !important; font-size: 15px !important; font-weight: 650 !important; cursor: pointer !important; }
+      .Yuze-dy-action.primary { color: #090a0c !important; background: linear-gradient(135deg, #25f4ee, #75fff8) !important; }
+      .Yuze-dy-action.danger { background: rgba(254,44,85,.16) !important; color: #ff8ca3 !important; }
+      .Yuze-dy-action:disabled { opacity: .45 !important; cursor: default !important; }
+      .Yuze-dy-progress { height: 8px !important; overflow: hidden !important; border-radius: 999px !important; background: rgba(255,255,255,.08) !important; }
+      .Yuze-dy-progress span { display: block !important; width: var(--Yuze-progress, 8%) !important; height: 100% !important; border-radius: inherit !important; background: linear-gradient(90deg, #25f4ee, #fe2c55) !important; transition: width .25s ease !important; }
+      .Yuze-dy-progress-log { margin: 13px 0 0 !important; color: rgba(255,255,255,.68) !important; font-size: 13px !important; line-height: 1.6 !important; }
+      .Yuze-dy-stats { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important; margin-bottom: 15px !important; }
+      .Yuze-dy-stat { padding: 12px !important; border-radius: 14px !important; background: rgba(255,255,255,.055) !important; }
+      .Yuze-dy-stat span { display: block !important; color: rgba(255,255,255,.46) !important; font-size: 11px !important; }
+      .Yuze-dy-stat b { display: block !important; margin-top: 4px !important; color: #fff !important; font-size: 21px !important; }
+      .Yuze-dy-folder-row { display: grid !important; grid-template-columns: minmax(0, 1fr) auto !important; gap: 12px !important; align-items: end !important; margin-bottom: 14px !important; }
+      .Yuze-dy-summary { margin: 0 0 14px !important; color: rgba(255,255,255,.65) !important; font-size: 13px !important; line-height: 1.6 !important; }
+      .Yuze-dy-list { display: grid !important; grid-template-columns: minmax(0, 1fr) !important; gap: 8px !important; margin: 0 !important; padding: 0 !important; list-style: none !important; }
+      .Yuze-dy-item { display: grid !important; grid-template-columns: minmax(0, 1fr) auto !important; gap: 12px !important; align-items: center !important; padding: 12px 13px !important; border: 1px solid rgba(255,255,255,.08) !important; border-radius: 14px !important; background: rgba(255,255,255,.035) !important; }
+      .Yuze-dy-item h4 { margin: 0 !important; color: rgba(255,255,255,.92) !important; font-size: 13px !important; line-height: 1.5 !important; }
+      .Yuze-dy-item p { margin: 4px 0 0 !important; color: rgba(255,255,255,.46) !important; font-size: 12px !important; line-height: 1.45 !important; }
+      .Yuze-dy-category-item { align-items: start !important; }
+      .Yuze-dy-category-item.is-deselected { opacity: .48 !important; background: rgba(255,255,255,.018) !important; }
+      .Yuze-dy-category-select { display: grid !important; grid-template-columns: 20px minmax(0, 1fr) !important; gap: 11px !important; align-items: start !important; min-width: 0 !important; cursor: pointer !important; }
+      .Yuze-dy-category-select input { width: 18px !important; height: 18px !important; margin: 2px 0 0 !important; accent-color: #25f4ee !important; cursor: pointer !important; }
+      .Yuze-dy-category-select input:disabled { cursor: default !important; }
+      .Yuze-dy-category-item h4 { display: flex !important; align-items: center !important; gap: 8px !important; }
+      .Yuze-dy-category-examples { margin-top: 7px !important; color: rgba(255,255,255,.48) !important; }
+      .Yuze-dy-selection-tools { display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 12px !important; margin: 0 0 12px !important; }
+      .Yuze-dy-selection-tools p { margin: 0 !important; color: rgba(255,255,255,.62) !important; font-size: 13px !important; }
+      .Yuze-dy-selection-actions { display: flex !important; gap: 7px !important; }
+      .Yuze-dy-mini-action { appearance: none !important; min-height: 32px !important; padding: 0 11px !important; border: 1px solid rgba(255,255,255,.10) !important; border-radius: 9px !important; background: rgba(255,255,255,.055) !important; color: rgba(255,255,255,.72) !important; font-size: 12px !important; cursor: pointer !important; }
+      .Yuze-dy-mini-action:hover { border-color: rgba(37,244,238,.32) !important; color: #fff !important; }
+      .Yuze-dy-remove { appearance: none !important; border: 0 !important; background: transparent !important; color: rgba(255,255,255,.42) !important; cursor: pointer !important; font-size: 18px !important; }
+      .Yuze-dy-badge { display: inline-flex !important; align-items: center !important; min-height: 26px !important; padding: 0 9px !important; border-radius: 999px !important; background: rgba(37,244,238,.10) !important; color: #7cfbf6 !important; font-size: 11px !important; white-space: nowrap !important; }
+      .Yuze-dy-note { margin-top: 12px !important; padding: 11px 12px !important; border-radius: 12px !important; background: rgba(255,255,255,.04) !important; color: rgba(255,255,255,.48) !important; font-size: 12px !important; line-height: 1.55 !important; }
       @media (max-width: 640px) {
         #${OVERLAY_ID} { padding: 8px !important; }
-        .tabbit-dy-card { width: calc(100vw - 16px) !important; max-height: calc(100vh - 16px) !important; border-radius: 17px !important; }
-        .tabbit-dy-grid, .tabbit-dy-folder-row { grid-template-columns: 1fr !important; }
-        .tabbit-dy-selection-tools { align-items: flex-start !important; flex-direction: column !important; }
-        .tabbit-dy-head { padding: 18px 17px 12px !important; }
-        .tabbit-dy-body { padding: 7px 17px 18px !important; }
-        .tabbit-dy-actions { padding: 13px 17px 17px !important; }
+        .Yuze-dy-card { width: calc(100vw - 16px) !important; max-height: calc(100vh - 16px) !important; border-radius: 17px !important; }
+        .Yuze-dy-grid, .Yuze-dy-folder-row { grid-template-columns: 1fr !important; }
+        .Yuze-dy-selection-tools { align-items: flex-start !important; flex-direction: column !important; }
+        .Yuze-dy-head { padding: 18px 17px 12px !important; }
+        .Yuze-dy-body { padding: 7px 17px 18px !important; }
+        .Yuze-dy-actions { padding: 13px 17px 17px !important; }
       }
     `;
     document.head.appendChild(style);
@@ -328,7 +328,7 @@
     if (batchManage?.parentElement) {
       batchManage.parentElement.insertBefore(host, batchManage);
     } else {
-      host.classList.add('tabbit-dy-fixed');
+      host.classList.add('Yuze-dy-fixed');
       document.body.appendChild(host);
     }
     setButtonLoading(state.running || state.moving, state.moving ? '整理中…' : '扫描中…');
@@ -344,13 +344,13 @@
     const overlay = document.createElement('div');
     overlay.id = OVERLAY_ID;
     overlay.innerHTML = `
-      <section class="tabbit-dy-card" role="dialog" aria-modal="true" aria-label="${escapeHtml(title)}">
-        <header class="tabbit-dy-head">
-          <div><div class="tabbit-dy-kicker">${escapeHtml(kicker)}</div><h2>${escapeHtml(title)}</h2><p>${escapeHtml(description)}</p></div>
-          <button class="tabbit-dy-close" type="button" data-action="close" aria-label="关闭">×</button>
+      <section class="Yuze-dy-card" role="dialog" aria-modal="true" aria-label="${escapeHtml(title)}">
+        <header class="Yuze-dy-head">
+          <div><div class="Yuze-dy-kicker">${escapeHtml(kicker)}</div><h2>${escapeHtml(title)}</h2><p>${escapeHtml(description)}</p></div>
+          <button class="Yuze-dy-close" type="button" data-action="close" aria-label="关闭">×</button>
         </header>
-        <div class="tabbit-dy-body">${bodyHtml}</div>
-        <footer class="tabbit-dy-actions">${actionsHtml}</footer>
+        <div class="Yuze-dy-body">${bodyHtml}</div>
+        <footer class="Yuze-dy-actions">${actionsHtml}</footer>
       </section>`;
     overlay.addEventListener('click', event => {
       if (event.target === overlay && !state.running && !state.moving) closeOverlay();
@@ -372,27 +372,27 @@
       'DOUYIN FAVORITES',
       '选择一种收藏整理方式',
       '按需求筛选到一个收藏夹，或让 AI 为全部候选作品自动分类并创建多个收藏夹；确认前不会移动任何作品。',
-      `<div class="tabbit-dy-mode-tabs" role="tablist" aria-label="整理模式">
-         <button class="tabbit-dy-mode-tab" type="button" role="tab" data-mode="filter" aria-selected="${state.mode === 'filter'}">按需求筛选</button>
-         <button class="tabbit-dy-mode-tab" type="button" role="tab" data-mode="auto" aria-selected="${state.mode === 'auto'}">自动分类</button>
+      `<div class="Yuze-dy-mode-tabs" role="tablist" aria-label="整理模式">
+         <button class="Yuze-dy-mode-tab" type="button" role="tab" data-mode="filter" aria-selected="${state.mode === 'filter'}">按需求筛选</button>
+         <button class="Yuze-dy-mode-tab" type="button" role="tab" data-mode="auto" aria-selected="${state.mode === 'auto'}">自动分类</button>
        </div>
-       <div class="tabbit-dy-mode-pane" data-pane="filter" ${state.mode === 'filter' ? '' : 'hidden'}>
-         <label class="tabbit-dy-label" for="tabbit-dy-query">你想整理什么？</label>
-         <textarea id="tabbit-dy-query" class="tabbit-dy-query" maxlength="500" placeholder="例如：把 AI Agent、机器人和芯片相关的视频整理到一个科技收藏夹">${escapeHtml(state.query)}</textarea>
+       <div class="Yuze-dy-mode-pane" data-pane="filter" ${state.mode === 'filter' ? '' : 'hidden'}>
+         <label class="Yuze-dy-label" for="Yuze-dy-query">你想整理什么？</label>
+         <textarea id="Yuze-dy-query" class="Yuze-dy-query" maxlength="500" placeholder="例如：把 AI Agent、机器人和芯片相关的视频整理到一个科技收藏夹">${escapeHtml(state.query)}</textarea>
        </div>
-       <div class="tabbit-dy-mode-pane" data-pane="auto" ${state.mode === 'auto' ? '' : 'hidden'}>
-         <p class="tabbit-dy-auto-intro">AI 会先读取已有收藏夹名称，再把每个作品归入一个稳定分类；优先复用已有收藏夹，并自动创建缺少的分组。“其他”只保留在预览中，不自动建组或移动。</p>
-         <div class="tabbit-dy-grid">
-           <div class="tabbit-dy-option"><div class="tabbit-dy-label" id="tabbit-dy-granularity-label">分类粒度</div><div class="tabbit-dy-choice-group" role="group" aria-labelledby="tabbit-dy-granularity-label"><button class="tabbit-dy-choice" type="button" data-granularity="coarse" aria-pressed="${state.autoGranularity === 'coarse'}"><strong>粗粒度</strong><span>合并为稳定大类</span></button><button class="tabbit-dy-choice" type="button" data-granularity="fine" aria-pressed="${state.autoGranularity === 'fine'}"><strong>细粒度</strong><span>保留具体主题</span></button></div></div>
-           <div class="tabbit-dy-option"><label class="tabbit-dy-label" for="tabbit-dy-max-categories">分类上限</label><select id="tabbit-dy-max-categories" class="tabbit-dy-select">${numericOptionHtml([5, 10, 15, 20, 30, 50, 80, 100, 150, 200], state.maxCategories, '个分组')}</select></div>
+       <div class="Yuze-dy-mode-pane" data-pane="auto" ${state.mode === 'auto' ? '' : 'hidden'}>
+         <p class="Yuze-dy-auto-intro">AI 会先读取已有收藏夹名称，再把每个作品归入一个稳定分类；优先复用已有收藏夹，并自动创建缺少的分组。“其他”只保留在预览中，不自动建组或移动。</p>
+         <div class="Yuze-dy-grid">
+           <div class="Yuze-dy-option"><div class="Yuze-dy-label" id="Yuze-dy-granularity-label">分类粒度</div><div class="Yuze-dy-choice-group" role="group" aria-labelledby="Yuze-dy-granularity-label"><button class="Yuze-dy-choice" type="button" data-granularity="coarse" aria-pressed="${state.autoGranularity === 'coarse'}"><strong>粗粒度</strong><span>合并为稳定大类</span></button><button class="Yuze-dy-choice" type="button" data-granularity="fine" aria-pressed="${state.autoGranularity === 'fine'}"><strong>细粒度</strong><span>保留具体主题</span></button></div></div>
+           <div class="Yuze-dy-option"><label class="Yuze-dy-label" for="Yuze-dy-max-categories">分类上限</label><select id="Yuze-dy-max-categories" class="Yuze-dy-select">${numericOptionHtml([5, 10, 15, 20, 30, 50, 80, 100, 150, 200], state.maxCategories, '个分组')}</select></div>
          </div>
        </div>
-       <div class="tabbit-dy-grid">
-         <div class="tabbit-dy-option"><label class="tabbit-dy-label" for="tabbit-dy-limit">最多扫描</label><select id="tabbit-dy-limit" class="tabbit-dy-select">${numericOptionHtml([100, 200, 300, 500, 1000, 2000, 5000], state.maxItems, '个作品')}</select></div>
-         <div class="tabbit-dy-option"><label class="tabbit-dy-label" for="tabbit-dy-offset">从第几个之后开始</label><input id="tabbit-dy-offset" class="tabbit-dy-input" type="number" min="0" max="10000" step="1" value="${state.startOffset}"></div>
+       <div class="Yuze-dy-grid">
+         <div class="Yuze-dy-option"><label class="Yuze-dy-label" for="Yuze-dy-limit">最多扫描</label><select id="Yuze-dy-limit" class="Yuze-dy-select">${numericOptionHtml([100, 200, 300, 500, 1000, 2000, 5000], state.maxItems, '个作品')}</select></div>
+         <div class="Yuze-dy-option"><label class="Yuze-dy-label" for="Yuze-dy-offset">从第几个之后开始</label><input id="Yuze-dy-offset" class="Yuze-dy-input" type="number" min="0" max="10000" step="1" value="${state.startOffset}"></div>
        </div>
-       <div class="tabbit-dy-note">扫描只读取标题、作者和作品链接；每次整理合并为一次结构化 LLMBridge 调用，不会逐条请求模型。</div>`,
-      `<button class="tabbit-dy-action" type="button" data-action="cancel">取消</button><button class="tabbit-dy-action primary" type="button" data-action="start">${state.mode === 'auto' ? '开始自动分类' : '开始筛选'}</button>`
+       <div class="Yuze-dy-note">扫描只读取标题、作者和作品链接；每次整理合并为一次结构化 LLMBridge 调用，不会逐条请求模型。</div>`,
+      `<button class="Yuze-dy-action" type="button" data-action="cancel">取消</button><button class="Yuze-dy-action primary" type="button" data-action="start">${state.mode === 'auto' ? '开始自动分类' : '开始筛选'}</button>`
     );
     const selectMode = mode => {
       state.mode = mode === 'auto' ? 'auto' : 'filter';
@@ -400,7 +400,7 @@
       overlay.querySelectorAll('[data-pane]').forEach(pane => { pane.hidden = pane.dataset.pane !== state.mode; });
       const startButton = overlay.querySelector('[data-action="start"]');
       if (startButton) startButton.textContent = state.mode === 'auto' ? '开始自动分类' : '开始筛选';
-      if (state.mode === 'filter') setTimeout(() => overlay.querySelector('#tabbit-dy-query')?.focus(), 0);
+      if (state.mode === 'filter') setTimeout(() => overlay.querySelector('#Yuze-dy-query')?.focus(), 0);
     };
     overlay.querySelectorAll('[data-mode]').forEach(button => button.addEventListener('click', () => selectMode(button.dataset.mode)));
     overlay.querySelectorAll('[data-granularity]').forEach(button => {
@@ -411,20 +411,20 @@
     });
     overlay.querySelector('[data-action="cancel"]')?.addEventListener('click', closeOverlay);
     overlay.querySelector('[data-action="start"]')?.addEventListener('click', () => {
-      const query = cleanText(overlay.querySelector('#tabbit-dy-query')?.value);
+      const query = cleanText(overlay.querySelector('#Yuze-dy-query')?.value);
       if (state.mode === 'filter' && !query) {
-        overlay.querySelector('#tabbit-dy-query')?.focus();
+        overlay.querySelector('#Yuze-dy-query')?.focus();
         return;
       }
       if (query) state.query = query;
-      state.maxItems = Math.max(1, Number(overlay.querySelector('#tabbit-dy-limit')?.value) || config.maxItems);
-      state.startOffset = Math.max(0, Math.floor(Number(overlay.querySelector('#tabbit-dy-offset')?.value) || 0));
-      state.maxCategories = Math.max(2, Math.min(200, Number(overlay.querySelector('#tabbit-dy-max-categories')?.value) || config.maxCategories));
+      state.maxItems = Math.max(1, Number(overlay.querySelector('#Yuze-dy-limit')?.value) || config.maxItems);
+      state.startOffset = Math.max(0, Math.floor(Number(overlay.querySelector('#Yuze-dy-offset')?.value) || 0));
+      state.maxCategories = Math.max(2, Math.min(200, Number(overlay.querySelector('#Yuze-dy-max-categories')?.value) || config.maxCategories));
       state.autoGranularity = overlay.querySelector('[data-granularity][aria-pressed="true"]')?.dataset.granularity === 'fine' ? 'fine' : 'coarse';
       if (state.mode === 'auto') runAutoOrganizer();
       else runOrganizer(query);
     });
-    if (state.mode === 'filter') setTimeout(() => overlay.querySelector('#tabbit-dy-query')?.focus(), 0);
+    if (state.mode === 'filter') setTimeout(() => overlay.querySelector('#Yuze-dy-query')?.focus(), 0);
   }
 
   function renderProgress(title, description) {
@@ -432,14 +432,14 @@
       '正在处理',
       title,
       description,
-      '<div class="tabbit-dy-progress" style="--tabbit-progress:8%"><span></span></div><p class="tabbit-dy-progress-log" data-role="progress-log">准备开始…</p>',
-      '<button class="tabbit-dy-action danger" type="button" data-action="stop">停止</button>'
+      '<div class="Yuze-dy-progress" style="--Yuze-progress:8%"><span></span></div><p class="Yuze-dy-progress-log" data-role="progress-log">准备开始…</p>',
+      '<button class="Yuze-dy-action danger" type="button" data-action="stop">停止</button>'
     );
   }
 
   function updateProgress(percent, message) {
     const overlay = document.getElementById(OVERLAY_ID);
-    overlay?.querySelector('.tabbit-dy-progress')?.style.setProperty('--tabbit-progress', `${Math.max(4, Math.min(100, Math.round(percent)))}%`);
+    overlay?.querySelector('.Yuze-dy-progress')?.style.setProperty('--Yuze-progress', `${Math.max(4, Math.min(100, Math.round(percent)))}%`);
     const log = overlay?.querySelector('[data-role="progress-log"]');
     if (log) log.textContent = message;
   }
@@ -449,8 +449,8 @@
       '未完成',
       '收藏整理失败',
       errorText(error),
-      '<div class="tabbit-dy-note">收藏作品不会因扫描或 AI 分析被修改。若错误发生在移动阶段，请以结果列表和收藏夹页面为准。</div>',
-      '<button class="tabbit-dy-action primary" type="button" data-action="done">知道了</button>'
+      '<div class="Yuze-dy-note">收藏作品不会因扫描或 AI 分析被修改。若错误发生在移动阶段，请以结果列表和收藏夹页面为准。</div>',
+      '<button class="Yuze-dy-action primary" type="button" data-action="done">知道了</button>'
     );
     overlay.querySelector('[data-action="done"]')?.addEventListener('click', closeOverlay);
   }
@@ -662,7 +662,7 @@
         usedFallback: false
       };
     } catch (error) {
-      console.warn('[Tabbit Douyin Organizer] LLM 分析失败，使用本地筛选', { error: errorText(error) });
+      console.warn('[Yuze Douyin Organizer] LLM 分析失败，使用本地筛选', { error: errorText(error) });
       return localFallback(query, items);
     }
   }
@@ -811,7 +811,7 @@
       plan.summary = cleanText(parsed.summary) || '已按主题完成收藏自动分类。';
       return plan;
     } catch (error) {
-      console.warn('[Tabbit Douyin Organizer] 自动分类失败，使用本地分类', { error: errorText(error) });
+      console.warn('[Yuze Douyin Organizer] 自动分类失败，使用本地分类', { error: errorText(error) });
       return localAutoPlan(items, existingNames);
     }
   }
@@ -820,34 +820,34 @@
     state.analysis = analysis;
     const listHtml = analysis.matches.length
       ? analysis.matches.map(item => `
-          <li class="tabbit-dy-item" data-item-id="${escapeHtml(item.itemId)}">
+          <li class="Yuze-dy-item" data-item-id="${escapeHtml(item.itemId)}">
             <div><h4>${escapeHtml(item.title)}</h4><p>${escapeHtml([item.author, item.reason].filter(Boolean).join(' · '))}</p></div>
-            <button class="tabbit-dy-remove" type="button" data-action="remove" aria-label="移除">×</button>
+            <button class="Yuze-dy-remove" type="button" data-action="remove" aria-label="移除">×</button>
           </li>`).join('')
-      : '<li class="tabbit-dy-item"><div><h4>没有找到匹配作品</h4><p>可以换一种描述后重新扫描。</p></div></li>';
+      : '<li class="Yuze-dy-item"><div><h4>没有找到匹配作品</h4><p>可以换一种描述后重新扫描。</p></div></li>';
     const overlay = renderShell(
       analysis.usedFallback ? '本地筛选结果' : 'AI 筛选结果',
       `找到 ${analysis.matches.length} 个相关作品`,
       analysis.summary,
-      `<div class="tabbit-dy-stats">
-         <div class="tabbit-dy-stat"><span>页面发现</span><b>${scanResult.discoveredCount}</b></div>
-         <div class="tabbit-dy-stat"><span>送入分析</span><b>${scanResult.items.length}</b></div>
-         <div class="tabbit-dy-stat"><span>筛选命中</span><b data-role="match-count">${analysis.matches.length}</b></div>
+      `<div class="Yuze-dy-stats">
+         <div class="Yuze-dy-stat"><span>页面发现</span><b>${scanResult.discoveredCount}</b></div>
+         <div class="Yuze-dy-stat"><span>送入分析</span><b>${scanResult.items.length}</b></div>
+         <div class="Yuze-dy-stat"><span>筛选命中</span><b data-role="match-count">${analysis.matches.length}</b></div>
        </div>
-       <div class="tabbit-dy-folder-row">
-         <div><label class="tabbit-dy-label" for="tabbit-dy-folder-name">目标收藏夹</label><input id="tabbit-dy-folder-name" class="tabbit-dy-input" maxlength="15" value="${escapeHtml(analysis.folderName)}"></div>
-         <label class="tabbit-dy-switch"><input id="tabbit-dy-private" type="checkbox" ${state.privateFolder ? 'checked' : ''}>新建时设为私密</label>
+       <div class="Yuze-dy-folder-row">
+         <div><label class="Yuze-dy-label" for="Yuze-dy-folder-name">目标收藏夹</label><input id="Yuze-dy-folder-name" class="Yuze-dy-input" maxlength="15" value="${escapeHtml(analysis.folderName)}"></div>
+         <label class="Yuze-dy-switch"><input id="Yuze-dy-private" type="checkbox" ${state.privateFolder ? 'checked' : ''}>新建时设为私密</label>
        </div>
-       <p class="tabbit-dy-summary">同名收藏夹会直接复用；只有点击“确认整理”后才会调用抖音页面内的签名接口。</p>
-       <ul class="tabbit-dy-list">${listHtml}</ul>`,
-      '<button class="tabbit-dy-action" type="button" data-action="back">重新设置</button><button class="tabbit-dy-action primary" type="button" data-action="move">确认整理</button>'
+       <p class="Yuze-dy-summary">同名收藏夹会直接复用；只有点击“确认整理”后才会调用抖音页面内的签名接口。</p>
+       <ul class="Yuze-dy-list">${listHtml}</ul>`,
+      '<button class="Yuze-dy-action" type="button" data-action="back">重新设置</button><button class="Yuze-dy-action primary" type="button" data-action="move">确认整理</button>'
     );
     overlay.querySelector('[data-action="back"]')?.addEventListener('click', openStartSheet);
     const moveButton = overlay.querySelector('[data-action="move"]');
     if (moveButton) moveButton.disabled = !analysis.matches.length;
     moveButton?.addEventListener('click', () => {
-      analysis.folderName = normalizeFolderName(overlay.querySelector('#tabbit-dy-folder-name')?.value, state.query);
-      state.privateFolder = !!overlay.querySelector('#tabbit-dy-private')?.checked;
+      analysis.folderName = normalizeFolderName(overlay.querySelector('#Yuze-dy-folder-name')?.value, state.query);
+      state.privateFolder = !!overlay.querySelector('#Yuze-dy-private')?.checked;
       organizeMatches();
     });
     overlay.querySelectorAll('[data-action="remove"]').forEach(button => {
@@ -883,27 +883,27 @@
       const status = category.isOther ? '不移动' : category.isExisting ? '复用已有' : '待创建';
       const selected = !category.isOther && category.selected !== false;
       return `
-        <li class="tabbit-dy-item tabbit-dy-category-item${selected || category.isOther ? '' : ' is-deselected'}" data-category-row="${index}">
-          <label class="tabbit-dy-category-select">
+        <li class="Yuze-dy-item Yuze-dy-category-item${selected || category.isOther ? '' : ' is-deselected'}" data-category-row="${index}">
+          <label class="Yuze-dy-category-select">
             <input type="checkbox" data-category-index="${index}" aria-label="选择分组 ${escapeHtml(category.name)}" ${selected ? 'checked' : ''} ${category.isOther ? 'disabled' : ''}>
-            <div><h4>${escapeHtml(category.name)} <span class="tabbit-dy-badge">${escapeHtml(status)}</span></h4><p>${escapeHtml(category.summary || `${category.items.length} 个相关作品`)}</p><p class="tabbit-dy-category-examples">${escapeHtml(examples)}</p></div>
+            <div><h4>${escapeHtml(category.name)} <span class="Yuze-dy-badge">${escapeHtml(status)}</span></h4><p>${escapeHtml(category.summary || `${category.items.length} 个相关作品`)}</p><p class="Yuze-dy-category-examples">${escapeHtml(examples)}</p></div>
           </label>
-          <span class="tabbit-dy-badge">${category.items.length} 个</span>
+          <span class="Yuze-dy-badge">${category.items.length} 个</span>
         </li>`;
     }).join('');
     const overlay = renderShell(
       plan.usedFallback ? '本地分类结果' : 'AI 自动分类结果',
       `已将 ${plan.analyzedCount} 个作品归为 ${regular.length} 个分组`,
       plan.summary || `${state.autoGranularity === 'fine' ? '细分主题' : '大类整理'}；优先复用 ${plan.existingFolderCount} 个已有收藏夹。`,
-      `<div class="tabbit-dy-stats">
-         <div class="tabbit-dy-stat"><span>已选分组</span><b data-role="selected-category-count">${regular.length}</b></div>
-         <div class="tabbit-dy-stat"><span>已选作品</span><b data-role="selected-item-count">${initialMovableCount}</b></div>
-         <div class="tabbit-dy-stat"><span>保留其他</span><b>${other?.items?.length || 0}</b></div>
+      `<div class="Yuze-dy-stats">
+         <div class="Yuze-dy-stat"><span>已选分组</span><b data-role="selected-category-count">${regular.length}</b></div>
+         <div class="Yuze-dy-stat"><span>已选作品</span><b data-role="selected-item-count">${initialMovableCount}</b></div>
+         <div class="Yuze-dy-stat"><span>保留其他</span><b>${other?.items?.length || 0}</b></div>
        </div>
-       <label class="tabbit-dy-switch"><input id="tabbit-dy-auto-private" type="checkbox" ${state.privateFolder ? 'checked' : ''}>新建收藏夹设为私密</label>
-       <div class="tabbit-dy-selection-tools"><p>取消不需要的分组后，该收藏夹不会创建，其中作品也不会移动。</p><div class="tabbit-dy-selection-actions"><button class="tabbit-dy-mini-action" type="button" data-action="select-all-categories">全选</button><button class="tabbit-dy-mini-action" type="button" data-action="clear-categories">清空</button></div></div>
-       <ul class="tabbit-dy-list">${listHtml}</ul>`,
-      `<button class="tabbit-dy-action" type="button" data-action="back">重新设置</button><button class="tabbit-dy-action primary" type="button" data-action="auto-organize">整理已选 ${regular.length} 个分组</button>`
+       <label class="Yuze-dy-switch"><input id="Yuze-dy-auto-private" type="checkbox" ${state.privateFolder ? 'checked' : ''}>新建收藏夹设为私密</label>
+       <div class="Yuze-dy-selection-tools"><p>取消不需要的分组后，该收藏夹不会创建，其中作品也不会移动。</p><div class="Yuze-dy-selection-actions"><button class="Yuze-dy-mini-action" type="button" data-action="select-all-categories">全选</button><button class="Yuze-dy-mini-action" type="button" data-action="clear-categories">清空</button></div></div>
+       <ul class="Yuze-dy-list">${listHtml}</ul>`,
+      `<button class="Yuze-dy-action" type="button" data-action="back">重新设置</button><button class="Yuze-dy-action primary" type="button" data-action="auto-organize">整理已选 ${regular.length} 个分组</button>`
     );
     overlay.querySelector('[data-action="back"]')?.addEventListener('click', openStartSheet);
     const organizeButton = overlay.querySelector('[data-action="auto-organize"]');
@@ -941,7 +941,7 @@
     });
     syncCategorySelection();
     organizeButton?.addEventListener('click', () => {
-      state.privateFolder = !!overlay.querySelector('#tabbit-dy-auto-private')?.checked;
+      state.privateFolder = !!overlay.querySelector('#Yuze-dy-auto-private')?.checked;
       organizeAutoPlan();
     });
   }
@@ -949,7 +949,7 @@
   function getWebpackRequire() {
     let captured = null;
     const chunks = window.webpackChunkdouyin_web = window.webpackChunkdouyin_web || [];
-    chunks.push([[`tabbit-douyin-organizer-${Date.now()}`], {}, require => { captured = require; }]);
+    chunks.push([[`Yuze-douyin-organizer-${Date.now()}`], {}, require => { captured = require; }]);
     if (!captured) throw new Error('没有获取到抖音 webpack runtime，请刷新页面后重试。');
     return captured;
   }
@@ -1008,7 +1008,7 @@
       throw new Error('没有找到抖音收藏夹页面内签名接口，请刷新收藏页后重试。');
     }
     state.apiModule = api;
-    console.debug('[Tabbit Douyin Organizer] signed API ready', {
+    console.debug('[Yuze Douyin Organizer] signed API ready', {
       source: api.source,
       hasList: !!api.listFolders,
       hasCreate: !!(api.createFolder || api.maintain),
@@ -1124,17 +1124,17 @@
       ...result.failed.map(item => ({ ...item, state: '失败', detail: item.error }))
     ];
     const listHtml = rows.slice(0, 120).map(item => `
-      <li class="tabbit-dy-item"><div><h4>${escapeHtml(item.title)}</h4><p>${escapeHtml(item.detail)}</p></div><span class="tabbit-dy-badge">${escapeHtml(item.state)}</span></li>`).join('');
+      <li class="Yuze-dy-item"><div><h4>${escapeHtml(item.title)}</h4><p>${escapeHtml(item.detail)}</p></div><span class="Yuze-dy-badge">${escapeHtml(item.state)}</span></li>`).join('');
     const overlay = renderShell(
       result.created ? '已创建并整理' : '已复用收藏夹',
       `“${result.folder.name}”整理完成`,
       `已确认 ${result.verified.length} 个，未确认 ${result.unverified.length} 个，失败 ${result.failed.length} 个。`,
-      `<div class="tabbit-dy-stats">
-         <div class="tabbit-dy-stat"><span>已确认</span><b>${result.verified.length}</b></div>
-         <div class="tabbit-dy-stat"><span>未确认</span><b>${result.unverified.length}</b></div>
-         <div class="tabbit-dy-stat"><span>失败</span><b>${result.failed.length}</b></div>
-       </div><ul class="tabbit-dy-list">${listHtml || '<li class="tabbit-dy-item"><div><h4>没有移动结果</h4></div></li>'}</ul>`,
-      '<button class="tabbit-dy-action primary" type="button" data-action="done">完成</button>'
+      `<div class="Yuze-dy-stats">
+         <div class="Yuze-dy-stat"><span>已确认</span><b>${result.verified.length}</b></div>
+         <div class="Yuze-dy-stat"><span>未确认</span><b>${result.unverified.length}</b></div>
+         <div class="Yuze-dy-stat"><span>失败</span><b>${result.failed.length}</b></div>
+       </div><ul class="Yuze-dy-list">${listHtml || '<li class="Yuze-dy-item"><div><h4>没有移动结果</h4></div></li>'}</ul>`,
+      '<button class="Yuze-dy-action primary" type="button" data-action="done">完成</button>'
     );
     overlay.querySelector('[data-action="done"]')?.addEventListener('click', closeOverlay);
   }
@@ -1208,19 +1208,19 @@
   function renderAutoResult(result) {
     state.lastResult = result;
     const folderRows = result.folderOutcomes.map(folder => `
-      <li class="tabbit-dy-item"><div><h4>${escapeHtml(folder.name)}</h4><p>${escapeHtml(`${folder.count} 个作品 · ${folder.status}`)}</p></div><span class="tabbit-dy-badge">${escapeHtml(folder.status)}</span></li>`).join('');
+      <li class="Yuze-dy-item"><div><h4>${escapeHtml(folder.name)}</h4><p>${escapeHtml(`${folder.count} 个作品 · ${folder.status}`)}</p></div><span class="Yuze-dy-badge">${escapeHtml(folder.status)}</span></li>`).join('');
     const failedRows = result.failed.slice(0, 50).map(item => `
-      <li class="tabbit-dy-item"><div><h4>${escapeHtml(item.title)}</h4><p>${escapeHtml(`${item.category || '未分类'}：${item.error}`)}</p></div><span class="tabbit-dy-badge">失败</span></li>`).join('');
+      <li class="Yuze-dy-item"><div><h4>${escapeHtml(item.title)}</h4><p>${escapeHtml(`${item.category || '未分类'}：${item.error}`)}</p></div><span class="Yuze-dy-badge">失败</span></li>`).join('');
     const overlay = renderShell(
       '自动分类完成',
       `已整理 ${result.verified.length + result.unverified.length} 个作品`,
       `新建 ${result.created.length} 个收藏夹，复用 ${result.reused.length} 个；已确认 ${result.verified.length} 个，未确认 ${result.unverified.length} 个，失败 ${result.failed.length} 个。`,
-      `<div class="tabbit-dy-stats">
-         <div class="tabbit-dy-stat"><span>已确认</span><b>${result.verified.length}</b></div>
-         <div class="tabbit-dy-stat"><span>未确认</span><b>${result.unverified.length}</b></div>
-         <div class="tabbit-dy-stat"><span>失败</span><b>${result.failed.length}</b></div>
-       </div><ul class="tabbit-dy-list">${folderRows}${failedRows}</ul>`,
-      '<button class="tabbit-dy-action primary" type="button" data-action="done">完成</button>'
+      `<div class="Yuze-dy-stats">
+         <div class="Yuze-dy-stat"><span>已确认</span><b>${result.verified.length}</b></div>
+         <div class="Yuze-dy-stat"><span>未确认</span><b>${result.unverified.length}</b></div>
+         <div class="Yuze-dy-stat"><span>失败</span><b>${result.failed.length}</b></div>
+       </div><ul class="Yuze-dy-list">${folderRows}${failedRows}</ul>`,
+      '<button class="Yuze-dy-action primary" type="button" data-action="done">完成</button>'
     );
     overlay.querySelector('[data-action="done"]')?.addEventListener('click', closeOverlay);
   }
@@ -1442,5 +1442,5 @@
   window.addEventListener('popstate', scheduleMount);
   window.addEventListener('hashchange', scheduleMount);
   window.addEventListener('resize', scheduleMount);
-  console.log('[Tabbit Douyin Organizer] 抖音收藏整理按钮已启用');
+  console.log('[Yuze Douyin Organizer] 抖音收藏整理按钮已启用');
 })();

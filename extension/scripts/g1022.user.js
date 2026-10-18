@@ -2,7 +2,7 @@
   'use strict';
 
   if (window.top !== window.self) return;
-  if (document.getElementById('__tabbit_ls_host__')) return;
+  if (document.getElementById('__Yuze_ls_host__')) return;
 
   const DEFAULT_WIDTH = 890;
   const DEFAULT_HEIGHT = 650;
@@ -17,7 +17,7 @@
   const SPLITTER_LINE_WIDTH = 1;
 
   const host = document.createElement('div');
-  host.id = '__tabbit_ls_host__';
+  host.id = '__Yuze_ls_host__';
   document.documentElement.appendChild(host);
 
   const shadow = host.attachShadow({ mode: 'open' });

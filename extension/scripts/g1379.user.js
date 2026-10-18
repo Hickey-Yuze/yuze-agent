@@ -219,7 +219,7 @@ async function run(args) {
     h += '<button id="_nddl" style="flex:1;padding:12px 20px;border:none;border-radius:10px;background:'+S.p+';color:#fff;font-size:14px;font-weight:600;cursor:pointer;box-shadow:'+S.sb+';">&#11015; Download</button>';
     h += '<button id="_ndx" style="display:none;padding:12px 20px;border:1px solid '+S.er+';border-radius:10px;background:transparent;color:'+S.er+';font-size:14px;font-weight:600;cursor:pointer;">Cancel</button></div></div>';
 
-    h += '<div style="padding:12px 24px;border-top:1px solid '+S.bd+';font-size:11px;color:'+S.tm+';text-align:center;">Transcode API extraction &middot; Tabbit v5</div>';
+    h += '<div style="padding:12px 24px;border-top:1px solid '+S.bd+';font-size:11px;color:'+S.tm+';text-align:center;">Transcode API extraction &middot; Yuze v5</div>';
 
     pnl.innerHTML = h;
     document.body.appendChild(bg);

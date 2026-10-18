@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      1.2
 // @description  智能检测页面颜色模式并自动切换，支持暗色/亮色双向转换
-// @author       Tabbit
+// @author       Yuze
 // @match        *://*/*
 // @grant        none
 // @run-at       document-end

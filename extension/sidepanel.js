@@ -3215,7 +3215,7 @@ $('btnFindPrev')?.addEventListener('click', () => stepFind(-1));
 $('btnFindNext')?.addEventListener('click', () => stepFind(1));
 $('btnFindClose')?.addEventListener('click', closeFind);
 
-/* ══ 妙招面板 ════════════════════════════════════════════════ */
+/* ══ 技炉面板 ════════════════════════════════════════════════ */
 const skillPanel = $('skillPanel');
 const skillGrid = $('skillGrid');
 (function () {
@@ -3230,7 +3230,7 @@ let skillView = 'library';
 let skillSrc = 'all';
 function srcOf(s) { return s.src || (s.custom ? 'custom' : 'official'); }
 
-// 妙招广场（发现妙招）：静态条目，安装进自定义
+// 技炉广场（发现技炉）：静态条目，安装进自定义
 const DISCOVER_POOL = [
   { id: 'd1', cat: 'prompt', icon: '📰', name: '新闻摘要', desc: '抓取当前页面新闻，按事件分组输出要点', prompt: '把当前页面里的新闻整理成摘要：按事件分组，每条一到两句话，标注来源与时间。' },
   { id: 'd2', cat: 'prompt', icon: '💻', name: '代码解释', desc: '解释选中代码做了什么，标出风险点', prompt: '解释这段代码在做什么，逐段说明，并指出可能的 bug 或风险：\n\n```\n\n```' },
@@ -3259,10 +3259,10 @@ const BUILTIN_SKILLS = [
   { id: 'b15', cat: 'script', icon: '📌', name: '打工人便利贴', desc: '可拖拽至页面任意位置，随时随地记录一切。在任意网页贴上便签，随开随记，位置和内容都会保留，适合记待办、记灵感、临时存一些不想丢的片段。', prompt: '在当前页面打开或创建一个可拖拽的便签，记录我接下来提供的内容，并保持可编辑。', author: '喜之螂', installs: 865, codeFile: 'scripts/b15.user.js'  },
   { id: 'b16', cat: 'script', icon: '⚙️', name: '智能工作流引擎', desc: '你的全能网页助手：集成阅读增强（字号/行高/护眼/专注/沉浸模式）、视频倍速控制（0.5x-16x 锁定）、快速笔记（划词快捷添加 + MD 导出）、待办清单、番茄钟（5/15/25/45 分钟）。毛玻璃 UI、模块化设计、零配置启动、数据本地持久化。', prompt: '在当前页面启用智能工作流引擎：阅读增强、视频倍速控制、快速笔记、待办与番茄钟。', author: '围巾哥萧尘', installs: 762, codeFile: 'scripts/b16.user.js'  },
   { id: 'b17', cat: 'script', icon: '🗒️', name: '便签', desc: '在网页上随手贴便签，记录临时信息，支持拖拽与编辑，适合快速记下看到的内容或待办。', prompt: '在当前页面创建一个便签，把我给你的内容写进去。', author: 'smiler', installs: 748, codeFile: 'scripts/b17.user.js'  },
-  { id: 'b18', cat: 'script', icon: '✅', name: '待办事项', desc: '右键悬浮球打开菜单，支持待办清单与提醒；「妙招」每个网页用「提醒」需要允许网页通知。支持数据导出/导入，油猴版支持云同步。', prompt: '在当前页面打开待办清单，添加我接下来提供的待办事项。', author: 'smiler', installs: 736, codeFile: 'scripts/b18.user.js'  },
+  { id: 'b18', cat: 'script', icon: '✅', name: '待办事项', desc: '右键悬浮球打开菜单，支持待办清单与提醒；「技炉」每个网页用「提醒」需要允许网页通知。支持数据导出/导入，油猴版支持云同步。', prompt: '在当前页面打开待办清单，添加我接下来提供的待办事项。', author: 'smiler', installs: 736, codeFile: 'scripts/b18.user.js'  },
   { id: 'b19', cat: 'script', icon: '🏷️', name: '奇点标签', desc: '拖拽、便签、贴图、计时、表格一体的网页工作台：悬浮便签随开随记、支持图片与表格、内置番茄钟/倒计时、批量收纳与一键清空。', prompt: '在当前页面启用奇点标签工作台。', author: '奇点标签', installs: 0, codeFile: 'scripts/b19.user.js'  },
-  { id: 'b20', cat: 'task', src: 'installed', icon: '🎓', name: 'B站学习视频对比推荐', desc: '想在 B 站学一项技能，却不知道哪个视频更适合自己？提供学习主题、当前基础、学习目标和时间安排，妙招会筛选可访问的视频或课程，并从内容方向、学习难度、课程结构、热度和用户反馈等方面进行比较，生成课程对比表与推荐建议。适合备考、软件学习、兴趣培养及生活技能入门时使用。', prompt: '帮我对比 B站上关于我主题的学习视频，从内容方向、难度、结构、热度和反馈打分，输出对比表与推荐顺序。', author: '萝萝山大王', installs: 17105 },
-  { id: 'b21', cat: 'task', src: 'installed', icon: '📝', name: 'B站课程视频学习笔记', desc: '一键把当前 B站课程视频整理成便于复习的结构化学习笔记（仅适用于有 AI 字幕的视频）。选择是否保留时间戳，妙招会提取当前视频可读取的字幕，整理为便于复制和保存的文本，也可生成 TXT 文件。适合整理课程内容、保存学习资料、制作笔记或回顾视频重点。', prompt: '把当前 B站视频的字幕提取出来，整理成结构化学习笔记，可选保留时间戳并导出 TXT。', author: '萝萝山大王', installs: 16466 },
+  { id: 'b20', cat: 'task', src: 'installed', icon: '🎓', name: 'B站学习视频对比推荐', desc: '想在 B 站学一项技能，却不知道哪个视频更适合自己？提供学习主题、当前基础、学习目标和时间安排，技炉会筛选可访问的视频或课程，并从内容方向、学习难度、课程结构、热度和用户反馈等方面进行比较，生成课程对比表与推荐建议。适合备考、软件学习、兴趣培养及生活技能入门时使用。', prompt: '帮我对比 B站上关于我主题的学习视频，从内容方向、难度、结构、热度和反馈打分，输出对比表与推荐顺序。', author: '萝萝山大王', installs: 17105 },
+  { id: 'b21', cat: 'task', src: 'installed', icon: '📝', name: 'B站课程视频学习笔记', desc: '一键把当前 B站课程视频整理成便于复习的结构化学习笔记（仅适用于有 AI 字幕的视频）。选择是否保留时间戳，技炉会提取当前视频可读取的字幕，整理为便于复制和保存的文本，也可生成 TXT 文件。适合整理课程内容、保存学习资料、制作笔记或回顾视频重点。', prompt: '把当前 B站视频的字幕提取出来，整理成结构化学习笔记，可选保留时间戳并导出 TXT。', author: '萝萝山大王', installs: 16466 },
   { id: 'b22', cat: 'task', src: 'installed', icon: '📚', name: '知网文献筛选助手', desc: '查论文时结果太多，不知道哪些真正值得读？根据你提供的研究主题、地域范围和研究重点，梳理检索方向、筛选高度相关的 7-15 篇优质文献，并生成精简文献清单、入选理由与推荐阅读顺序。适合撰写课程论文、毕业论文、开题报告、文献综述或开展专题研究时使用。', prompt: '根据我的研究主题、地域范围和研究重点，梳理检索方向，筛选 7-15 篇高相关文献，输出清单、入选理由与阅读顺序。', author: '萝萝山大王', installs: 15631 },
   { id: 'b23', cat: 'task', src: 'installed', icon: '📖', name: '考研英语学习计划', desc: '基础薄弱不知道先背单词还是看网课？想冲高分不知道如何突破？结合你的英语基础、目标分数、备考时间和当前进度，判断适合的学习路线，安排词汇、真题、写作等任务，并给出资料和课程建议。最后生成 J 人版或 P 人版规划，让你知道当前重点、每周怎么学、什么时候复盘。', prompt: '结合我的基础、目标分数、备考时间和进度，帮我制定一份可执行的考研英语学习计划（J 人版 / P 人版可选）。', author: '去码头整点内存条', installs: 15098 },
   { id: 'b24', cat: 'script', icon: '👑', name: '你就是爱奇艺VIP', desc: '适用于爱奇艺，绕过会员限制直接看 VIP 视频。仅用于个人学习体验，请支持正版。', prompt: '在爱奇艺页面启用 VIP 观看。', author: '益生菌', installs: 12245 },
@@ -3271,7 +3271,7 @@ const BUILTIN_SKILLS = [
   { id: 'b27', cat: 'prompt', icon: '🤖', name: '文本去 AI 化', desc: '将 AI 生成的文本转化为更自然、更人性化的表达；也可以引用自己写的文章，让它按照你的文字风格修改，去掉机器感。', prompt: '把这段 AI 生成的文本改写成自然、有人味的表达，保留信息但去掉机器腔；可以按我提供的范文风格改写。', author: 'Mo', installs: 3126 },
   { id: 'b28', cat: 'prompt', icon: '🎥', name: '视频总结', desc: '将视频快速转化为文字总结报告，支持 B 站、YouTube、抖音、小红书等主流视频网站。适合快速浏览长视频、提取要点和做学习笔记。', prompt: '总结当前视频的内容，输出结构化文字报告：主题、要点、时间线、关键结论。', author: 'Calvin', installs: 3046 },
   { id: 'b29', cat: 'task', icon: '🛒', name: '全网比价决策助手', desc: '输入商品名称或打开商品页面，自动在淘宝、京东、拼多多三大平台搜索比价，深度分析真实评价，30 秒生成跨平台对比报告。实时比价、评价去水、智能推荐，给出最终购买建议。', prompt: '帮我对比这个商品在淘宝、京东、拼多多的价格与优惠，识别刷单好评，给出购买建议。', author: '青言AI进化论', installs: 2824 },
-  { id: 'b30', cat: 'prompt', icon: '🖼️', name: '图→反推提示词', desc: '（先选妙招再截图）根据图片反推 AI 生图的提示词，适合复刻参考图的风格与构图。', prompt: '根据我提供的图片，反推一段可用于 AI 生图的提示词，覆盖主体、场景、风格、构图与光线。', author: '666ahxxx', installs: 2750 },
+  { id: 'b30', cat: 'prompt', icon: '🖼️', name: '图→反推提示词', desc: '（先选技炉再截图）根据图片反推 AI 生图的提示词，适合复刻参考图的风格与构图。', prompt: '根据我提供的图片，反推一段可用于 AI 生图的提示词，覆盖主体、场景、风格、构图与光线。', author: '666ahxxx', installs: 2750 },
   { id: 'b31', cat: 'task', icon: '📈', name: '金融大师·自进化', desc: '专业的全品类金融投资分析助手：股票推荐、评分、走势分析、基本面评估、交易建议、市场日总结、新股申购建议，并支持理财产品、基金、债券、保险分析。支持多平台财经师舆情分析与 .txt 批量导入。分析不构成投资建议。', prompt: '对当前页面或我提供的标的做全品类金融分析：走势、基本面、风险与操作建议，并标注数据来源。', author: 'Hermione', installs: 2723 },
   { id: 'b32', cat: 'script', icon: '📦', name: '小红书收藏整理', desc: '整理小红书收藏内容，支持分类归档与批量处理，方便后续查找。', prompt: '整理我小红书收藏的内容，按主题分类并给出索引。', author: 'Leo的屋儿', installs: 2599 },
   { id: 'b33', cat: 'task', icon: '🎞️', name: '内容转视频生成器', desc: '输入任意文字内容，自动生成精美动画视频。支持产品介绍、社交媒体、知识科普、教程演示等多种场景，一键输出 MP4。无需剪辑软件，像写网页一样做视频。', prompt: '把我提供的文字内容生成一段动画视频（MP4），按场景设计节奏与转场。', author: '围巾哥萧尘', installs: 2262 },
@@ -3314,8 +3314,8 @@ function updateSkillHead() {
   set('nOfficial', cnt.official);
   set('nInstalled', cnt.installed);
   set('nCustom', cnt.custom);
-  const titles = { all: '全部', official: '官方妙招', installed: '已安装妙招', custom: '自定义妙招' };
-  const subs = { all: '管理官方妙招、已安装妙招和你创建的妙招', official: '官方提供的妙招，开箱即用', installed: '从妙招广场安装的妙招', custom: '你创建的自定义妙招' };
+  const titles = { all: '全部', official: '官方技炉', installed: '已安装技炉', custom: '自定义技炉' };
+  const subs = { all: '管理官方技炉、已安装技炉和你创建的技炉', official: '官方提供的技炉，开箱即用', installed: '从技炉广场安装的技炉', custom: '你创建的自定义技炉' };
   set('skMainTitle', titles[skillSrc] || '全部');
   set('skMainSub', subs[skillSrc] || '');
   const g = $('skGroupTitle');
@@ -3341,7 +3341,7 @@ function renderSkillGrid() {
   if (!rows.length) {
     const e = document.createElement('div');
     e.className = 'empty';
-    e.textContent = '没有匹配的妙招';
+    e.textContent = '没有匹配的技炉';
     skillGrid.appendChild(e);
     return;
   }
@@ -3461,7 +3461,7 @@ $('btnSkillDiscoverTop').addEventListener('click', () => $('btnSkillDiscover').c
 loadCustomSkills();
 
 
-/* ── 妙招详情 ─────────────────────────────────────────── */
+/* ── 技炉详情 ─────────────────────────────────────────── */
 
 const MZ_EXAMPLES = {
   '生成 PDF': [
@@ -3504,17 +3504,17 @@ function openSkillDetail(s) {
   mzCurrent = s;
 
   $('sdIcon').textContent = s.icon || '✨';
-  $('sdName').textContent = s.name || '妙招';
+  $('sdName').textContent = s.name || '技炉';
   $('sdMeta').textContent = '创建者 Yuze-agent · 最后更新 2026-10-18 · 版本 v1';
-  const intro = (s.desc || s.name || '妙招') + '。当你在任务中描述类似需求时，Yuze-agent 会按这个妙招的固定流程执行：先确认页面状态与数据来源，再整理结果并标注来源、时间与不确定项。你可以直接输入任务，也可以点上方「去试试」把示例带入输入框。';
-  const contents = '加载条件：用户从「技能」面板选择本妙招，或在任务中直接描述对应需求时加载；同一会话内持续生效，换新对话需重新选择。\n\n执行方式：' + (s.prompt || s.desc || '') + '\n\n输出要求：结果按结构化格式呈现，标注来源与时间；数据有出入或无法确认时明确说明，不臆测缺失信息。\n\n适用边界：仅处理当前请求，不会自动应用到其他对话；涉及网页操作时先确认页面状态再执行；涉及价格、库存、优惠等信息以目标平台为准。';
+  const intro = (s.desc || s.name || '技炉') + '。当你在任务中描述类似需求时，Yuze-agent 会按这个技炉的固定流程执行：先确认页面状态与数据来源，再整理结果并标注来源、时间与不确定项。你可以直接输入任务，也可以点上方「去试试」把示例带入输入框。';
+  const contents = '加载条件：用户从「技能」面板选择本技炉，或在任务中直接描述对应需求时加载；同一会话内持续生效，换新对话需重新选择。\n\n执行方式：' + (s.prompt || s.desc || '') + '\n\n输出要求：结果按结构化格式呈现，标注来源与时间；数据有出入或无法确认时明确说明，不臆测缺失信息。\n\n适用边界：仅处理当前请求，不会自动应用到其他对话；涉及网页操作时先确认页面状态再执行；涉及价格、库存、优惠等信息以目标平台为准。';
   if ($('sdIntro')) $('sdIntro').textContent = intro;
   $('sdSkillDesc').textContent = contents;
 
   const slug = String(s.name || '').replace(/\s+/g, '-').toLowerCase();
   const flow = String(s.prompt || '').split(/[。；;\n]/).map((t) => t.trim()).filter(Boolean).slice(0, 6);
-  const md = '# ' + (s.name || '妙招') + '\n\n' + (s.desc || '') + '\n\n' +
-    '## 加载条件\n- 用户从「技能」面板选择本妙招后发出任务时加载\n- 仅对当前请求生效，不会自动应用到其他对话\n\n' +
+  const md = '# ' + (s.name || '技炉') + '\n\n' + (s.desc || '') + '\n\n' +
+    '## 加载条件\n- 用户从「技能」面板选择本技炉后发出任务时加载\n- 仅对当前请求生效，不会自动应用到其他对话\n\n' +
     '## 执行流程\n' + flow.map((t, i) => (i + 1) + '. ' + t).join('\n') + (flow.length ? '' : '1. 按任务描述执行并给出结果') + '\n\n' +
     '## 输出要求\n- 结构化输出，标注来源与不确定项\n- 涉及网页操作时先确认页面状态再执行';
   $('sdMd').innerHTML =
@@ -3582,7 +3582,7 @@ function openSkillDetail(s) {
           .catch((e) => { codeEl.value = '读取失败：' + (e && e.message); });
       }
     } else {
-      codeEl.value = '该妙招不含脚本代码（提示词类）。';
+      codeEl.value = '该技炉不含脚本代码（提示词类）。';
     }
     codeEl.readOnly = !s.codeFile;
     updateSdCodeBtns();
@@ -3731,7 +3731,7 @@ $('btnSkillBack')?.addEventListener('click', () => {
   skillPanel.classList.remove('hidden');
 });
 
-/* ── 创建妙招 ─────────────────────────────────────────── */
+/* ── 创建技炉 ─────────────────────────────────────────── */
 
 let seType = 'prompt';
 let seSites = [];
@@ -3836,7 +3836,7 @@ function backToCustomSkills() {
 async function saveCustomSkill() {
   const name = ($('seName').value || '').trim();
   if (!name) {
-    setStatus('先给妙招起个名字');
+    setStatus('先给技炉起个名字');
     $('seName').focus();
     return;
   }
@@ -3877,7 +3877,7 @@ async function saveCustomSkill() {
     b.classList.toggle('active', b.dataset.src === 'custom');
   });
   renderSkillGrid();
-  setStatus('妙招已保存');
+  setStatus('技炉已保存');
   setTimeout(() => setStatus(''), 2000);
 }
 

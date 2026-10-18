@@ -212,7 +212,7 @@ body {
   word-break: break-word;
 }
 
-/* 思考过程 —— Tabbit 式折叠块 */
+/* 思考过程 —— Yuze 式折叠块 */
 .think { margin: 0 0 10px; }
 .think-head {
   display: inline-flex;
@@ -1195,7 +1195,7 @@ body {
 .quote-chip.tab { padding: 0; }
 .qc-file-ic { font-size: 14px; opacity: 1; }
 
-/* 引用卡片（Tabbit 式：链接头 + 粉底文件 chip） */
+/* 引用卡片（Yuze 式：链接头 + 粉底文件 chip） */
 .quote-card { display:block; width:100%; background:#f2f2f4; border:1px solid #e8e8ec; border-radius:12px; overflow:hidden; }
 .qc-head { display:flex; align-items:center; gap:8px; padding:9px 12px; background:#f2f2f4; }
 .qc-head + .qc-head { border-top:1px solid #e6e6e9; }
@@ -1405,7 +1405,7 @@ body {
 .sd-mdt td:first-child { width: 90px; color: var(--text-dim); font-weight: 500; }
 .sd-mdt tr:last-child td { border-bottom: none; }
 
-/* ══ 妙招面板：Tabbit 式两栏 ═════════════════════════════ */
+/* ══ 妙招面板：Yuze 式两栏 ═════════════════════════════ */
 .sk-wrap { display: flex; flex: 1 1 auto; min-height: 0; }
 .sk-side { width: 288px; flex-shrink: 0; padding: 12px 10px 12px 12px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
 .sk-side-title { font-size: 12px; color: var(--text-faint); font-weight: 600; padding: 2px 10px; }

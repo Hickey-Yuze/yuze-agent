@@ -1,9 +1,9 @@
 /**
- * Tabbit 脚本妙招：开学社交人格说明书
+ * Yuze 脚本技炉：开学社交人格说明书
  * 版本：1.0.0
  *
  * 数据用途：
- * 1. 在当前 Tabbit 页面内运行 20 道大学新环境社交倾向测试；
+ * 1. 在当前 Yuze 页面内运行 20 道大学新环境社交倾向测试；
  * 2. 根据用户主动填写的信息生成自我介绍；
  * 3. 将测试结果、填写内容和最近生成记录保存在当前浏览器 localStorage。
  *
@@ -24,12 +24,12 @@
 (() => {
   "use strict";
 
-  const APP_ID = "tabbit-campus-personality-app";
+  const APP_ID = "Yuze-campus-personality-app";
   const STYLE_ID = `${APP_ID}-style`;
-  const CLEANUP_KEY = "__tabbitCampusPersonalityCleanup";
-  const STORAGE_RESULT = "tabbit-campus-personality-result-v1";
-  const STORAGE_PROFILE = "tabbit-campus-personality-profile-v1";
-  const STORAGE_INTROS = "tabbit-campus-personality-intros-v1";
+  const CLEANUP_KEY = "__YuzeCampusPersonalityCleanup";
+  const STORAGE_RESULT = "Yuze-campus-personality-result-v1";
+  const STORAGE_PROFILE = "Yuze-campus-personality-profile-v1";
+  const STORAGE_INTROS = "Yuze-campus-personality-intros-v1";
 
   if (typeof window[CLEANUP_KEY] === "function") window[CLEANUP_KEY]();
 
@@ -646,7 +646,7 @@
       </button>
       <div class="tbp-top-actions">
         <span class="tbp-local">● 结果仅保存在当前浏览器</span>
-        <button class="tbp-close" data-action="close" aria-label="关闭应用" title="关闭并返回 Tabbit 首页">×</button>
+        <button class="tbp-close" data-action="close" aria-label="关闭应用" title="关闭并返回 Yuze 首页">×</button>
       </div>
     </header>`;
   }
@@ -656,7 +656,7 @@
     const savedPersona = saved ? personas[saved.primary] : null;
     return `<section class="tbp-page tbp-landing">
       <div class="tbp-hero-copy">
-        <div class="tbp-eyebrow">TABBIT · 大学生妙招</div>
+        <div class="tbp-eyebrow">Yuze · 大学生技炉</div>
         <h1>找到你的<br><em>开学社交人格</em></h1>
         <p class="tbp-hero-lead">20 道大学情境题，看看你在陌生环境中更自然的社交方式，并生成适合你的自我介绍。</p>
         <div class="tbp-meta"><span>20 道情境题</span><span>约 3 分钟</span><span>6 种人格结果</span></div>

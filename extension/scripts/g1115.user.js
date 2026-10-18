@@ -2,8 +2,8 @@
   const __tabScriptArgs = {};
   const __tabOriginalFunction = (
     /**
-     * 名称：tabbit 隐藏技能
-     * 描述：弹出可移动/可缩放精致弹窗，展示 Tabbit 神技能。纯 SVG 图标、CSS 动画演示、字号可调
+     * 名称：Yuze 隐藏技能
+     * 描述：弹出可移动/可缩放精致弹窗，展示 Yuze 神技能。纯 SVG 图标、CSS 动画演示、字号可调
      * 类型：脚本  生效网页：*  自动运行：false
      */
     async function run(args) {
@@ -34,7 +34,7 @@
         /* ── 1. Codex 桌面宠物 ── */
         {
           title:"Codex 桌面宠物",
-          content:"Tabbit 近期整理了 Codex 桌面宠物的完整玩法教程，并制作了一只可直接安装的 GG Bond 小猪宠物包。宠物会根据运行、等待、审阅、失败等状态自动切换动画，让工作台更有陪伴感。",
+          content:"Yuze 近期整理了 Codex 桌面宠物的完整玩法教程，并制作了一只可直接安装的 GG Bond 小猪宠物包。宠物会根据运行、等待、审阅、失败等状态自动切换动画，让工作台更有陪伴感。",
           source:"官方最新动态",
           demo:`
             <style>
@@ -60,7 +60,7 @@
         /* ── 2. 智能截图吸附 ── */
         {
           title:"智能截图吸附",
-          content:"截图时 Tabbit 会自动识别页面 HTML 结构中的代码块、卡片、表格等元素，像素级吸附高亮，直接点选即可精准截取，无需手动拖框。",
+          content:"截图时 Yuze 会自动识别页面 HTML 结构中的代码块、卡片、表格等元素，像素级吸附高亮，直接点选即可精准截取，无需手动拖框。",
           source:"产品介绍",
           demo:`
             <style>
@@ -72,7 +72,7 @@
               .snap-tip svg{width:10px;height:10px;flex-shrink:0;}
             </style>
             <div class="snap-wrap">
-              <div><span class="kw">const</span> <span class="op">result</span> = <span class="kw">await</span> <span class="fn">tabbit</span>.<span class="fn">agent</span>(</div>
+              <div><span class="kw">const</span> <span class="op">result</span> = <span class="kw">await</span> <span class="fn">Yuze</span>.<span class="fn">agent</span>(</div>
               <div style="padding-left:12px;"><span class="str">"帮我整理收藏夹"</span></div>
               <div>)</div>
               <div class="snap-border"></div>
@@ -104,10 +104,10 @@
             <div class="at-hint">AI 已读取 3 个上下文，综合分析中...</div>`
         },
     
-        /* ── 4. 妙招唤起 ── */
+        /* ── 4. 技炉唤起 ── */
         {
-          title:"妙招 / 快捷唤起",
-          content:"对话框输入 '/' 即可调出妙招菜单，选择已保存的 Prompt 指令，将润色、总结、翻译等高频工作流变成一键操作。",
+          title:"技炉 / 快捷唤起",
+          content:"对话框输入 '/' 即可调出技炉菜单，选择已保存的 Prompt 指令，将润色、总结、翻译等高频工作流变成一键操作。",
           source:"产品介绍",
           demo:`
             <style>
@@ -121,16 +121,16 @@
             </style>
             <div class="mz-input">/</div>
             <div class="mz-menu">
-              <div class="mz-item"><span class="mz-badge">妙招</span>${I.star} 润色文案</div>
-              <div class="mz-item"><span class="mz-badge">妙招</span>${I.layers} 总结全文</div>
-              <div class="mz-item"><span class="mz-badge">妙招</span>${I.zap} 翻译英文</div>
+              <div class="mz-item"><span class="mz-badge">技炉</span>${I.star} 润色文案</div>
+              <div class="mz-item"><span class="mz-badge">技炉</span>${I.layers} 总结全文</div>
+              <div class="mz-item"><span class="mz-badge">技炉</span>${I.zap} 翻译英文</div>
             </div>`
         },
     
         /* ── 5. 网页转 Excel ── */
         {
           title:"自然语言 → Excel",
-          content:"对 Tabbit 说「批量提取当前页面所有商品名称和价格，导出为 Excel」，AI 自动生成并执行脚本，数据表格一键下载，无需手写代码。",
+          content:"对 Yuze 说「批量提取当前页面所有商品名称和价格，导出为 Excel」，AI 自动生成并执行脚本，数据表格一键下载，无需手写代码。",
           source:"智能代理",
           demo:`
             <style>
@@ -193,7 +193,7 @@
         /* ── 7. Agent 模式 ── */
         {
           title:"全自动 Agent 模式",
-          content:"开启智能代理，用自然语言描述复杂需求，Tabbit 自主规划策略、打开多个标签页搜索、提取关键信息，最终生成深度调研报告。",
+          content:"开启智能代理，用自然语言描述复杂需求，Yuze 自主规划策略、打开多个标签页搜索、提取关键信息，最终生成深度调研报告。",
           source:"产品介绍",
           demo:`
             <style>
@@ -216,7 +216,7 @@
         /* ── 8. 网页风格改造 ── */
         {
           title:"网页风格一键改造",
-          content:"输入 '/' 选择「使用脚本」，用自然语言描述风格，例如「把这个页面改成极简深色模式」，Tabbit 生成脚本一键执行，刷新页面可还原。",
+          content:"输入 '/' 选择「使用脚本」，用自然语言描述风格，例如「把这个页面改成极简深色模式」，Yuze 生成脚本一键执行，刷新页面可还原。",
           source:"脚本功能",
           demo:`
             <style>
@@ -250,10 +250,10 @@
             </div>`
         },
     
-        /* ── 9. 保存 Agent 为妙招 ── */
+        /* ── 9. 保存 Agent 为技炉 ── */
         {
-          title:"Agent 任务保存为妙招",
-          content:"智能代理任务执行完成后，点击对话底部「保存为妙招」，将复杂执行流程固化为可复用指令，下次直接一键调用，无需重新描述。",
+          title:"Agent 任务保存为技炉",
+          content:"智能代理任务执行完成后，点击对话底部「保存为技炉」，将复杂执行流程固化为可复用指令，下次直接一键调用，无需重新描述。",
           source:"使用指南",
           demo:`
             <style>
@@ -275,7 +275,7 @@
               </div>
               <div class="sv-btns">
                 <div class="sv-run">一键运行</div>
-                <div class="sv-saved">已保存为妙招</div>
+                <div class="sv-saved">已保存为技炉</div>
               </div>
             </div>`
         }
@@ -285,7 +285,7 @@
          § 从 localStorage 合并动态缓存技能
          ══════════════════════════════════════════════ */
       let cached = [];
-      try { cached = JSON.parse(localStorage.getItem('tabbit_skill_cache') || '[]'); } catch (_) {}
+      try { cached = JSON.parse(localStorage.getItem('Yuze_skill_cache') || '[]'); } catch (_) {}
       const pool = Object.fromEntries(DEFAULT.map(s => [s.title, s]));
       cached.forEach(s => { if (!pool[s.title]) pool[s.title] = s; });
       const skills = Object.values(pool);
@@ -293,7 +293,7 @@
       /* ══════════════════════════════════════════════
          § 后台静默抓取官网最新技能
          ══════════════════════════════════════════════ */
-      const isOfficial = /tabbit\.com|tabbit-ai\.com|go\.tabbit/.test(location.href);
+      const isOfficial = /Yuze\.com|Yuze-ai\.com|go\.Yuze/.test(location.href);
       function extractFromDoc(doc, label) {
         const items = [];
         doc.querySelectorAll('h2,h3').forEach(h => {
@@ -310,15 +310,15 @@
       }
       function saveCache(items) {
         try {
-          const c = JSON.parse(localStorage.getItem('tabbit_skill_cache') || '[]');
+          const c = JSON.parse(localStorage.getItem('Yuze_skill_cache') || '[]');
           items.forEach(x => { if (!c.some(y => y.title === x.title)) c.push(x); });
-          localStorage.setItem('tabbit_skill_cache', JSON.stringify(c.slice(-30)));
+          localStorage.setItem('Yuze_skill_cache', JSON.stringify(c.slice(-30)));
         } catch (_) {}
       }
       if (isOfficial) {
         saveCache(extractFromDoc(document, '实时官网：' + document.title.slice(0,12)));
       } else {
-        ['https://www.tabbit.com/guide/usage', 'https://go.tabbit-ai.com/topics/desktop-pet-for-codex/ggbond'].forEach(url => {
+        ['https://www.Yuze.com/guide/usage', 'https://go.Yuze-ai.com/topics/desktop-pet-for-codex/ggbond'].forEach(url => {
           const ac = new AbortController(); setTimeout(() => ac.abort(), 2800);
           fetch(url, { signal:ac.signal, credentials:'omit' })
             .then(r => r.text())
@@ -538,7 +538,7 @@
       <!-- 标题栏（可拖拽） -->
       <div id="bar">
         <div id="bar-logo">${I.bulb}</div>
-        <div id="bar-title">Tabbit 隐藏技能</div>
+        <div id="bar-title">Yuze 隐藏技能</div>
         <div id="bar-btns">
           <button class="ctrl" id="btn-zo" title="缩小字号"><span class="ctrl-lbl">A−</span></button>
           <button class="ctrl" id="btn-zi" title="放大字号"><span class="ctrl-lbl">A＋</span></button>

@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         强制自然暗色模式
-// @namespace    https://tabbit.ai/
+// @namespace    https://Yuze.ai/
 // @version      1.1
 // @description  遍历 DOM 智能替换白底黑字为黑灰底浅字，保留图片/视频/SVG/iframe 原样，已暗黑页面不重复处理
-// @author       Tabbit
+// @author       Yuze
 // @match        *://*/*
 // @grant        none
 // @run-at       document-start

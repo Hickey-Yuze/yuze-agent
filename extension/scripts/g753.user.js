@@ -1,21 +1,21 @@
 async function run(args) {
   // ══════════════════════════════════════════════════════════════════════════
   // 🍅 番茄专注钟 v2 — 精确计时 + 沉浸遮罩 + 番茄数持久化
-  // Tabbit 妙招大赛 · 脚本赛道参赛作品
+  // Yuze 技炉大赛 · 脚本赛道参赛作品
   // ══════════════════════════════════════════════════════════════════════════
 
   // ── Toggle: re-run closes the widget ──────────────────────────────────────
-  if (document.getElementById('tabbit-pomodoro')) {
+  if (document.getElementById('Yuze-pomodoro')) {
     cleanup();
     return { ok: true, summary: '番茄钟已关闭' };
   }
 
   // ── Constants ─────────────────────────────────────────────────────────────
-  const SESSION_KEY = 'tabbit_pomodoro_sessions_' + (() => {
+  const SESSION_KEY = 'Yuze_pomodoro_sessions_' + (() => {
     const d = new Date();
     return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
   })();
-  const POS_KEY = 'tabbit_pomodo_pos';
+  const POS_KEY = 'Yuze_pomodo_pos';
 
   const PHASES = [
     { id:'work',  label:'专注时间', dur:25*60, color:'#f87171', glow:'rgba(248,113,113,.35)', emoji:'🍅' },
@@ -43,17 +43,17 @@ async function run(args) {
 
   // ── Styles ────────────────────────────────────────────────────────────────
   const style = document.createElement('style');
-  style.id = 'tabbit-pomodoro-style';
+  style.id = 'Yuze-pomodoro-style';
   style.textContent = `
     @keyframes pmIn  { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
     @keyframes pmBeat{ 0%,100%{filter:drop-shadow(0 0 6px var(--pm-glow))} 50%{filter:drop-shadow(0 0 18px var(--pm-glow))} }
     @keyframes pmPop { 0%{transform:translate(-50%,-50%) scale(.8)} 50%{transform:translate(-50%,-50%) scale(1.15)} 100%{transform:translate(-50%,-50%) scale(1)} }
-    #tabbit-pomodoro { animation:pmIn .3s ease; }
-    #tabbit-pomodoro.running #pm-svg-ring { animation:pmBeat 2s ease-in-out infinite; }
+    #Yuze-pomodoro { animation:pmIn .3s ease; }
+    #Yuze-pomodoro.running #pm-svg-ring { animation:pmBeat 2s ease-in-out infinite; }
     #pm-progress { transition: stroke-dasharray .95s ease; }
-    #tabbit-pomodoro button { transition: all .15s ease; cursor:pointer; }
-    #tabbit-pomodoro button:hover { filter:brightness(1.18); }
-    #tabbit-focus-overlay {
+    #Yuze-pomodoro button { transition: all .15s ease; cursor:pointer; }
+    #Yuze-pomodoro button:hover { filter:brightness(1.18); }
+    #Yuze-focus-overlay {
       position:fixed;top:0;left:0;right:0;bottom:0;
       background:rgba(0,0,0,.78);backdrop-filter:blur(10px);
       z-index:2147483640;
@@ -67,7 +67,7 @@ async function run(args) {
 
   // ── Widget ────────────────────────────────────────────────────────────────
   const widget = document.createElement('div');
-  widget.id = 'tabbit-pomodoro';
+  widget.id = 'Yuze-pomodoro';
 
   // Restore saved position
   let savedPos = null;
@@ -172,7 +172,7 @@ async function run(args) {
 
     // Browser notification
     try {
-      new Notification('Tabbit 番茄钟 · ' + PHASES[phaseIdx].label, {
+      new Notification('Yuze 番茄钟 · ' + PHASES[phaseIdx].label, {
         body: PHASES[phaseIdx].id === 'work' ? '休息结束，准备专注！' : '完成一个番茄，好好休息 🌿',
         silent: false,
       });
@@ -233,7 +233,7 @@ async function run(args) {
     document.removeEventListener('keydown', onKeydown);
     document.removeEventListener('scroll', preventScroll);
     document.removeEventListener('wheel', preventScroll);
-    ['tabbit-pomodoro','tabbit-pomodoro-style','tabbit-focus-overlay'].forEach(id =>
+    ['Yuze-pomodoro','Yuze-pomodoro-style','Yuze-focus-overlay'].forEach(id =>
       document.getElementById(id)?.remove()
     );
   }
@@ -270,7 +270,7 @@ async function run(args) {
     focusMode = !focusMode;
     if (focusMode) {
       const ov = document.createElement('div');
-      ov.id = 'tabbit-focus-overlay';
+      ov.id = 'Yuze-focus-overlay';
       // Click on overlay dismisses focus mode (instead of穿透)
       ov.onclick = () => {
         focusMode = false;
@@ -284,7 +284,7 @@ async function run(args) {
       document.addEventListener('scroll', preventScroll, { passive: false });
       document.addEventListener('wheel', preventScroll, { passive: false });
     } else {
-      document.getElementById('tabbit-focus-overlay')?.remove();
+      document.getElementById('Yuze-focus-overlay')?.remove();
       document.removeEventListener('scroll', preventScroll);
       document.removeEventListener('wheel', preventScroll);
     }

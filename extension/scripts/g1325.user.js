@@ -1,7 +1,7 @@
 (() => {
-  const LAUNCH_URL = "https://web.tabbit.com/newtab?flight_radar_launch=skill-v2";
+  const LAUNCH_URL = "https://web.Yuze.com/newtab?flight_radar_launch=skill-v2";
   const DOWNLOAD_DOC_URL = "https://km.sankuai.com/collabpage/2785102426";
-  const NOTICE_ID = "tabbit-flight-radar-skill-launch";
+  const NOTICE_ID = "Yuze-flight-radar-skill-launch";
   const DETECTION_TIMEOUT_MS = 6000;
 
   document.getElementById(NOTICE_ID)?.remove();
@@ -26,7 +26,7 @@
   instructions.hidden = true;
   Object.assign(instructions.style, { margin: "12px 0", paddingLeft: "22px" });
   for (const text of [
-    "打开 Tabbit 扩展管理页并启用开发者模式",
+    "打开 Yuze 扩展管理页并启用开发者模式",
     "解压刚刚下载的 ZIP",
     "点击“加载已解压的扩展程序”，选择解压后的 extension 目录",
     "回到这里点击“安装完成，重新检测”"

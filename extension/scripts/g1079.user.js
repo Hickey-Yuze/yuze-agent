@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  // Tabbit 脚本妙招：在当前标签页直接生成完整导航页；不依赖本机文件或外部资源。
+  // Yuze 脚本技炉：在当前标签页直接生成完整导航页；不依赖本机文件或外部资源。
   const groups = [
     { title: "学习与办事", caption: "高频", items: [
       ["教务处", "https://jw.muc.edu.cn/", "教学通知"], ["研究生院", "https://grs.muc.edu.cn/", "培养与招生"],
@@ -36,7 +36,7 @@
   ];
 
   const host = document.createElement("div");
-  host.id = "muc-tabbit-full-page";
+  host.id = "muc-Yuze-full-page";
   host.style.setProperty("position", "fixed", "important");
   host.style.setProperty("inset", "0", "important");
   host.style.setProperty("z-index", "2147483647", "important");
@@ -120,7 +120,7 @@
         </div>
       </section>
       <section class="utility" aria-labelledby="utility-title"><div class="shell"><div><h2 id="utility-title">按要办的事找，不按部门找。</h2><p>教学、校园生活、公共信息、学院与研究机构依次排列。输入关键词可即时筛选。</p></div><div class="find"><label for="muc-search">查找链接</label><input id="muc-search" type="search" placeholder="例如：图书馆、法学院、VPN" autocomplete="off"></div></div></section>
-      <section class="shell directory" aria-labelledby="directory-title"><div class="directory-heading"><div><h2 id="directory-title">更多官方入口</h2><p>按学生使用频率排序。标注“需登录”的系统会要求你的统一身份认证账号。</p></div><p class="count" id="muc-count" aria-live="polite"></p></div><div class="groups" id="muc-groups"></div><p class="restore">此页面由 Tabbit 临时生成，不读取或提交当前网页数据。<button type="button" id="muc-restore">刷新当前标签页，回到原网页</button></p></section>
+      <section class="shell directory" aria-labelledby="directory-title"><div class="directory-heading"><div><h2 id="directory-title">更多官方入口</h2><p>按学生使用频率排序。标注“需登录”的系统会要求你的统一身份认证账号。</p></div><p class="count" id="muc-count" aria-live="polite"></p></div><div class="groups" id="muc-groups"></div><p class="restore">此页面由 Yuze 临时生成，不读取或提交当前网页数据。<button type="button" id="muc-restore">刷新当前标签页，回到原网页</button></p></section>
     </main>`;
 
   // 只替换当前标签页呈现；刷新会重新请求原网址，因此可恢复原网页。

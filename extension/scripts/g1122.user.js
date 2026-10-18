@@ -196,7 +196,7 @@
     
         // ===== 主容器 =====
         const container = document.createElement('div');
-        container.id = 'tabbit-recorder-panel';
+        container.id = 'Yuze-recorder-panel';
         container.style.cssText = `
           position: fixed;
           top: 20px;
@@ -226,7 +226,7 @@
         `;
     
         const title = document.createElement('span');
-        title.textContent = '🎬 Tabbit 录屏';
+        title.textContent = '🎬 Yuze 录屏';
         title.style.cssText = `
           font-size: 14px;
           font-weight: 600;
@@ -258,11 +258,11 @@
     
         // ===== 内容区域 =====
         const body = document.createElement('div');
-        body.id = 'tabbit-recorder-body';
+        body.id = 'Yuze-recorder-body';
     
         // 计时器显示
         const timerDisplay = document.createElement('div');
-        timerDisplay.id = 'tabbit-timer';
+        timerDisplay.id = 'Yuze-timer';
         timerDisplay.textContent = '00:00.00';
         timerDisplay.style.cssText = `
           text-align: center;
@@ -485,7 +485,7 @@
     
         return {
           ok: true,
-          summary: 'Tabbit 增强版网页录屏工具已启动',
+          summary: 'Yuze 增强版网页录屏工具已启动',
           features: ['实时计时器', '暂停/恢复', '拖拽移动', '面板折叠', '三档画质选择', '深色UI主题'],
           warnings: []
         };
@@ -541,9 +541,9 @@
       }
     
       function addPulseAnimation() {
-        if (document.getElementById('tabbit-recorder-pulse-style')) return;
+        if (document.getElementById('Yuze-recorder-pulse-style')) return;
         const style = document.createElement('style');
-        style.id = 'tabbit-recorder-pulse-style';
+        style.id = 'Yuze-recorder-pulse-style';
         style.textContent = `
           @keyframes pulse-dot {
             0%, 100% { opacity: 1; transform: scale(1); }

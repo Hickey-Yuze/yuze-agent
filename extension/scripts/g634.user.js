@@ -1,6 +1,6 @@
 (function() {
-  const STYLE_ID = 'tabbit-beautify';
-  const FONT_ID = 'tabbit-beautify-fonts';
+  const STYLE_ID = 'Yuze-beautify';
+  const FONT_ID = 'Yuze-beautify-fonts';
   const ALL_IDS = [STYLE_ID, FONT_ID];
 
   // === 切换：已存在则移除（关闭美化） ===
@@ -9,15 +9,15 @@
       var el = document.getElementById(id);
       if (el) el.remove();
     });
-    if (window._tabbitThemeObserver) {
-      window._tabbitThemeObserver.disconnect();
-      window._tabbitThemeObserver = null;
+    if (window._YuzeThemeObserver) {
+      window._YuzeThemeObserver.disconnect();
+      window._YuzeThemeObserver = null;
     }
-    if (window._tabbitPollTimer) {
-      clearInterval(window._tabbitPollTimer);
-      window._tabbitPollTimer = null;
+    if (window._YuzePollTimer) {
+      clearInterval(window._YuzePollTimer);
+      window._YuzePollTimer = null;
     }
-    document.documentElement.removeAttribute('data-tabbit-theme');
+    document.documentElement.removeAttribute('data-Yuze-theme');
     // 清理 CSS 变量
     var constants = ['--accent-blue','--accent-purple','--accent-cyan','--accent-green','--accent-orange','--accent-pink','--accent-red','--radius-sm','--radius-md','--radius-lg'];
     var paletteKeys = ['--bg-primary','--bg-secondary','--bg-card','--bg-hover','--text-primary','--text-secondary','--text-muted','--border-color','--shadow-sm','--shadow-md','--shadow-lg','--code-bg','--nav-bg','--nav-blur','--mobile-bg','--footer-bg','--inline-code-bg','--inline-code-border','--tag-book-bg','--tag-book-border','--tag-watch-bg','--tag-watch-border','--tag-mem-bg','--tag-mem-border','--h2-color','--sidebar-header-bg','--highlight-bg','--highlight-border','--focus-ring','--scrollbar-thumb','--scrollbar-hover','--selection-bg','--toolbar-bg','--loader-track','--dropdown-shadow','--btn-shadow','--btn-shadow-hover','--drop-item-bg','--tab-border','--editor-bg'];
@@ -29,8 +29,8 @@
   }
 
   // 清理旧版本残留
-  ['tabbit-beautify-style','tabbit-beautify-light','tabbit-nav-height-boost',
-   'tabbit-overflow-fix','tabbit-nav-height-fix'].forEach(function(id) {
+  ['Yuze-beautify-style','Yuze-beautify-light','Yuze-nav-height-boost',
+   'Yuze-overflow-fix','Yuze-nav-height-fix'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.remove();
   });
@@ -266,8 +266,8 @@
     '::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-hover) !important; }',
 
     /* 动画 */
-    '@keyframes tabbit-fadein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }',
-    '.problem-content-container, .section.side { animation: tabbit-fadein 0.5s ease forwards !important; }',
+    '@keyframes Yuze-fadein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }',
+    '.problem-content-container, .section.side { animation: Yuze-fadein 0.5s ease forwards !important; }',
     '.section.side { animation-delay: 0.1s !important; }',
 
     /* 杂项 */
@@ -310,7 +310,7 @@
     Object.keys(palette).forEach(function(k) {
       root.style.setProperty(k, palette[k]);
     });
-    root.setAttribute('data-tabbit-theme', theme);
+    root.setAttribute('data-Yuze-theme', theme);
     console.log('🎨 Applied ' + theme + ' palette');
   }
 
@@ -333,7 +333,7 @@
     attributes: true,
     attributeFilter: ['class', 'style']
   });
-  window._tabbitThemeObserver = observer;
+  window._YuzeThemeObserver = observer;
 
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
     var newTheme = detectTheme();
@@ -343,9 +343,9 @@
     }
   });
 
-  window._tabbitPollTimer = setInterval(function() {
+  window._YuzePollTimer = setInterval(function() {
     if (!document.getElementById(STYLE_ID)) {
-      clearInterval(window._tabbitPollTimer);
+      clearInterval(window._YuzePollTimer);
       return;
     }
     var newTheme = detectTheme();

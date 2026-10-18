@@ -13,19 +13,19 @@
   'use strict';
 
   const CONFIG = {
-    ROOT_ID: 'tabbit-resume-fill-assistant',
-    PROFILE_KEY: 'tabbit-resume-fill-assistant:profile:v2',
-    PROFILE_VERSION_KEY: 'tabbit-resume-fill-assistant:profile-version:v2',
-    PAGE_PLAN_PREFIX: 'tabbit-resume-fill-assistant:page-plan:v4:',
+    ROOT_ID: 'Yuze-resume-fill-assistant',
+    PROFILE_KEY: 'Yuze-resume-fill-assistant:profile:v2',
+    PROFILE_VERSION_KEY: 'Yuze-resume-fill-assistant:profile-version:v2',
+    PAGE_PLAN_PREFIX: 'Yuze-resume-fill-assistant:page-plan:v4:',
     MAX_PROFILE: 12000,
     MAX_CONTEXT: 7000,
     MAX_FORM_HTML: 40000,
     MAX_IMPORT_IMAGE_BYTES: 2 * 1024 * 1024,
     MAX_IMPORT_TEXT_BYTES: 300 * 1024,
     PLAN_TTL_MS: 7 * 24 * 60 * 60 * 1000,
-    ULTIMATE_RESUME_KEY: 'tabbit-resume-fill-assistant:ultimate-resume:v1',
-    FLOATING_BALL_POSITION_KEY: 'tabbit-resume-fill-assistant:floating-ball-position:v1',
-    PROFILE_PACKAGE_FORMAT: 'tabbit-resume-fill-assistant',
+    ULTIMATE_RESUME_KEY: 'Yuze-resume-fill-assistant:ultimate-resume:v1',
+    FLOATING_BALL_POSITION_KEY: 'Yuze-resume-fill-assistant:floating-ball-position:v1',
+    PROFILE_PACKAGE_FORMAT: 'Yuze-resume-fill-assistant',
     PROFILE_PACKAGE_VERSION: 3,
     RESUME_SCHEMA_VERSION: 3,
     MAX_PROFILE_PACKAGE_BYTES: 1024 * 1024,
@@ -501,7 +501,7 @@
     return resume;
   }
 
-  const RUNTIME_KEY = '__tabbitResumeFillAssistantV4Runtime__';
+  const RUNTIME_KEY = '__YuzeResumeFillAssistantV4Runtime__';
   // 用户可能同时启用了旧版和 v4，或在脚本更新后页面未刷新；同一页面只保留 v4 的一个运行实例。
   try { window[RUNTIME_KEY]?.dispose?.(); } catch (_) {}
   let root, shadow, layer, duplicateRootObserver, analysisSeq = 0, pagePlanSeq = 0;
@@ -531,7 +531,7 @@
     try {
       const current = localStorage.getItem(CONFIG.PROFILE_KEY);
       if (current !== null) return current;
-      const legacy = localStorage.getItem('tabbit-resume-fill-assistant:profile:v1');
+      const legacy = localStorage.getItem('Yuze-resume-fill-assistant:profile:v1');
       return legacy === null ? null : legacy;
     } catch (_) { return null; }
   }
@@ -1615,7 +1615,7 @@ renderFab();
   async function parseResume(onStatus) {
     const profile = getProfile();
     if (!profile) throw new Error('请先在"管理简历资料"中录入或上传简历');
-    if (!isAIAvailable()) throw new Error('未检测到 Tabbit AI，无法进行分析');
+    if (!isAIAvailable()) throw new Error('未检测到 Yuze AI，无法进行分析');
     if (onStatus) onStatus(`正在用 AI 解析简历…`);
     const prompt = parseResumePrompt(profile);
     /* console.group('[简历填写助手] 发送给 AI 的提示词');
@@ -1870,12 +1870,12 @@ return output;
 function importPrompt() { return '你是简历资料整理助手。请仅基于用户提供的简历内容提取和重组信息，不得补充、猜测或编造任何事实。将结果整理为可直接保存到“简历资料库”的中文纯文本，尽量包含：姓名、联系方式、教育经历、实习/工作经历、项目经历、技能、奖项/证书、求职意向。未出现的信息不要虚构。保留时间、公司、学校、项目、职责、技术和量化成果等原始事实；可优化表达但不得改变事实。不要使用 Markdown 表格，不要解释处理过程，只输出整理后的资料文本。'; }
   async function importResumeFile(file, textarea, statusEl, button) {
     if (!file) { statusEl.textContent = '请先选择图片或文本简历。'; return; }
-    if (!isAIAvailable()) { statusEl.textContent = '未检测到 Tabbit AI，无法解析文件。'; return; }
+    if (!isAIAvailable()) { statusEl.textContent = '未检测到 Yuze AI，无法解析文件。'; return; }
     const image = file.type.startsWith('image/') && /\.(png|jpe?g|webp)$/i.test(file.name); const text = /^(text\/|application\/(json|xml))/.test(file.type) || /\.(txt|md|csv|html?)$/i.test(file.name);
     if (!image && !text) { statusEl.textContent = '仅支持 PNG、JPG、JPEG、WEBP 图片及 TXT、MD、CSV、HTML 文本；暂不支持 PDF / DOCX。'; return; }
     if (image && file.size > CONFIG.MAX_IMPORT_IMAGE_BYTES) { statusEl.textContent = '图片超过 2 MB，请压缩后再上传。'; return; }
     if (text && file.size > CONFIG.MAX_IMPORT_TEXT_BYTES) { statusEl.textContent = '文本超过 300 KB，请仅保留简历正文。'; return; }
-    button.disabled = true; statusEl.textContent = '正在交给 Tabbit AI 提取并整理简历资料，请稍候…';
+    button.disabled = true; statusEl.textContent = '正在交给 Yuze AI 提取并整理简历资料，请稍候…';
     try {
       const reply = image ? await window.LLMBridge.chat(importPrompt(), { images: [await toDataUrl(file)] }) : await window.LLMBridge.chat(`${importPrompt()}\n\n【用户上传的简历文本】\n${await readTextFile(file)}`);
       const parsed = cleanText(reply); if (!parsed) throw new Error('AI 未返回可用资料');
@@ -2187,7 +2187,7 @@ function importPrompt() { return '你是简历资料整理助手。请仅基于�
     return /自我评价|自我介绍|个人(?:简介|总结|优势|概述|描述|陈述)|职业(?:概述|摘要|规划|目标)|核心(?:优势|能力)|能力总结|专业总结|求职动机|应聘理由|岗位匹配|自荐|个人亮点|个人特长/u.test(semantic);
   }
   async function aiGenerateForField(field, resume, fields = scanFields()) {
-    if (!isAIAvailable()) throw new Error('未检测到 Tabbit AI，无法生成内容');
+    if (!isAIAvailable()) throw new Error('未检测到 Yuze AI，无法生成内容');
     const { section, label } = splitFieldContext(field.label);
     const formContext = getFieldAIContext(field, fields);
     const narrativeMode = isNarrativeGenerationField(field, formContext);
@@ -2234,7 +2234,7 @@ function importPrompt() { return '你是简历资料整理助手。请仅基于�
     ].join('\n');
   }
   async function aiCompressCandidate(field, sourceValue, maxLength) {
-    if (!isAIAvailable()) throw new Error('未检测到 Tabbit AI，无法压缩内容');
+    if (!isAIAvailable()) throw new Error('未检测到 Yuze AI，无法压缩内容');
     const raw = await window.LLMBridge.chat(compressionPrompt(field, sourceValue, maxLength));
     const value = trimValue(raw);
     if (!value) throw new Error('AI 未返回可用的压缩内容');
@@ -2316,7 +2316,7 @@ function importPrompt() { return '你是简历资料整理助手。请仅基于�
     const profile = getProfile();
     if (!value) throw new Error('请先填写当前字段，再加入简历资料');
     if (!profile) throw new Error('尚未保存原始简历资料，请先在“简历资料”中录入资料');
-    if (!isAIAvailable()) throw new Error('未检测到 Tabbit AI，无法归类资料');
+    if (!isAIAvailable()) throw new Error('未检测到 Yuze AI，无法归类资料');
     const plan = await aiPlanProfileUpdate(field, value, profile);
     if (!plan.shouldAdd) {
       if (plan.conflict) throw new Error((plan.reason || '原始简历资料中存在冲突信息') + '，请到“简历资料”中人工核对');
@@ -2338,7 +2338,7 @@ function importPrompt() { return '你是简历资料整理助手。请仅基于�
     const value = trimValue(field.element.value);
     if (!value) throw new Error('请先填写当前字段，再加入简历资料');
     if (!getProfile()) throw new Error('尚未保存原始简历资料，请先在“简历资料”中录入资料');
-    if (!isAIAvailable()) throw new Error('未检测到 Tabbit AI，无法归类资料');
+    if (!isAIAvailable()) throw new Error('未检测到 Yuze AI，无法归类资料');
     const requestKey = hash(`${field.key}|${normalizeProfileFact(field.label)}|${normalizeProfileFact(value)}`);
     if (pendingProfileUpdateKeys.has(requestKey)) return { queued: false, reason: '该字段正在后台加入简历资料' };
     pendingProfileUpdateKeys.add(requestKey);

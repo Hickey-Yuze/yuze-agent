@@ -7,7 +7,7 @@
  * 核心原则：岗位职责、岗位要求、加分项 一律照搬原文，不做 AI 提炼概括
  *
  * 使用方式：
- *   1. 安装到 Tabbit 浏览器
+ *   1. 安装到 Yuze 浏览器
  *   2. 终端启动本地服务：node proxy.js（默认端口 8788）
  *   3. 飞书开放平台创建自建应用，开通 bitable 和 wiki 权限
  *   4. 在多维表格右上角「...」→「...更多」→ 添加文档应用 → 搜索应用名 → 添加为可编辑
@@ -994,7 +994,7 @@ score 基于"硬性要求"的匹配程度计算，满分 100 分：
 
         <div style="margin-bottom:14px;border:1px solid var(--border-color);border-radius:8px;padding:12px;">
           <div style="font-weight:600;margin-bottom:6px;">🔗 方式二：连接飞书多维表格（推荐）</div>
-          <div style="margin-bottom:4px;">1. 安装依赖妙招「JD Lens 本地服务」，复制代码保存为 <code style="background:rgba(0,0,0,0.08);padding:2px 6px;border-radius:4px;">proxy.js</code></div>
+          <div style="margin-bottom:4px;">1. 安装依赖技炉「JD Lens 本地服务」，复制代码保存为 <code style="background:rgba(0,0,0,0.08);padding:2px 6px;border-radius:4px;">proxy.js</code></div>
           <div style="margin-bottom:4px;">2. 终端运行 <code style="background:rgba(0,0,0,0.08);padding:2px 6px;border-radius:4px;">node proxy.js</code></div>
           <div style="color:#6b7280;margin-bottom:6px;">看到"服务已启动"即可</div>
           <div style="margin-bottom:4px;">3. 飞书开放平台创建自建应用，开通 bitable 和 wiki 权限</div>

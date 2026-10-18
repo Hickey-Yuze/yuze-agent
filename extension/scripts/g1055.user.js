@@ -1120,7 +1120,7 @@
                 showMessage('即将跳转到 QHR 超级插件页面');
                 
                 setTimeout(() => {
-                    openURL('https://go.tabbit.site/projects/tj3xYcwVLL#install');
+                    openURL('https://go.Yuze.site/projects/tj3xYcwVLL#install');
                     clickCount = 0;
                     S.qhrClickCount = 0;
                     saveState('qhrClickCount', 0);
@@ -1149,7 +1149,7 @@
             html:
                 '<div style="font-weight:700;margin-bottom:8px">🔗 目标网址</div>' +
                 '<div style="font-size:13px;color:var(--tb-text2);word-break:break-all">' +
-                'https://go.tabbit.site/projects/tj3xYcwVLL#install' +
+                'https://go.Yuze.site/projects/tj3xYcwVLL#install' +
                 '</div>',
             style: 'text-align:center'
         }));

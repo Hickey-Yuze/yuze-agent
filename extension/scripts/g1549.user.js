@@ -1,7 +1,7 @@
 (function() {
   'use strict';
   
-  const PET_ID = 'tabbit-desktop-pet';
+  const PET_ID = 'Yuze-desktop-pet';
   const PET_IMAGE = 'https://tab-web-prod-1300456063.cos.ap-beijing.myqcloud.com/skill_plaza/a3572d8142874bddb65304ab7846e3e5/a3572d8142874bddb65304ab7846e3e5.png';
   
   const PET_WIDTH = 300;
@@ -21,7 +21,7 @@
       user-select: none;
       right: 20px;
       bottom: 20px;
-      animation: tabbitDrop 2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      animation: YuzeDrop 2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
       transform-origin: center center;
     }
     #${PET_ID}:active {
@@ -35,7 +35,7 @@
       display: block;
     }
     
-    @keyframes tabbitDrop {
+    @keyframes YuzeDrop {
       0% {
         transform: translateY(-100vh) rotate(-15deg);
         opacity: 0;
@@ -59,7 +59,7 @@
       }
     }
     
-    .tabbit-confetti {
+    .Yuze-confetti {
       position: fixed;
       width: 12px;
       height: 12px;
@@ -68,7 +68,7 @@
       border-radius: 3px;
     }
     
-    @keyframes tabbitFirework {
+    @keyframes YuzeFirework {
       0% {
         transform: translate(0, 0) rotate(0deg);
         opacity: 1;
@@ -79,7 +79,7 @@
       }
     }
     
-    .tabbit-birthday-container {
+    .Yuze-birthday-container {
       position: fixed;
       pointer-events: none;
       z-index: 999999;
@@ -92,14 +92,14 @@
       letter-spacing: -2px;
     }
     
-    .tabbit-birthday-letter {
+    .Yuze-birthday-letter {
       display: inline-block;
-      animation: tabbitLetterAnim 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      animation: YuzeLetterAnim 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
       opacity: 0;
       text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
     }
     
-    @keyframes tabbitLetterAnim {
+    @keyframes YuzeLetterAnim {
       0% {
         transform: scale(0) translateY(50px);
         opacity: 0;
@@ -135,7 +135,7 @@
 
     for (let i = 0; i < particleCount; i++) {
       const confetti = document.createElement('div');
-      confetti.className = 'tabbit-confetti';
+      confetti.className = 'Yuze-confetti';
       confetti.style.left = x + 'px';
       confetti.style.top = y + 'px';
       confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
@@ -151,7 +151,7 @@
       confetti.style.setProperty('--rotate', rotate + 'deg');
       
       const duration = 2 + Math.random() * 0.8;
-      confetti.style.animation = `tabbitFirework ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards`;
+      confetti.style.animation = `YuzeFirework ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards`;
       
       document.body.appendChild(confetti);
       setTimeout(() => confetti.remove(), duration * 1000);
@@ -163,13 +163,13 @@
     const colors = ['#FF4757', '#FFA502', '#FFD700', '#1E90FF', '#9B59B6'];
     
     const container = document.createElement('div');
-    container.className = 'tabbit-birthday-container';
+    container.className = 'Yuze-birthday-container';
     container.style.left = (x - 230) + 'px';
     container.style.top = (y - 250) + 'px';
     
     text.split('').forEach((char, index) => {
       const letter = document.createElement('span');
-      letter.className = 'tabbit-birthday-letter';
+      letter.className = 'Yuze-birthday-letter';
       letter.textContent = char;
       letter.style.color = colors[index % colors.length];
       letter.style.animationDelay = (index * 0.05) + 's';

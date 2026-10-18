@@ -1,4 +1,4 @@
-// ContextFlow Tabbit Skill v0.3.0 — LLMBridge AI + 本地批注 + Obsidian/Markdown 同步。
+// ContextFlow Yuze Skill v0.3.0 — LLMBridge AI + 本地批注 + Obsidian/Markdown 同步。
 (() => {
   var __defProp = Object.defineProperty;
   var __export = (target, all) => {
@@ -1438,7 +1438,7 @@ ${entry}
   }
 
   // src/public/api.js
-  var MODEL = "Tabbit LLMBridge";
+  var MODEL = "Yuze LLMBridge";
   var unavailable = (message, code = "PUBLIC_LOCAL_ONLY") => Promise.reject(Object.assign(
     new Error(message),
     { code, status: 503 }
@@ -1452,7 +1452,7 @@ ${entry}
       await wait(100);
     } while (Date.now() < end);
     throw Object.assign(
-      new Error("Tabbit 未向当前妙招注入 LLMBridge，请确认妙招已获 AI 能力后重试"),
+      new Error("Yuze 未向当前技炉注入 LLMBridge，请确认技炉已获 AI 能力后重试"),
       { code: "LLM_BRIDGE_UNAVAILABLE", status: 503 }
     );
   }
@@ -1461,7 +1461,7 @@ ${entry}
     let timer;
     const timeout = new Promise((_, reject) => {
       timer = setTimeout(() => reject(Object.assign(
-        new Error("Tabbit AI 超过 60 秒未返回，可稍后手动重试"),
+        new Error("Yuze AI 超过 60 秒未返回，可稍后手动重试"),
         { code: "LLM_BRIDGE_TIMEOUT", status: 504 }
       )), callTimeoutMs);
     });
@@ -1502,7 +1502,7 @@ ${entry}
     };
     const text = walk(raw);
     if (!text) throw Object.assign(
-      new Error("Tabbit AI 返回了无法识别的空结果"),
+      new Error("Yuze AI 返回了无法识别的空结果"),
       { code: "LLM_BRIDGE_BAD_RESPONSE", status: 502 }
     );
     return text;
@@ -1521,14 +1521,14 @@ ${entry}
     }
     active = true;
     try {
-      item.onProgress?.({ progress: "等待 Tabbit AI…" });
+      item.onProgress?.({ progress: "等待 Yuze AI…" });
       const raw = await callBridge(item.prompt, { response_format: "json" });
       if (item.signal?.aborted) throw Object.assign(new Error("已取消"), { code: "ABORTED" });
       item.resolve(raw);
     } catch (e) {
       if (e?.code) item.reject(e);
       else item.reject(Object.assign(
-        new Error(`Tabbit AI 调用失败：${e?.message || e}`),
+        new Error(`Yuze AI 调用失败：${e?.message || e}`),
         { code: "LLM_BRIDGE_ERROR", status: 502 }
       ));
     } finally {
@@ -1676,7 +1676,7 @@ ${entry}
       ctx: c.ctx
     };
   }
-  var getConfig = () => unavailable("公开妙招由 Tabbit LLMBridge 提供 AI，无需配置密钥");
+  var getConfig = () => unavailable("公开技炉由 Yuze LLMBridge 提供 AI，无需配置密钥");
   var putConfig = getConfig;
   var listModels = getConfig;
   var listNotebooks = getConfig;
@@ -1686,7 +1686,7 @@ ${entry}
   var sync = (urlKey2) => syncToFileTarget(urlKey2);
   var getJob = getConfig;
   var cancelJob = async () => false;
-  var detectAgents = () => unavailable("公开妙招不运行本地 Agent");
+  var detectAgents = () => unavailable("公开技炉不运行本地 Agent");
 
   // src/skill/theme.js
   var T = {
@@ -2008,13 +2008,13 @@ ${entry}
           <div class="section-copy"><span class="eyebrow">SERVICE</span><h3>AI 服务</h3></div>
           <span class="info-tip">
             <button class="info-btn" type="button" aria-label="查看 AI 服务说明" aria-describedby="ai-help">${icon("help")}</button>
-            <span class="info-pop" id="ai-help" role="tooltip">翻译、解释与速览由 Tabbit AI 处理。仅在调用功能时发送必要内容，不需要另填模型密钥。</span>
+            <span class="info-pop" id="ai-help" role="tooltip">翻译、解释与速览由 Yuze AI 处理。仅在调用功能时发送必要内容，不需要另填模型密钥。</span>
           </span>
           <span class="section-rule"></span>
         </div>
         <div class="service-line">
           <span class="service-mark">${brandMark()}</span>
-          <span class="service-copy"><strong>Tabbit LLMBridge</strong><span>随浏览器提供的 AI 通道</span></span>
+          <span class="service-copy"><strong>Yuze LLMBridge</strong><span>随浏览器提供的 AI 通道</span></span>
           <span class="bridge-state" id="bridge-state"></span>
         </div>
       </section>
@@ -3279,7 +3279,7 @@ ${Object.entries(DARK_COLORS).map(([name, color]) => `  :host([data-theme=dark])
       console.log("[ContextFlow] 就绪", { key: this.key, n: this.items.length, online: this.online });
     }
     /**
-     * 切换现有面板。公开妙招重复执行时走这里，避免再次构造整套 UI。
+     * 切换现有面板。公开技炉重复执行时走这里，避免再次构造整套 UI。
      * DOM 尚未 ready 时先记下意图，Panel 创建后再应用。
      */
     togglePanel() {
@@ -4105,9 +4105,9 @@ ${Object.entries(DARK_COLORS).map(([name, color]) => `  :host([data-theme=dark])
       if (e.code === "NO_FILE_TARGET") return "打开“配置”并选择 Obsidian Vault 或 Markdown 文件夹";
       if (e.code === "FS_PERMISSION") return "打开“配置”并点击重新授权";
       if (e.code === "FS_UNSUPPORTED") return "当前浏览器不支持文件夹写入，可使用底部“下载”";
-      if (e.code === "LLM_BRIDGE_UNAVAILABLE") return "请在支持 AI 能力的 Tabbit 妙招环境中运行";
+      if (e.code === "LLM_BRIDGE_UNAVAILABLE") return "请在支持 AI 能力的 Yuze 技炉环境中运行";
       if (e.code === "LLM_BRIDGE_TIMEOUT") return "本次等待已结束；晚到结果不会写入，可稍后手动重试";
-      if (["LLM_BRIDGE_ERROR", "LLM_BRIDGE_BAD_RESPONSE"].includes(e.code)) return "Tabbit AI 暂时不可用，请稍后手动重试";
+      if (["LLM_BRIDGE_ERROR", "LLM_BRIDGE_BAD_RESPONSE"].includes(e.code)) return "Yuze AI 暂时不可用，请稍后手动重试";
       if (e.code === "NO_AGENT") return "在面板「配置」里选一个本地 agent 并点「检测」";
       if (e.code === "AGENT_SPAWN") return "选中的 agent 没装或不在 PATH 上";
       if (e.code === "AGENT_TIMEOUT") return "agent 太久没返回；可在配置里调大超时或改用 LLM";

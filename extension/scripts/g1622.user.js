@@ -1,7 +1,7 @@
 async (args = {}) => {
   const registerPersonalSkill = (
     async ({
-      page_origin = "https://web.tabbit.com",
+      page_origin = "https://web.Yuze.com",
       page_path = "/plaza/skills",
       api_base = "/api/v1/prompts",
       upload_api_base = "/proxy/v0/skills",

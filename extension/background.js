@@ -1,4 +1,4 @@
-// 自动运行：进入匹配网站时自动注入已启用「自动运行」的脚本妙招
+// 自动运行：进入匹配网站时自动注入已启用「自动运行」的脚本技炉
 chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
   if (info.status !== 'complete' || !tab.url) return;
   try {

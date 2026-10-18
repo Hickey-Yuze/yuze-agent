@@ -140,7 +140,7 @@
 
      <div class="footer-note">
       💡 如何保存和运行游戏:<br/>
-      点击妙招链接窗口右上角【一键添加】即可保存这个妙招，快去试试吧
+      点击技炉链接窗口右上角【一键添加】即可保存这个技炉，快去试试吧
     </div>
   `;
   document.body.appendChild(container);

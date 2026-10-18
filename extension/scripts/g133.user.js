@@ -523,7 +523,7 @@
     detail.replaceChildren(list, btn, fbBox);
   }
 
-  // 学习空间反馈：优先用 Tabbit 内置 AI（LLMBridge）本地生成，省云上额度；
+  // 学习空间反馈：优先用 Yuze 内置 AI（LLMBridge）本地生成，省云上额度；
   // 没有 LLMBridge 或本地失败时降级调云上 /api/workspace/feedback。
   async function generateWorkspaceFeedback(workspace, items) {
     if (typeof LLMBridge !== "undefined" && typeof LLMBridge.chat === "function") {
@@ -1019,32 +1019,32 @@
     }).observe(titleEl, { subtree: true, characterData: true, childList: true });
   }
 
-  // 点「返回学习页面」：优先用 Tabbit 妙招的 tab API 直接切回学习源 tab（不新开页面）。
+  // 点「返回学习页面」：优先用 Yuze 技炉的 tab API 直接切回学习源 tab（不新开页面）。
   // 普通网页 JS 不能任意激活已有 tab（浏览器安全限制），所以 API 不存在时依次降级：
-  //   1) Tabbit.tabs.activate（需记录/查询到源 tab id）
+  //   1) Yuze.tabs.activate（需记录/查询到源 tab id）
   //   2) window.opener.focus()（本 tab 是从学习页 window.open 出来的才能聚焦回去）
   //   3) 就地提示手动切换标签，不再 window.open 堆积重复的学习页 tab
-  function tabbitTabs() {
-    try { return (window.Tabbit || window.tabbit)?.tabs || null; } catch (_) { return null; }
+  function YuzeTabs() {
+    try { return (window.Yuze || window.Yuze)?.tabs || null; } catch (_) { return null; }
   }
 
   // 读当前 tab 的 id（供学习源页广播给其它 tab，切回时用）；读不到返回 null
-  function readTabbitTabId() {
-    if (state._tabbitTabId !== undefined) return state._tabbitTabId;
+  function readYuzeTabId() {
+    if (state._YuzeTabId !== undefined) return state._YuzeTabId;
     let id = null;
     try {
-      const tabs = tabbitTabs();
+      const tabs = YuzeTabs();
       const current = tabs?.current?.() ?? tabs?.getCurrent?.();
       if (current != null) id = typeof current === "object" ? (current.id ?? null) : current;
     } catch (_) { id = null; }
-    state._tabbitTabId = id;
+    state._YuzeTabId = id;
     return id;
   }
 
   function backToSourceTab() {
     const url = state.session?.sourceUrl;
     if (!url) return;
-    // 直接在当前标签页导航回学习源页面：不再尝试 Tabbit API / opener.focus / 提示手动找标签
+    // 直接在当前标签页导航回学习源页面：不再尝试 Yuze API / opener.focus / 提示手动找标签
     window.location.href = url;
   }
 
@@ -1344,8 +1344,8 @@
     if (local?.active && isSourcePage()) {
       // 只有学习源页面自己广播进度；被共享冻结的 Tab 即使临时持有 session 也不广播，
       // 避免无关页面的 URL / 标题污染共享状态，导致「返回学习页面」指错地方。
-      // tabId 一并广播：冻结 Tab 点「返回学习页面」时优先用 Tabbit tab API 直接切回本 tab。
-      share.write({ melt: Math.round(melt), title: local.sourceTitle || "", url: location.href, theme: local.theme || "ice", tabId: readTabbitTabId(), updatedAt: Date.now() });
+      // tabId 一并广播：冻结 Tab 点「返回学习页面」时优先用 Yuze tab API 直接切回本 tab。
+      share.write({ melt: Math.round(melt), title: local.sourceTitle || "", url: location.href, theme: local.theme || "ice", tabId: readYuzeTabId(), updatedAt: Date.now() });
     }
   }
 
@@ -1413,8 +1413,8 @@
     return null;
   }
 
-  // —— 选中即问：选中页面上的一段文字 → 选区上方浮出「让 AI 帮你理解」→ 调 Tabbit 内置 AI 解释 ——
-  // 只在妙招环境（LLMBridge 存在）里生效；普通浏览器里选字不会出现任何额外 UI。
+  // —— 选中即问：选中页面上的一段文字 → 选区上方浮出「让 AI 帮你理解」→ 调 Yuze 内置 AI 解释 ——
+  // 只在技炉环境（LLMBridge 存在）里生效；普通浏览器里选字不会出现任何额外 UI。
   function currentTextSelection() {
     const selection = window.getSelection ? window.getSelection() : null;
     if (!selection || selection.isCollapsed || selection.rangeCount === 0) return null;
@@ -1481,7 +1481,7 @@
         if (document.querySelector(".ice-sel-card")) return;   // 已展示解读卡片，不重复气泡
         const found = currentTextSelection();
         if (!found) return;
-        if (typeof LLMBridge === "undefined" || typeof LLMBridge.chat !== "function") return; // 没有 Tabbit AI 就不打扰
+        if (typeof LLMBridge === "undefined" || typeof LLMBridge.chat !== "function") return; // 没有 Yuze AI 就不打扰
         bubble = el("button", { class: "ice-ui ice-sel-bubble", type: "button" }, "让 AI 帮你理解");
         bubble.onclick = (clickEvent) => {
           clickEvent.stopPropagation();
@@ -1876,8 +1876,8 @@
     new MutationObserver(iceScheduleDecoScan).observe(document.documentElement, { subtree: true, childList: true });
   }
 
-  // —— Tabbit 内置 AI（LLMBridge）本地出题 ——
-  // 在妙招环境里 LLMBridge 是浏览器注入的全局对象，走本地推理，不依赖云上 LLM 配置。
+  // —— Yuze 内置 AI（LLMBridge）本地出题 ——
+  // 在技炉环境里 LLMBridge 是浏览器注入的全局对象，走本地推理，不依赖云上 LLM 配置。
   // 只负责「生成」，答案校验/判卷仍由后端做；后端 generate-set 收到 source=local 时
   // 直接走与云上出题一致的出口复核（evidence 原文比对 + 格式校验 + 去重），不调云端模型。
   // 模型返回可能是纯 JSON 字符串 / 已解析对象 / markdown code fence / 单题对象，统一兜底。
@@ -1973,7 +1973,7 @@
       for (let attempt = 0; attempt < 2 && !state.quizSet; attempt += 1) {
         // 题目全部由 AI 出。AI 出不来就记下原因让界面显示，不再用本地题顶上。
         try {
-          // 优先用 Tabbit 内置 AI（LLMBridge）在本地出题，不依赖云上 LLM 配置；
+          // 优先用 Yuze 内置 AI（LLMBridge）在本地出题，不依赖云上 LLM 配置；
           // LLMBridge 不存在或出题失败时回退云上路径（旧行为不变）。
           const local = await generateQuizzesLocally(material, state.session.goal, CONFIG.quizMinCount, CONFIG.quizMaxCount);
           const body = local
@@ -2360,7 +2360,7 @@ async function finalMelt(modal) {
       // 合法性检查：非 boolean active 的响应不能当成「会话已结束」，保持现状等下轮
       if (!latest || typeof latest.active !== "boolean") latest = state.session;
       else if (!latest.active && !isSourcePage() && location.origin !== new URL(CONFIG.api).origin) {
-        // Tabbit 妙招环境没有 GM_*，localStorage 又按站点隔离，跨域 Tab 之间唯一可靠的信号通道是云端：
+        // Yuze 技炉环境没有 GM_*，localStorage 又按站点隔离，跨域 Tab 之间唯一可靠的信号通道是云端：
         // 自己的会话不在，且本页不是学习源页 → 查「全局活跃会话」，别的 Tab 在学习就直接跟随冻结。
         // 全局查询失败时保持现状：旧版 catch 成 {active:false}，一次网络抖动就解锁 → 广播又冻结 → 反复弹窗。
         const global = await api("/session/global").catch(() => null);

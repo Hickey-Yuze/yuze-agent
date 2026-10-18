@@ -1,6 +1,6 @@
 (function() {
-  const STORAGE_KEY = 'tabbit_calendar_reminders';
-  const CONTAINER_ID = 'tabbit-calendar-widget';
+  const STORAGE_KEY = 'Yuze_calendar_reminders';
+  const CONTAINER_ID = 'Yuze-calendar-widget';
 
   if (document.getElementById(CONTAINER_ID)) return;
 
@@ -96,7 +96,7 @@
           `).join('')}
       </div>
       <div style="display:flex;gap:6px;">
-        <input id="tabbit-reminder-input" type="text" placeholder="输入提醒事项…" style="flex:1;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 12px;color:#fff;font-size:13px;outline:none;" />
+        <input id="Yuze-reminder-input" type="text" placeholder="输入提醒事项…" style="flex:1;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 12px;color:#fff;font-size:13px;outline:none;" />
         <button data-action="add-reminder" data-date="${dateStr}" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;color:#fff;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap;">添加</button>
       </div>
     `;
@@ -158,7 +158,7 @@
       selectedDate = null;
       update();
     } else if (action === 'add-reminder') {
-      const input = wrapper.querySelector('#tabbit-reminder-input');
+      const input = wrapper.querySelector('#Yuze-reminder-input');
       if (input && input.value.trim()) {
         const reminders = getReminders();
         const date = target.dataset.date;
@@ -182,7 +182,7 @@
 
   content.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
-      const input = wrapper.querySelector('#tabbit-reminder-input');
+      const input = wrapper.querySelector('#Yuze-reminder-input');
       if (input && input.value.trim()) {
         const addBtn = wrapper.querySelector('[data-action="add-reminder"]');
         if (addBtn) addBtn.click();

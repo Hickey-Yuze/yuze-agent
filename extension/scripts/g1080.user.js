@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Obsidian Web Clipper Callout Annotator
-// @namespace    https://tabbit-ai.com
+// @namespace    https://Yuze-ai.com
 // @version      1.4.15
 // @description  面向 Obsidian Web Clipper 的网页 Callout 标注器：15 种标注类型、合法列表插入、富文本编辑、自动保存与毛玻璃浮动面板。
 // @match        *://*/*

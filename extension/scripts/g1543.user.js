@@ -1,5 +1,5 @@
 (function () {
-    if (document.getElementById('tabbit-niudan-machine') || document.getElementById('tabbit-pet')) {
+    if (document.getElementById('Yuze-niudan-machine') || document.getElementById('Yuze-pet')) {
         return;
     }
 
@@ -23,7 +23,7 @@
 
     const style = document.createElement('style');
     style.textContent = `
-        #tabbit-niudan-machine {
+        #Yuze-niudan-machine {
             position: fixed;
             inset: 0;
             width: 100vw;
@@ -551,22 +551,22 @@
             color: #ff5286;
         }
 
-        #tabbit-pet {
+        #Yuze-pet {
             position: fixed;
             top: 0;
             left: 60px;
             z-index: 2147483645;
             width: 110px;
             transform-origin: 55px 0;
-            animation: tabbit-pet-swing 3.6s ease-in-out infinite;
+            animation: Yuze-pet-swing 3.6s ease-in-out infinite;
             user-select: none;
             pointer-events: auto;
         }
-        @keyframes tabbit-pet-swing {
+        @keyframes Yuze-pet-swing {
             0%, 100% { transform: rotate(-14deg); }
             50% { transform: rotate(14deg); }
         }
-        #tabbit-pet.dragging {
+        #Yuze-pet.dragging {
             animation: none !important;
         }
 
@@ -644,7 +644,7 @@
     document.head.appendChild(style);
 
     const wrapper = document.createElement('div');
-    wrapper.id = 'tabbit-niudan-machine';
+    wrapper.id = 'Yuze-niudan-machine';
     wrapper.innerHTML = `
         <button class="niudan-close" aria-label="关闭">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
@@ -806,18 +806,18 @@
     }
 
     function activatePet(stickerUrl) {
-        const existing = document.getElementById('tabbit-pet');
+        const existing = document.getElementById('Yuze-pet');
         if (existing) existing.remove();
 
         const pet = document.createElement('div');
-        pet.id = 'tabbit-pet';
+        pet.id = 'Yuze-pet';
         pet.innerHTML = `
             <div class="pet-pin"></div>
             <div class="pet-chain">
                 ${Array.from({ length: 9 }).map((_, i) => `<div class="pet-chain-bead" style="top:${i * 8}px"></div>`).join('')}
             </div>
             <div class="pet-sticker-wrap" title="拖动可移动">
-                <img class="pet-sticker" src="${stickerUrl}" alt="tabbit-pet" draggable="false"/>
+                <img class="pet-sticker" src="${stickerUrl}" alt="Yuze-pet" draggable="false"/>
             </div>
         `;
         document.body.appendChild(pet);

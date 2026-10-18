@@ -1,12 +1,12 @@
 (function() {
   'use strict';
 
-  const SCRIPT_ID = 'tabbit-xhs-album-batch-remove';
+  const SCRIPT_ID = 'Yuze-xhs-album-batch-remove';
   const STYLE_ID = `${SCRIPT_ID}-style`;
   const ANCHOR_ID = `${SCRIPT_ID}-anchor`;
   const BUTTON_ID = `${SCRIPT_ID}-button`;
   const OVERLAY_ID = `${SCRIPT_ID}-overlay`;
-  const CLEANUP_KEY = '__tabbitXhsAlbumBatchRemoveCleanup';
+  const CLEANUP_KEY = '__YuzeXhsAlbumBatchRemoveCleanup';
 
   if (window[CLEANUP_KEY]) window[CLEANUP_KEY]();
 
@@ -25,7 +25,7 @@
     maxVerifyPages: 12
   };
 
-  const rawConfig = window.__tabbitXhsAlbumBatchRemoveConfig || {};
+  const rawConfig = window.__YuzeXhsAlbumBatchRemoveConfig || {};
   const config = {
     ...defaultConfig,
     ...rawConfig,
@@ -255,7 +255,7 @@
   function getWebpackRequire() {
     let captured = null;
     const chunk = window.webpackChunkxhs_pc_web = window.webpackChunkxhs_pc_web || [];
-    chunk.push([[`tabbit-xhs-album-remove-api-${Date.now()}`], {}, req => {
+    chunk.push([[`Yuze-xhs-album-remove-api-${Date.now()}`], {}, req => {
       captured = req;
     }]);
     if (!captured) throw new Error('没有获取到小红书 webpack runtime，无法调用前端接口封装');
@@ -266,7 +266,7 @@
     try {
       return req?.(id);
     } catch (error) {
-      console.warn('[Tabbit XHS Album Remove] require module failed', { id, error: errorText(error) });
+      console.warn('[Yuze XHS Album Remove] require module failed', { id, error: errorText(error) });
       return null;
     }
   }
@@ -295,7 +295,7 @@
     try {
       Object.values(req?.c || {}).forEach(module => inspectApiExports(module?.exports, found, checked));
     } catch (error) {
-      console.warn('[Tabbit XHS Album Remove] inspect webpack cache failed', { error: errorText(error), detail: errorDetail(error) });
+      console.warn('[Yuze XHS Album Remove] inspect webpack cache failed', { error: errorText(error), detail: errorDetail(error) });
     }
     if ((!found.uncollect || !found.collect || !found.boardNote) && req?.m) {
       for (const id of Object.keys(req.m)) {
@@ -319,7 +319,7 @@
     if (!api.uncollect) throw new Error('没有找到小红书 note/uncollect 已签名接口封装');
     if (!api.collect) throw new Error('没有找到小红书 note/collect 已签名接口封装');
     state.apiModule = api;
-    console.debug('[Tabbit XHS Album Remove] 已获取小红书 API 模块', {
+    console.debug('[Yuze XHS Album Remove] 已获取小红书 API 模块', {
       hasUncollect: !!api.uncollect,
       hasCollect: !!api.collect,
       hasBoardNote: !!api.boardNote
@@ -345,13 +345,13 @@
     for (let attempt = 0; attempt <= retries; attempt += 1) {
       try {
         const response = await withTimeout(factory(), label, options.timeoutMs || config.apiRequestTimeoutMs);
-        console.debug('[Tabbit XHS Album Remove] 请求完成', { label, attempt: attempt + 1, response: summarizeApiResponse(response) });
+        console.debug('[Yuze XHS Album Remove] 请求完成', { label, attempt: attempt + 1, response: summarizeApiResponse(response) });
         return response;
       } catch (error) {
         lastError = error;
         if (attempt >= retries) break;
         const delay = config.apiRetryDelay * (attempt + 1);
-        console.warn('[Tabbit XHS Album Remove] 请求失败，准备重试', { label, attempt: attempt + 1, delay, error: errorText(error), detail: errorDetail(error) });
+        console.warn('[Yuze XHS Album Remove] 请求失败，准备重试', { label, attempt: attempt + 1, delay, error: errorText(error), detail: errorDetail(error) });
         await sleep(delay);
       }
     }
@@ -400,7 +400,7 @@
   async function ensureXhsApiLoginReady() {
     const api = getXhsApiModule();
     if (!api.uncollect || !api.collect) throw new Error('小红书页面内已签名的专辑移出接口不可用，请刷新页面后重试');
-    console.debug('[Tabbit XHS Album Remove] signed webpack api ready', {
+    console.debug('[Yuze XHS Album Remove] signed webpack api ready', {
       hasUncollect: true,
       hasCollect: true,
       hasBoardNote: !!api.boardNote
@@ -597,7 +597,7 @@
       }
 
       #${BUTTON_ID}.is-loading svg {
-        animation: tabbitXhsAlbumRemoveSpin 900ms linear infinite !important;
+        animation: YuzeXhsAlbumRemoveSpin 900ms linear infinite !important;
       }
 
       #${BUTTON_ID} span {
@@ -716,7 +716,7 @@
       .${SCRIPT_ID}-bar span {
         position: absolute !important;
         inset: 0 auto 0 0 !important;
-        width: var(--tabbit-xhs-album-remove-progress, 6%) !important;
+        width: var(--Yuze-xhs-album-remove-progress, 6%) !important;
         border-radius: inherit !important;
         background: linear-gradient(90deg, rgba(255,36,66,0.88), rgba(0,122,255,0.76), rgba(52,199,89,0.66)) !important;
         transition: width 240ms cubic-bezier(.2,.8,.2,1) !important;
@@ -872,7 +872,7 @@
         opacity: 0.55 !important;
       }
 
-      @keyframes tabbitXhsAlbumRemoveSpin {
+      @keyframes YuzeXhsAlbumRemoveSpin {
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
       }
@@ -923,7 +923,7 @@
   function updateProgress(progress, message) {
     const bar = document.querySelector(`.${SCRIPT_ID}-bar`);
     const log = document.querySelector(`.${SCRIPT_ID}-log`);
-    if (bar) bar.style.setProperty('--tabbit-xhs-album-remove-progress', `${Math.max(6, Math.min(100, Math.round(progress)))}%`);
+    if (bar) bar.style.setProperty('--Yuze-xhs-album-remove-progress', `${Math.max(6, Math.min(100, Math.round(progress)))}%`);
     if (log) log.textContent = message;
   }
 
@@ -1161,5 +1161,5 @@
   state.observer.observe(document.body, { childList: true, subtree: true });
   window.addEventListener('popstate', mount);
   window.addEventListener('hashchange', mount);
-  console.log('[Tabbit XHS Album Remove] 小红书收藏专辑多选移出按钮已启用', { config });
+  console.log('[Yuze XHS Album Remove] 小红书收藏专辑多选移出按钮已启用', { config });
 })();

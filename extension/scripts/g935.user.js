@@ -1,18 +1,18 @@
-// ==TabbitJiaZhao==
+// ==YuzeJiaZhao==
 // @name         ✅ Raptor 日志美化脚本
 // @namespace    https://km.sankuai.com/collabpage/2746617944
 // @version      2.2.7-tab
-// @description  Raptor 日志美化脚本 — Tabbit 妙招脚本版（日志美化 + 查询历史 + JSON 节点折叠 + 节点详情面板 + 双区域搜索 + JS 过滤；v2.2.7-tab 同步油猴版 v1.7.7：截断 JSON 自动补全闭合后格式化 + Java toString 行防碎片化）
+// @description  Raptor 日志美化脚本 — Yuze 技炉脚本版（日志美化 + 查询历史 + JSON 节点折叠 + 节点详情面板 + 双区域搜索 + JS 过滤；v2.2.7-tab 同步油猴版 v1.7.7：截断 JSON 自动补全闭合后格式化 + Java toString 行防碎片化）
 // @author       jiacongqian
 // @match        *://raptor.mws.sankuai.com/*
 // @match        *://raptor.mws-test.sankuai.com/*
 // @match        *://lion.mws.sankuai.com/*
 // @match        *://lion.mws-test.sankuai.com/*
 // @run-at       document-end
-// ==/TabbitJiaZhao==
+// ==/YuzeJiaZhao==
 
 /**
- * Tabbit 妙招脚本版 (v2.2.4-tab)
+ * Yuze 技炉脚本版 (v2.2.4-tab)
  *
  * 功能与油猴版 v1.7.4 完全拉齐：
  *   1. JSON 节点折叠（左侧 gutter 悬浮小三角，点击折叠/展开，占位符显示元素数）
@@ -44,7 +44,7 @@
 
   const SCRIPT_VERSION = "2.2.7-tab";
   console.log(
-    `%c【Raptor 助手】Tabbit 脚本 v${SCRIPT_VERSION} 已加载`,
+    `%c【Raptor 助手】Yuze 脚本 v${SCRIPT_VERSION} 已加载`,
     "color:#10b981;font-weight:bold;",
   );
 
@@ -1670,12 +1670,12 @@
         .replace(/([{[\],}])/g, '<span class="json-punctuation">$1</span>');
 
     /**
-     * 复制文本到剪贴板（navigator.clipboard → execCommand 两级兜底，适配 Tabbit 无 GM API）
+     * 复制文本到剪贴板（navigator.clipboard → execCommand 两级兜底，适配 Yuze 无 GM API）
      * @param {string} text - 要复制的文本
      * @param {Function} onCopySuccess - 复制成功回调
      */
     const copyTextToClipboard = (text, onCopySuccess) => {
-      // Tabbit 无油猴 GM API：navigator.clipboard 优先，execCommand 兜底
+      // Yuze 无油猴 GM API：navigator.clipboard 优先，execCommand 兜底
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard
           .writeText(text)
@@ -4168,7 +4168,7 @@
     // 这样即使用户在页面完全加载前就点击查询，也能捕获到
     interceptNetworkRequests();
 
-    // 慢加载兑底：Tabbit document-end 注入时 Vue 表格可能尚未渲染完，
+    // 慢加载兑底：Yuze document-end 注入时 Vue 表格可能尚未渲染完，
     // main() 那一次 executeRender 可能一行都看不到。追加 2s / 5s 两次
     // 兑底渲染（幂等，已美化的行直接跳过）。
     const scheduleRenderFallback = () => {
@@ -4204,7 +4204,7 @@
   } // end initRaptorLogModule
 
   // ── 启动入口（SPA 路由感知）────────────────────────────────
-  // Tabbit 只在 document load 时按 URL 匹配注入脚本，而 Raptor 是 qiankun SPA：
+  // Yuze 只在 document load 时按 URL 匹配注入脚本，而 Raptor 是 qiankun SPA：
   // 用户常从首页/其他入口经站内路由（pushState）跳到 /log/xxx，全程没有新的
   // document load，旧的 @match /log/* 永远命中不了 → 脚本根本不会被注入，
   // 必须整页刷新才生效。因此 @match 放宽到整个域名，这里再判断是否日志页，

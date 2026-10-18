@@ -36,7 +36,7 @@
     askDsh: true,
     // 右键「问问 DeepSeek Harness」默认开启
     autocomplete: true,
-    // Tabbit 首页提示词自动补全默认开启
+    // Yuze 首页提示词自动补全默认开启
     dshUrl: DSH_URL
     // DeepSeek Harness 服务地址
   };
@@ -2612,7 +2612,7 @@ A: ${answers[i] || "\u672A\u56DE\u7B54"}`).join("\n\n");
     <section class="sz-field sz-setting-card sz-switch-card">
       <div class="sz-switch-text">
         <div class="sz-card-heading"><span class="sz-card-icon">${ICONS.sparkle}</span><strong>\u63D0\u793A\u8BCD\u81EA\u52A8\u8865\u5168</strong></div>
-        <span class="sz-switch-desc">\u5728 Tabbit \u9996\u9875\u8F93\u5165\u63D0\u793A\u8BCD\u65F6\uFF0CAI \u4F1A\u5728\u672B\u5C3E\u663E\u793A\u53EF\u63A5\u53D7\u7684\u8865\u5168\u6587\u5B57\u3002</span>
+        <span class="sz-switch-desc">\u5728 Yuze \u9996\u9875\u8F93\u5165\u63D0\u793A\u8BCD\u65F6\uFF0CAI \u4F1A\u5728\u672B\u5C3E\u663E\u793A\u53EF\u63A5\u53D7\u7684\u8865\u5168\u6587\u5B57\u3002</span>
       </div>
       <button class="sz-switch ${s.autocomplete ? "on" : ""}" data-act="toggle-autocomplete" role="switch" aria-checked="${s.autocomplete}" aria-label="\u63D0\u793A\u8BCD\u81EA\u52A8\u8865\u5168"><span class="sz-switch-knob"></span></button>
     </section>
@@ -3005,8 +3005,8 @@ ${profile}` : "";
   var MIN_CHARS = 3;
   var DEBOUNCE_MS = 600;
   var GHOST_CLASS = "shizhi-ghost-text";
-  function isTabbitHome() {
-    return /(^|\.)tabbit\.com$/i.test(location.hostname);
+  function isYuzeHome() {
+    return /(^|\.)Yuze\.com$/i.test(location.hostname);
   }
   function findEditor() {
     for (const selector of INPUT_SELECTORS) {
@@ -3077,7 +3077,7 @@ ${profile}` : "";
       el.addEventListener("blur", this.handleBlur);
       el.addEventListener("scroll", this.handleScroll);
       this.setupGhostElement(el);
-      console.log("[\u62FE\u77E5] Tabbit \u9996\u9875\u63D0\u793A\u8BCD\u8865\u5168\u5DF2\u542F\u7528");
+      console.log("[\u62FE\u77E5] Yuze \u9996\u9875\u63D0\u793A\u8BCD\u8865\u5168\u5DF2\u542F\u7528");
     }
     setupGhostElement(inputEl) {
       const parent = inputEl.parentElement;
@@ -3281,8 +3281,8 @@ ${profile}` : "";
       }
     }
   };
-  function initTabbitAutocomplete() {
-    if (!isTabbitHome()) return;
+  function initYuzeAutocomplete() {
+    if (!isYuzeHome()) return;
     new HomeInputAutocomplete().start();
   }
 
@@ -3320,7 +3320,7 @@ ${profile}` : "";
       if (typeof LLMBridge !== "undefined") {
         const start = () => {
           boot();
-          initTabbitAutocomplete();
+          initYuzeAutocomplete();
         };
         if (document.readyState === "loading") {
           document.addEventListener("DOMContentLoaded", start, { once: true });

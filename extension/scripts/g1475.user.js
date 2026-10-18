@@ -2,7 +2,7 @@
   const __tabScriptArgs = null;
   const __tabOriginalFunction = (
     /**
-     * 安居客智能筛选妙招 V2 — 基于真实DOM结构完整重写
+     * 安居客智能筛选技炉 V2 — 基于真实DOM结构完整重写
      * 
      * 功能：
      *   Phase 1: 筛选弹窗 — 用户填写区域/价格/面积/房型/标签
@@ -291,7 +291,7 @@
               community,address,tags,image
             });
           }catch(err){
-            console.warn('[安居客妙招] 解析第'+idx+'条房源出错:',err.message);
+            console.warn('[安居客技炉] 解析第'+idx+'条房源出错:',err.message);
           }
         });
         
@@ -634,7 +634,7 @@
     </div>`;
           });
     
-          html+=`<div class="footer">由「安居客智能筛选妙招」自动生成 · 仅供个人参考</div></body></html>`;
+          html+=`<div class="footer">由「安居客智能筛选技炉」自动生成 · 仅供个人参考</div></body></html>`;
     
           const blob=new Blob([html],{type:'text/html;charset=utf-8'});
           const url=URL.createObjectURL(blob);
@@ -666,7 +666,7 @@
         const listings=scrapeListings();
         
         if(listings.length===0){
-          console.warn('[安居客妙招] 未检测到房源列表，回退到筛选模式');
+          console.warn('[安居客技炉] 未检测到房源列表，回退到筛选模式');
           showFilter();
           return{ok:true,summary:'未检测到房源列表，回退到筛选模式',data:{mode:'fallback',count:0}};
         }

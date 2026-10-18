@@ -280,7 +280,7 @@
 
   async function callAI(prompt, validate = validateAIResponse) {
     if (!globalThis.LLMBridge || typeof globalThis.LLMBridge.chat !== "function") {
-      throw new Error("当前环境未提供 Tabbit AI 能力");
+      throw new Error("当前环境未提供 Yuze AI 能力");
     }
     for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt += 1) {
       let timer;

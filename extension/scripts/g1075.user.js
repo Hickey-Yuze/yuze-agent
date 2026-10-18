@@ -1,8 +1,8 @@
 /*
- * Tabbit Skill: AI 浏览护栏
+ * Yuze Skill: AI 浏览护栏
  * Version: 0.9.3-privacy-details
  * Description: 在浏览网页时，同时守住你的注意力与隐私。
- * Runtime: Tabbit Script Host / 任意浏览器页内执行
+ * Runtime: Yuze Script Host / 任意浏览器页内执行
  */
 (function () {
   const META = {
@@ -41,10 +41,10 @@
     { host: /(bbc\.|cnn\.|nytimes\.|theguardian\.|medium\.com|36kr\.com|huxiu\.com)/i, category: 'news', label: '资讯站点', score: 12 },
     { host: /(github\.com|gitlab\.com|stackoverflow\.com)/i, category: 'dev', label: '开发站点', score: -10 },
     { host: /(notion\.so|feishu\.cn|yuque\.com|confluence|km\.sankuai\.com)/i, category: 'docs', label: '文档站点', score: -14 },
-    { host: /(web\.tabbit\.com|skills\.tabbit\.com|console\.catpaw\.sankuai\.com|reactmind\.sankuai\.com|mlt\.sankuai\.com)/i, category: 'console', label: '控制台/配置页', score: -14 },
+    { host: /(web\.Yuze\.com|skills\.Yuze\.com|console\.catpaw\.sankuai\.com|reactmind\.sankuai\.com|mlt\.sankuai\.com)/i, category: 'console', label: '控制台/配置页', score: -14 },
   ];
 
-  const WORK_CONTEXT_RE = /(控制台|配置管理|配置页|设置页|工作台|管理台|dashboard|console|settings|workspace|studio|admin|runtimes|runtime|channel|agent|创建妙招|编辑妙招|我的妙招|my skills|skill editor|skill new|plaza\/skills|配置|发布|版本|渠道)/i;
+  const WORK_CONTEXT_RE = /(控制台|配置管理|配置页|设置页|工作台|管理台|dashboard|console|settings|workspace|studio|admin|runtimes|runtime|channel|agent|创建技炉|编辑技炉|我的技炉|my skills|skill editor|skill new|plaza\/skills|配置|发布|版本|渠道)/i;
   const SHOPPING_COPY_RE = /(购物|商品|促销|成交|加购|购物车|下单|买|优惠|限时抢购|推荐商品)/i;
   const FEED_COPY_RE = /(内容流|信息流|下一条|越刷越|热榜|热搜|刷下去|连续推荐)/i;
 
@@ -953,7 +953,7 @@
       { type: 'news', label: '资讯/文章页', re: /(news|资讯|headline|article|blog|推荐阅读|猜你喜欢|热榜)/, score: 12 },
       { type: 'docs', label: '文档/知识库', re: /(docs|notion|feishu|yuque|confluence|km\.|wiki|document)/, score: -14 },
       { type: 'dev', label: '开发工作页', re: /(github|gitlab|stack overflow|localhost|cursor|vscode|code)/, score: -10 },
-      { type: 'console', label: '控制台/配置页', re: /(console|dashboard|workspace|studio|settings|配置|设置|工作台|管理台|创建妙招|编辑妙招|我的妙招|my skills|runtimes|runtime|channel|agent)/, score: -12 },
+      { type: 'console', label: '控制台/配置页', re: /(console|dashboard|workspace|studio|settings|配置|设置|工作台|管理台|创建技炉|编辑技炉|我的技炉|my skills|runtimes|runtime|channel|agent)/, score: -12 },
       { type: 'work', label: '办公协作页', re: /(jira|ones|slack|gmail|calendar|figma)/, score: -8 },
     ];
 
@@ -1809,7 +1809,7 @@
     const narrative = buildNarrative(report);
     state.narrative = narrative;
     window.__AI_BROWSER_GUARD_RESULT__ = report;
-    window.__TABBIT_SKILL_META__ = META;
+    window.__Yuze_SKILL_META__ = META;
 
     const status = document.getElementById(`${PANEL_ID}_status`);
     const headline = document.getElementById(`${PANEL_ID}_headline`);

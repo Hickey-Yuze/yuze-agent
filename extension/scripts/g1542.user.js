@@ -1,5 +1,5 @@
 (function () {
-    if (document.getElementById('tabbit-niudan-machine-8') || document.getElementById('tabbit-pet-8')) {
+    if (document.getElementById('Yuze-niudan-machine-8') || document.getElementById('Yuze-pet-8')) {
         return;
     }
 
@@ -28,7 +28,7 @@
 
     const style = document.createElement('style');
     style.textContent = `
-        #tabbit-niudan-machine-8 {
+        #Yuze-niudan-machine-8 {
             position: fixed;
             inset: 0;
             width: 100vw;
@@ -556,22 +556,22 @@
             color: #ff5286;
         }
 
-        #tabbit-pet-8 {
+        #Yuze-pet-8 {
             position: fixed;
             top: 0;
             left: 60px;
             z-index: 2147483645;
             width: 110px;
             transform-origin: 55px 0;
-            animation: tabbit-pet8-swing 3.6s ease-in-out infinite;
+            animation: Yuze-pet8-swing 3.6s ease-in-out infinite;
             user-select: none;
             pointer-events: auto;
         }
-        @keyframes tabbit-pet8-swing {
+        @keyframes Yuze-pet8-swing {
             0%, 100% { transform: rotate(-14deg); }
             50% { transform: rotate(14deg); }
         }
-        #tabbit-pet-8.dragging {
+        #Yuze-pet-8.dragging {
             animation: none !important;
         }
 
@@ -649,7 +649,7 @@
     document.head.appendChild(style);
 
     const wrapper = document.createElement('div');
-    wrapper.id = 'tabbit-niudan-machine-8';
+    wrapper.id = 'Yuze-niudan-machine-8';
     wrapper.innerHTML = `
         <button class="niudan8-close" aria-label="关闭">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
@@ -814,11 +814,11 @@
     }
 
     function activatePet(stickerUrl) {
-        const existing = document.getElementById('tabbit-pet-8');
+        const existing = document.getElementById('Yuze-pet-8');
         if (existing) existing.remove();
 
         const pet = document.createElement('div');
-        pet.id = 'tabbit-pet-8';
+        pet.id = 'Yuze-pet-8';
         pet.innerHTML = `
             <div class="pet8-pin"></div>
             <div class="pet8-chain">
@@ -827,7 +827,7 @@
                     .join('')}
             </div>
             <div class="pet8-sticker-wrap" title="拖动可移动">
-                <img class="pet8-sticker" src="${stickerUrl}" alt="tabbit-pet-8" draggable="false"/>
+                <img class="pet8-sticker" src="${stickerUrl}" alt="Yuze-pet-8" draggable="false"/>
             </div>
         `;
         document.body.appendChild(pet);

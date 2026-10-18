@@ -1,9 +1,9 @@
 (function () {
   'use strict';
 
-  const INSTANCE_KEY = '__tabbitPerlerBeadGenerator';
-  const CONFIG_KEY = '__tabbitPerlerBeadGeneratorConfig';
-  const HOST_ID = 'tabbit-perler-bead-generator-root';
+  const INSTANCE_KEY = '__YuzePerlerBeadGenerator';
+  const CONFIG_KEY = '__YuzePerlerBeadGeneratorConfig';
+  const HOST_ID = 'Yuze-perler-bead-generator-root';
   const VERSION = '1.6.1';
 
   window[INSTANCE_KEY]?.cleanup?.();
@@ -160,8 +160,8 @@
                 <button type="button" data-action="select-adjust-mode" data-adjust-mode="creative">创意调整</button>
               </div>
               <p class="adjustment-mode-hint" data-ref="adjustModeHint"></p>
-              <label class="adjustment-prompt-label" for="tabbit-perler-adjust-prompt">调整要求</label>
-              <textarea id="tabbit-perler-adjust-prompt" data-ref="adjustPrompt" rows="5"
+              <label class="adjustment-prompt-label" for="Yuze-perler-adjust-prompt">调整要求</label>
+              <textarea id="Yuze-perler-adjust-prompt" data-ref="adjustPrompt" rows="5"
                 placeholder="例如：眼睛更接近原图，保留手里的毛笔；减少身体内部的黑色描边。"></textarea>
               <p class="adjustment-note">会重新调用一次 Pro 生图；完成后自动重算当前尺寸的 MARD 色号图纸。</p>
             </div>
@@ -1106,7 +1106,7 @@
     } catch (error) {
       const fallbackOptions = Object.assign({}, requestOptions);
       delete fallbackOptions.optimize_prompt_mode;
-      console.warn('[Tabbit] Pro Prompt 优化请求失败，自动关闭优化重试一次:', error);
+      console.warn('[Yuze] Pro Prompt 优化请求失败，自动关闭优化重试一次:', error);
       showToast('Pro 优化暂时不可用，正在自动重试…', 2600);
       return requestImage(fallbackOptions);
     }
@@ -1469,7 +1469,7 @@
     image.removeAttribute('srcset');
     image.removeAttribute('sizes');
     image.src = generatedUrl;
-    image.dataset.tabbitPerlerBeadGenerated = 'true';
+    image.dataset.YuzePerlerBeadGenerated = 'true';
     return record;
   }
 
@@ -1487,7 +1487,7 @@
       if (srcset) node.setAttribute('srcset', srcset); else node.removeAttribute('srcset');
       if (sizes) node.setAttribute('sizes', sizes); else node.removeAttribute('sizes');
     });
-    delete image.dataset.tabbitPerlerBeadGenerated;
+    delete image.dataset.YuzePerlerBeadGenerated;
     refs.resultBackdrop.hidden = true;
     showToast('已恢复原图');
   }
@@ -1598,7 +1598,7 @@
         record,
         createdAt: Date.now()
       };
-      window.__tabbitPerlerBeadGeneratorLastCalls = calls;
+      window.__YuzePerlerBeadGeneratorLastCalls = calls;
       setPhase('success', '拼豆色号图纸已生成');
       showResult();
       showToast(`色号图纸生成完成：${pattern.colors.length} 种颜色，共 ${pattern.total} 颗`);
@@ -1606,8 +1606,8 @@
         if (state.phase === 'success') setPhase('idle');
       }, 2800);
     } catch (error) {
-      console.error('[Tabbit] 拼豆图生成失败:', error);
-      window.__tabbitPerlerBeadGeneratorLastCalls = calls;
+      console.error('[Yuze] 拼豆图生成失败:', error);
+      window.__YuzePerlerBeadGeneratorLastCalls = calls;
       setPhase('error', '', error instanceof Error ? error : new Error(String(error)));
       showToast(error?.message || '拼豆图生成失败', 3600);
       window.setTimeout(showComposer, 160);
@@ -1675,11 +1675,11 @@
         optimize_prompt_mode: 'pro',
         watermark: false
       });
-      const calls = Array.isArray(window.__tabbitPerlerBeadGeneratorLastCalls)
-        ? window.__tabbitPerlerBeadGeneratorLastCalls.slice()
+      const calls = Array.isArray(window.__YuzePerlerBeadGeneratorLastCalls)
+        ? window.__YuzePerlerBeadGeneratorLastCalls.slice()
         : [];
       calls.push({ stage: 'adjust-bead', mode, prompt, options });
-      window.__tabbitPerlerBeadGeneratorLastCalls = calls;
+      window.__YuzePerlerBeadGeneratorLastCalls = calls;
 
       const adjustedImage = config.mockBridge
         ? {
@@ -1762,14 +1762,14 @@
         optimize_prompt_mode: 'pro',
         watermark: false
       });
-      const calls = Array.isArray(window.__tabbitPerlerBeadGeneratorLastCalls)
-        ? window.__tabbitPerlerBeadGeneratorLastCalls.slice()
+      const calls = Array.isArray(window.__YuzePerlerBeadGeneratorLastCalls)
+        ? window.__YuzePerlerBeadGeneratorLastCalls.slice()
         : [];
 
       const frontPrompt = buildHeatEffectPrompt(result, 'front');
       const frontOptions = Object.assign({}, baseOptions);
       calls.push({ stage: 'heat-effect-front', prompt: frontPrompt, options: frontOptions });
-      window.__tabbitPerlerBeadGeneratorLastCalls = calls;
+      window.__YuzePerlerBeadGeneratorLastCalls = calls;
       const frontImage = config.mockBridge
         ? {
           dataUrl: await createMockImage(result.beadUrl, 'MOCK · 烫后正面', false),
@@ -1786,7 +1786,7 @@
       const backPrompt = buildHeatEffectPrompt(result, 'back');
       const backOptions = Object.assign({}, baseOptions);
       calls.push({ stage: 'heat-effect-back', prompt: backPrompt, options: backOptions });
-      window.__tabbitPerlerBeadGeneratorLastCalls = calls;
+      window.__YuzePerlerBeadGeneratorLastCalls = calls;
       const backImage = config.mockBridge
         ? {
           dataUrl: await createMockImage(result.beadUrl, 'MOCK · 烫后反面', false),
@@ -2073,7 +2073,7 @@
         if (srcset) node.setAttribute('srcset', srcset); else node.removeAttribute('srcset');
         if (sizes) node.setAttribute('sizes', sizes); else node.removeAttribute('sizes');
       });
-      delete image.dataset.tabbitPerlerBeadGenerated;
+      delete image.dataset.YuzePerlerBeadGenerated;
     });
     host.remove();
     if (window[INSTANCE_KEY]?.cleanup === cleanup) delete window[INSTANCE_KEY];

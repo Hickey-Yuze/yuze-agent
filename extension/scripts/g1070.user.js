@@ -1,11 +1,11 @@
 (function() {
-  if (document.getElementById('__tabbit_timer_overlay')) return;
+  if (document.getElementById('__Yuze_timer_overlay')) return;
 
   const style = document.createElement('style');
   style.textContent = `
-    #__tabbit_timer_overlay *{margin:0;padding:0;box-sizing:border-box}
-    #__tabbit_timer_overlay{position:fixed;z-index:2147483647;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
-    #__tabbit_timer_drag{cursor:move;user-select:none}
+    #__Yuze_timer_overlay *{margin:0;padding:0;box-sizing:border-box}
+    #__Yuze_timer_overlay{position:fixed;z-index:2147483647;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+    #__Yuze_timer_drag{cursor:move;user-select:none}
     .__tt_panel{background:#1a1a2e;border-radius:20px;padding:28px 24px 24px;box-shadow:0 16px 48px rgba(0,0,0,0.6);text-align:center;min-width:300px;border:1px solid #2a2a4a}
     .__tt_title{font-size:14px;color:#8888aa;letter-spacing:2px;margin-bottom:16px}
     .__tt_display{font-size:72px;font-weight:700;color:#e94560;letter-spacing:4px;text-shadow:0 0 40px rgba(233,69,96,0.4);line-height:1.1;font-variant-numeric:tabular-nums}
@@ -34,7 +34,7 @@
   document.head.appendChild(style);
 
   const overlay = document.createElement('div');
-  overlay.id = '__tabbit_timer_overlay';
+  overlay.id = '__Yuze_timer_overlay';
   overlay.innerHTML = `
     <div class="__tt_panel" style="position:relative">
       <button class="__tt_close" id="__tt_close_btn" title="关闭">✕</button>

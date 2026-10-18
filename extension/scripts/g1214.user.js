@@ -3,7 +3,7 @@
 // @namespace    https://www.bilibili.com/*
 // @version      1.0
 // @description  解除B站未登录时的画质限制、评论限制和登录弹窗
-// @author       Tabbit妙招助手
+// @author       Yuze技炉助手
 // @match        https://www.bilibili.com/*
 // @grant        none
 // ==/UserScript==

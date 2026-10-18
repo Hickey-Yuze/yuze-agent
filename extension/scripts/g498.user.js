@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      1.1
 // @description  修复API问题的AI热点收集插件
-// @author       Tabbit
+// @author       Yuze
 // @match        *://*/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_notification

@@ -1,15 +1,15 @@
 /**
- * Tabbit · 抖音选题分析
+ * Yuze · 抖音选题分析
  * 当前视频内容提取、结构拆解、选题分析与本地灵感库。
  */
 (function () {
   'use strict';
 
-  const SCRIPT_ID = 'tabbit-douyin-inspiration-library';
+  const SCRIPT_ID = 'Yuze-douyin-inspiration-library';
   const STYLE_ID = `${SCRIPT_ID}-style`;
   const HOST_ID = `${SCRIPT_ID}-host`;
-  const CLEANUP_KEY = '__tabbitDouyinInspirationCleanup';
-  const API_KEY = '__tabbitDouyinInspirationApi';
+  const CLEANUP_KEY = '__YuzeDouyinInspirationCleanup';
+  const API_KEY = '__YuzeDouyinInspirationApi';
   const CONFIG_KEY = `${SCRIPT_ID}:config:v1`;
   const LIBRARY_KEY = `${SCRIPT_ID}:library:v1`;
   const CACHE_KEY = `${SCRIPT_ID}:analysis-cache:v7`;
@@ -59,7 +59,7 @@
     llmTimeoutMs: 90000,
     maxCacheItems: 24
   };
-  const overrides = window.__tabbitDouyinInspirationConfig || {};
+  const overrides = window.__YuzeDouyinInspirationConfig || {};
 
   const state = {
     config: normalizeConfig(readJson(CONFIG_KEY, {})),
@@ -755,7 +755,7 @@
   }
 
   async function collectCommentsFromDetailPage(source) {
-    const mock = window.__tabbitDouyinInspirationTestComments?.[source.key];
+    const mock = window.__YuzeDouyinInspirationTestComments?.[source.key];
     if (Array.isArray(mock)) return { comments: mock.slice(0, 8), status: 'mock', error: '' };
     if (!/^https?:.*\/(?:video|note)\//i.test(source.sourceUrl || '')) {
       return { comments: [], status: 'invalid_url', error: '作品详情链接不可用' };
@@ -1309,7 +1309,7 @@
       breakdown: Object.fromEntries(DIMENSIONS.map(([key, label]) => [key, {
         title: label, summary: source.douyinAiText
           ? `已获取抖音 AI 证据，但当前环境没有 LLMBridge，暂不能完成“${label}”的结构化转换。`
-          : '当前环境没有 LLMBridge，已保留素材，注入 Tabbit 后可重新分析。'
+          : '当前环境没有 LLMBridge，已保留素材，注入 Yuze 后可重新分析。'
       }])),
       angles: [{ title: '原题复用', idea: `围绕“${source.title.slice(0, 60)}”结合 ${profile.track || '你的赛道'} 重新表达` }],
       tags
@@ -1442,7 +1442,7 @@
         videoKey: currentKey || state.activeVideoKey,
         summaryStatus: state.summaryStatus
       });
-      if (!/视频已切换/.test(message)) console.error('[Tabbit Douyin Inspiration]', error);
+      if (!/视频已切换/.test(message)) console.error('[Yuze Douyin Inspiration]', error);
       feedback = [message, /视频已切换/.test(message) ? 'warning' : 'error'];
     } finally {
       state.running = false;
@@ -1533,7 +1533,7 @@
         stack: error?.stack,
         videoKey: state.result?.source?.key
       });
-      console.error('[Tabbit Douyin Inspiration]', error);
+      console.error('[Yuze Douyin Inspiration]', error);
       feedback = [cleanText(error?.message || error) || '选题微调失败', 'error'];
     } finally {
       state.refining = false;
@@ -1985,7 +1985,7 @@
     if (!state.root) return;
     state.root.innerHTML = `<button class="launcher" data-action="toggle" aria-label="打开选题分析"><span>✦</span><b>选题分析</b></button>
       <aside class="panel ${state.panelOpen ? 'open' : ''}" aria-label="抖音选题分析">
-        <header><div><span class="eyebrow">TABBIT · DOUYIN</span><h2>${state.activeTab === 'library' ? '灵感库' : state.activeTab === 'settings' ? '配置' : state.activeTab === 'ai-records' ? 'AI记录' : state.activeTab === 'logs' ? '日志' : '视频拆解'}</h2></div><button class="close" data-action="close" aria-label="关闭">×</button></header>
+        <header><div><span class="eyebrow">Yuze · DOUYIN</span><h2>${state.activeTab === 'library' ? '灵感库' : state.activeTab === 'settings' ? '配置' : state.activeTab === 'ai-records' ? 'AI记录' : state.activeTab === 'logs' ? '日志' : '视频拆解'}</h2></div><button class="close" data-action="close" aria-label="关闭">×</button></header>
         <nav>${[['analyze', '视频拆解'], ['library', `灵感库 ${state.library.length || ''}`], ['ai-records', `AI记录 ${state.aiRecords.length || ''}`], ['settings', '配置'], ['logs', `日志${state.logs.some(item => item.level === 'error') ? ` ${state.logs.filter(item => item.level === 'error').length}` : ''}`]].map(([key, label]) => `<button data-tab="${key}" class="${state.activeTab === key ? 'active' : ''}">${label}</button>`).join('')}</nav>
         <main>${renderBody()}</main>
         ${state.activeTab === 'analyze' && !state.running && !state.result ? '<footer><button class="primary wide" data-action="analyze">✦ 拆解当前视频</button><small>快捷键 Alt/⌥ + I</small></footer>' : ''}
@@ -2161,7 +2161,7 @@
       #${HOST_ID} .primary,#${HOST_ID} .secondary{border:0;border-radius:12px;padding:11px 16px;font-weight:750;cursor:pointer} #${HOST_ID} .primary{background:#20251e;color:#fff} #${HOST_ID} .primary:hover{background:#090b08} #${HOST_ID} .primary:disabled{background:#aeb1a9;cursor:default} #${HOST_ID} .secondary{background:#fff;border:1px solid #d7d7cf;color:#30342d} #${HOST_ID} .wide{width:100%}
       #${HOST_ID} footer{position:absolute;left:0;right:0;bottom:0;padding:14px 22px 18px;background:linear-gradient(transparent,#f5f4ee 18%,#f5f4ee);text-align:center} #${HOST_ID} footer small{display:block;margin-top:7px;color:#878a82;font-size:10px}
       #${HOST_ID} .empty{min-height:58vh;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;gap:11px;padding:28px} #${HOST_ID} .empty.compact{min-height:300px} #${HOST_ID} .empty-icon{font-size:38px;color:#90b932} #${HOST_ID} .empty h3{margin:0;font-size:18px} #${HOST_ID} .analyzing h3{font-size:15px}
-      #${HOST_ID} .loader{width:46px;height:46px;border:3px solid #dfe1d9;border-top-color:#20251e;border-radius:50%;animation:tabbit-spin .8s linear infinite} @keyframes tabbit-spin{to{transform:rotate(360deg)}} #${HOST_ID} .progress{width:220px;height:5px;background:#dedfd7;border-radius:5px;overflow:hidden} #${HOST_ID} .progress i{display:block;width:8%;height:100%;background:#aee733;transition:width .35s}
+      #${HOST_ID} .loader{width:46px;height:46px;border:3px solid #dfe1d9;border-top-color:#20251e;border-radius:50%;animation:Yuze-spin .8s linear infinite} @keyframes Yuze-spin{to{transform:rotate(360deg)}} #${HOST_ID} .progress{width:220px;height:5px;background:#dedfd7;border-radius:5px;overflow:hidden} #${HOST_ID} .progress i{display:block;width:8%;height:100%;background:#aee733;transition:width .35s}
       #${HOST_ID} .source-card{background:#20251e;color:#fff;border-radius:16px;padding:10px;margin-bottom:20px;display:flex;gap:12px;align-items:stretch} #${HOST_ID} .source-cover{width:108px;aspect-ratio:3/4;object-fit:cover;border-radius:11px;background:#343930;flex:none} #${HOST_ID} .source-copy{padding:5px 3px;min-width:0;flex:1} #${HOST_ID} .source-kicker{font-size:9px;letter-spacing:1px;color:#b8bcaf;margin-bottom:6px} #${HOST_ID} .source-title{font-size:14px;font-weight:750;line-height:1.45;max-height:82px;overflow:hidden} #${HOST_ID} .source-meta{font-size:11px;color:#bfc2ba;margin-top:7px} #${HOST_ID} .metrics{display:flex;gap:10px;margin-top:9px;font-size:10px;color:#d6ff77;flex-wrap:wrap}
       #${HOST_ID} .classification{background:#e7ffc0;border:1px solid #c8e59c;border-radius:14px;padding:14px} #${HOST_ID} .classification b{font-size:11px;background:#20251e;color:#fff;border-radius:9px;padding:3px 7px} #${HOST_ID} .classification p{font-size:14px;font-weight:650;margin:8px 0 4px} #${HOST_ID} .classification small{color:#61675a}
       #${HOST_ID} .timeline-tip{font-size:9px;color:#81867c;margin:-4px 0 9px;padding-left:11px} #${HOST_ID} .timeline-list{display:grid;gap:7px;position:relative} #${HOST_ID} .timeline-list:before{content:'';position:absolute;top:20px;bottom:20px;left:47px;width:2px;background:#d9e9b9} #${HOST_ID} .timeline-item{position:relative;background:#fff;border:1px solid #deded6;border-radius:13px;overflow:hidden} #${HOST_ID} .timeline-item[open]{border-color:#b8d978;box-shadow:0 4px 14px #6c8b1f12} #${HOST_ID} .timeline-item>summary{list-style:none;display:grid;grid-template-columns:86px minmax(0,1fr);gap:9px;align-items:center;padding:10px;cursor:pointer} #${HOST_ID} .timeline-item>summary::-webkit-details-marker{display:none} #${HOST_ID} .timeline-item>summary>button,#${HOST_ID} .time-chips button{border:0;background:#20251e;color:#fff;border-radius:9px;padding:7px 8px;font-size:9px;font-weight:800;white-space:nowrap;cursor:pointer;position:relative;z-index:1} #${HOST_ID} .timeline-item>summary>button span,#${HOST_ID} .time-chips button span{color:#c8ff45;margin-right:4px} #${HOST_ID} .timeline-item>summary>button i,#${HOST_ID} .time-chips button i{font-style:normal;color:#8d9588;margin:0 2px} #${HOST_ID} .timeline-item>summary>div{min-width:0} #${HOST_ID} .timeline-item>summary b{display:block;font-size:12px;color:#293021;margin-bottom:3px} #${HOST_ID} .timeline-item>summary p{font-size:10px;color:#687063;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} #${HOST_ID} .timeline-detail{border-top:1px solid #ebeae3;background:#fdfdf9;padding:10px 11px 11px 105px} #${HOST_ID} .timeline-detail>p{font-size:11px;color:#4d5448;line-height:1.6} #${HOST_ID} .timeline-detail>p strong{display:block;font-size:9px;color:#658125;margin-bottom:2px} #${HOST_ID} .timeline-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px} #${HOST_ID} .timeline-tags span{font-size:8px;background:#eaebe5;color:#62685e;border-radius:7px;padding:4px 6px} #${HOST_ID} .breakdown-time{margin-top:10px} #${HOST_ID} .breakdown-time>strong{display:block;font-size:9px;color:#617e25;margin-bottom:6px;padding-left:6px;border-left:2px solid #b8eb4a} #${HOST_ID} .time-chips{display:flex;flex-wrap:wrap;gap:5px} #${HOST_ID} .time-chips button{background:#edf7dc;color:#486219;border:1px solid #d2e5ae;padding:5px 7px} #${HOST_ID} .time-chips button span{color:#729929} #${HOST_ID} .raw-time{font-size:11px;color:#4f574a}
@@ -2235,7 +2235,7 @@
       exportLibrary,
       cleanup
     };
-    console.log(`[Tabbit] 抖音选题分析 v${ANALYSIS_VERSION} 已启动：window.__tabbitDouyinInspirationApi.open()`);
+    console.log(`[Yuze] 抖音选题分析 v${ANALYSIS_VERSION} 已启动：window.__YuzeDouyinInspirationApi.open()`);
   }
 
   if (document.body) init();

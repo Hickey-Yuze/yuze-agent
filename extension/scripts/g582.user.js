@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         网页光效 · 飘落粒子
-// @namespace    https://tabbit.com/userscripts/
+// @namespace    https://Yuze.com/userscripts/
 // @version      1.0.0
 // @license      MIT
 // @description  网页飘落粒子光效：雪花、花瓣、树叶、星光、星星等素材从页面顶部飘落（仿鸣潮风格），右下角按钮可一键开启/关闭，也可设置定时自动停止。适合在任意网页营造氛围光效。
-// @author       Tabbit
+// @author       Yuze
 // @match        *://*/*
 // @exclude      *://*.github.com/*
 // @exclude      *://github.com/*

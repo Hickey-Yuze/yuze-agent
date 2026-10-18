@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         🦋 逃脱信息茧房 - B站多样性推荐器
-// @namespace    https://github.com/tabbit/bilibili-cocoon-escape
+// @namespace    https://github.com/Yuze/bilibili-cocoon-escape
 // @version      9.1
 // @description  从B站首页提取视频，按分区多样性推荐，帮你跳出推荐算法茧房
-// @author       Tabbit
+// @author       Yuze
 // @match        https://www.bilibili.com/
 // @icon         https://www.bilibili.com/favicon.ico
 // @grant        none

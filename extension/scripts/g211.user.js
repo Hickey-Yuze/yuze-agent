@@ -1,7 +1,7 @@
 (async (args) => {
   "use strict";
 
-  const PANEL_ID = "tabbit-bilibili-ai-subtitle-direct-panel";
+  const PANEL_ID = "Yuze-bilibili-ai-subtitle-direct-panel";
   const VERSION = "V4.2";
   const API_ROOT = "https://api.bilibili.com";
   const AI_SUBTITLE_HOST = "aisubtitle.hdslb.com";
@@ -661,9 +661,9 @@
       timestampText
     };
 
-    window.__TABBIT_BILIBILI_SUBTITLE__ = result;
+    window.__Yuze_BILIBILI_SUBTITLE__ = result;
     window.dispatchEvent(
-      new CustomEvent("tabbit-bilibili-subtitle-ready", {
+      new CustomEvent("Yuze-bilibili-subtitle-ready", {
         detail: result
       })
     );

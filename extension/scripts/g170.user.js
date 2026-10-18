@@ -1,11 +1,11 @@
 (function () {
   'use strict';
 
-  const SCRIPT_ID = 'tabbit-bili-learning';
+  const SCRIPT_ID = 'Yuze-bili-learning';
   const HOST_ID = `${SCRIPT_ID}-host`;
   const CLEANUP_KEY = `__${SCRIPT_ID}Cleanup`;
   const API_KEY = `__${SCRIPT_ID}Api`;
-  const DB_NAME = 'tabbit-bili-learning-v1';
+  const DB_NAME = 'Yuze-bili-learning-v1';
   const DB_VERSION = 1;
   const ANALYSIS_VERSION = 9;
 
@@ -133,7 +133,7 @@
     state.logs.push(entry);
     if (state.logs.length > config.maxLogs) state.logs.splice(0, state.logs.length - config.maxLogs);
     const consoleMethod = entry.level === 'error' ? 'error' : entry.level === 'warn' ? 'warn' : entry.level === 'debug' ? 'debug' : 'log';
-    console[consoleMethod](`[Tabbit Bili Learning][${entry.stage}] ${entry.message}`, entry.details || '');
+    console[consoleMethod](`[Yuze Bili Learning][${entry.stage}] ${entry.message}`, entry.details || '');
     return entry;
   }
 
@@ -426,8 +426,8 @@
   function getLearningBridge() {
     // Mock Bridge 只允许出现在本地验证页。生产 B 站页面必须使用真实 LLMBridge，
     // 避免页面残留的调试对象让所有视频都返回同一份假数据。
-    if (isTrustedValidationPage() && window.__tabbitBiliLearningBridge?.chat) {
-      return window.__tabbitBiliLearningBridge;
+    if (isTrustedValidationPage() && window.__YuzeBiliLearningBridge?.chat) {
+      return window.__YuzeBiliLearningBridge;
     }
     return window.LLMBridge;
   }
@@ -605,7 +605,7 @@
         identity_verified: 'public-api'
       };
     } catch (error) {
-      console.debug('[Tabbit Bili Learning] 公开视频信息接口不可用', error);
+      console.debug('[Yuze Bili Learning] 公开视频信息接口不可用', error);
       return meta;
     }
   }
@@ -881,7 +881,7 @@
           end: transcriptEndTime(segments)
         } : null;
       } catch (error) {
-        console.debug('[Tabbit Bili Learning] 单条字幕轨读取失败', track?.lan_doc || track?.lan, error);
+        console.debug('[Yuze Bili Learning] 单条字幕轨读取失败', track?.lan_doc || track?.lan, error);
         return null;
       }
     }))).filter(Boolean);
@@ -927,12 +927,12 @@
         error.code = 'TRANSCRIPT_IDENTITY_MISMATCH';
         remote = { ...remote, segments: [], rejected: true };
         remoteError = error;
-        console.warn('[Tabbit Bili Learning] 拒绝疑似属于其他视频的远程字幕', state.transcriptValidation);
+        console.warn('[Yuze Bili Learning] 拒绝疑似属于其他视频的远程字幕', state.transcriptValidation);
       }
     } catch (error) {
       if (isStaleVideoError(error)) throw error;
       remoteError = error;
-      console.debug('[Tabbit Bili Learning] 公开字幕接口不可用', error);
+      console.debug('[Yuze Bili Learning] 公开字幕接口不可用', error);
     }
 
     const localEnd = transcriptEndTime(local);
@@ -1379,7 +1379,7 @@
       }
     } catch (error) {
       if (isStaleVideoError(error) && !isAnalysisRouteCurrent(analysisContext)) throw error;
-      console.debug('[Tabbit Bili Learning] 关键帧抽取失败', error);
+      console.debug('[Yuze Bili Learning] 关键帧抽取失败', error);
       logEvent(isStaleVideoError(error) ? 'warn' : 'error', 'scene-scan', isStaleVideoError(error)
         ? '播放器在视觉抽样时重建，但仍是同一视频；停止关键帧抽样并继续使用完整字幕生成概览'
         : '关键帧抽取阶段结束', {
@@ -1430,7 +1430,7 @@
         error: ''
       };
     } catch (error) {
-      console.debug('[Tabbit Bili Learning] 当前帧截图失败', error);
+      console.debug('[Yuze Bili Learning] 当前帧截图失败', error);
       return {
         dataUrl: '',
         error: /security|taint|cross-origin/i.test(String(error?.message || error))
@@ -1913,7 +1913,7 @@
   function ensureBridge() {
     const bridge = getLearningBridge();
     if (!bridge || typeof bridge.chat !== 'function') {
-      throw new Error('当前页面未检测到 LLMBridge.chat。普通浏览器页面不会自动提供该能力，请确认脚本由 Tabbit 的脚本注入环境运行，并在注入后刷新 B 站页面');
+      throw new Error('当前页面未检测到 LLMBridge.chat。普通浏览器页面不会自动提供该能力，请确认脚本由 Yuze 的脚本注入环境运行，并在注入后刷新 B 站页面');
     }
     return bridge;
   }
@@ -2208,7 +2208,7 @@
         stopStaleAnalysis(requestId);
         return;
       }
-      console.warn('[Tabbit Bili Learning] 字幕读取失败，将继续使用关键帧', error);
+      console.warn('[Yuze Bili Learning] 字幕读取失败，将继续使用关键帧', error);
       transcriptSegments = [];
       state.transcriptDiagnostic = `字幕读取失败：${cleanText(error?.message || error)}`;
       logEvent('error', 'subtitle', state.transcriptDiagnostic, { error: serializeError(error) });
@@ -2331,7 +2331,7 @@
         }
       } catch (frameError) {
         if (isStaleVideoError(frameError) && !isAnalysisRouteCurrent(analysisContext)) throw frameError;
-        console.warn('[Tabbit Bili Learning] 关键帧理解失败，继续使用字幕分析', frameError);
+        console.warn('[Yuze Bili Learning] 关键帧理解失败，继续使用字幕分析', frameError);
         logEvent('warn', 'frame-analysis', isStaleVideoError(frameError)
           ? '播放器在关键帧阶段刷新，但仍是同一视频；跳过视觉证据并继续完整字幕分析'
           : '关键帧理解失败，继续使用字幕/页面分析', { error: cleanText(frameError?.message || frameError) });
@@ -2421,7 +2421,7 @@
             });
           }
         } catch (timelineError) {
-          console.warn('[Tabbit Bili Learning] AI 时间线补全失败，将使用字幕本地补全', timelineError);
+          console.warn('[Yuze Bili Learning] AI 时间线补全失败，将使用字幕本地补全', timelineError);
           logEvent('error', 'timeline-repair', 'AI 时间线补全失败，将使用本地字幕补尾', { error: cleanText(timelineError?.message || timelineError), code: timelineError?.code });
         }
       }
@@ -2438,7 +2438,7 @@
         return;
       }
       state.lastError = serializeError(error);
-      console.error('[Tabbit Bili Learning] 分析失败，使用本地学习模式', state.lastError);
+      console.error('[Yuze Bili Learning] 分析失败，使用本地学习模式', state.lastError);
       normalized = fallbackAnalysis(meta, transcriptSegments);
       source = 'local-fallback';
       logEvent('error', 'analysis', 'AI 分析未通过，已切换本地可靠结构', { error: state.lastError, transcript_count: transcriptSegments.length });
@@ -3550,7 +3550,7 @@
     const cover = state.video.cover
       ? `<a class="cover" href="${escapeHtml(state.video.cover)}" target="_blank" rel="noopener noreferrer" title="打开公开封面原图" aria-label="打开公开封面原图" style="background-image:url('${escapeHtml(state.video.cover)}')"></a>`
       : '<div class="cover" aria-hidden="true"></div>';
-    return `<button class="launcher ${state.open ? 'is-open' : ''}" data-action="toggle" aria-label="打开 AI 学习伴侣">${icon('book', 22)}<span>AI 学习</span>${dueCount ? `<b>${dueCount}</b>` : ''}</button><aside class="drawer ${state.open ? 'is-open' : ''} ${state.minimized ? 'is-minimized' : ''}" role="dialog" aria-modal="false" aria-label="B 站 AI 学习伴侣"><header class="app-header"><div class="brand"><span>${icon('spark', 20)}</span><div><small>TABBIT LEARNING</small><h2>AI 学习伴侣</h2></div></div><div class="header-actions"><button data-action="minimize" title="最小化" aria-label="最小化">${icon('minimize')}</button><button data-action="close" title="关闭" aria-label="关闭">${icon('close')}</button></div></header><section class="video-strip">${cover}<div><b>${escapeHtml(truncate(state.video.title || '请打开 B 站视频页', 46))}</b><small>${escapeHtml(state.video.author || 'Bilibili')} · ${formatTime(state.video.duration || 0)}</small></div></section><nav aria-label="学习伴侣页面">${tabs.map(([key, label]) => `<button class="${state.activeTab === key ? 'active' : ''}" data-tab="${key}" ${state.activeTab === key ? 'aria-current="page"' : ''}>${label}${key === 'subtitles' && state.transcriptSegments.length ? `<i>${state.transcriptSegments.length}</i>` : ''}${key === 'notes' && state.notes.length ? `<i>${state.notes.length}</i>` : ''}${key === 'project' && dueCount ? `<i>${dueCount}</i>` : ''}${key === 'logs' && state.logs.some(entry => entry.level === 'error' && entry.run_id === state.analysisRunId) ? '<i>!</i>' : ''}</button>`).join('')}</nav><main class="content">${state.busy && !['logs', 'subtitles'].includes(state.activeTab) ? busyHtml() : content}</main><footer class="app-footer"><button class="footer-time" data-action="quick-note" aria-label="在当前时间写笔记">${icon('note', 16)}${formatTime(getPrimaryVideoElement()?.currentTime || 0)}</button><input data-field="footer-question" aria-label="问当前视频" placeholder="问当前视频…"><button class="send" data-action="footer-ask" aria-label="发送问题">${icon('arrow', 16)}</button></footer></aside><div class="image-lightbox" data-lightbox hidden role="dialog" aria-modal="true" aria-label="帧截图预览"><button class="lightbox-close" data-action="close-screenshot" aria-label="关闭截图预览">${icon('close', 24)}</button><div class="lightbox-stage"><img alt=""><p data-lightbox-caption></p></div></div><div class="toast-layer" aria-live="polite"></div>`;
+    return `<button class="launcher ${state.open ? 'is-open' : ''}" data-action="toggle" aria-label="打开 AI 学习伴侣">${icon('book', 22)}<span>AI 学习</span>${dueCount ? `<b>${dueCount}</b>` : ''}</button><aside class="drawer ${state.open ? 'is-open' : ''} ${state.minimized ? 'is-minimized' : ''}" role="dialog" aria-modal="false" aria-label="B 站 AI 学习伴侣"><header class="app-header"><div class="brand"><span>${icon('spark', 20)}</span><div><small>Yuze LEARNING</small><h2>AI 学习伴侣</h2></div></div><div class="header-actions"><button data-action="minimize" title="最小化" aria-label="最小化">${icon('minimize')}</button><button data-action="close" title="关闭" aria-label="关闭">${icon('close')}</button></div></header><section class="video-strip">${cover}<div><b>${escapeHtml(truncate(state.video.title || '请打开 B 站视频页', 46))}</b><small>${escapeHtml(state.video.author || 'Bilibili')} · ${formatTime(state.video.duration || 0)}</small></div></section><nav aria-label="学习伴侣页面">${tabs.map(([key, label]) => `<button class="${state.activeTab === key ? 'active' : ''}" data-tab="${key}" ${state.activeTab === key ? 'aria-current="page"' : ''}>${label}${key === 'subtitles' && state.transcriptSegments.length ? `<i>${state.transcriptSegments.length}</i>` : ''}${key === 'notes' && state.notes.length ? `<i>${state.notes.length}</i>` : ''}${key === 'project' && dueCount ? `<i>${dueCount}</i>` : ''}${key === 'logs' && state.logs.some(entry => entry.level === 'error' && entry.run_id === state.analysisRunId) ? '<i>!</i>' : ''}</button>`).join('')}</nav><main class="content">${state.busy && !['logs', 'subtitles'].includes(state.activeTab) ? busyHtml() : content}</main><footer class="app-footer"><button class="footer-time" data-action="quick-note" aria-label="在当前时间写笔记">${icon('note', 16)}${formatTime(getPrimaryVideoElement()?.currentTime || 0)}</button><input data-field="footer-question" aria-label="问当前视频" placeholder="问当前视频…"><button class="send" data-action="footer-ask" aria-label="发送问题">${icon('arrow', 16)}</button></footer></aside><div class="image-lightbox" data-lightbox hidden role="dialog" aria-modal="true" aria-label="帧截图预览"><button class="lightbox-close" data-action="close-screenshot" aria-label="关闭截图预览">${icon('close', 24)}</button><div class="lightbox-stage"><img alt=""><p data-lightbox-caption></p></div></div><div class="toast-layer" aria-live="polite"></div>`;
   }
 
   function busyHtml() {
@@ -3799,7 +3799,7 @@
     try {
       state.db = await openDatabase();
     } catch (error) {
-      console.warn('[Tabbit Bili Learning] IndexedDB unavailable', error);
+      console.warn('[Yuze Bili Learning] IndexedDB unavailable', error);
       state.db = null;
     }
     state.routeKey = getRouteToken();
@@ -3840,7 +3840,7 @@
         transcriptValidation: state.transcriptValidation,
         subtitleActivation: state.subtitleActivation,
         bridgeAvailable: Boolean(getLearningBridge()?.chat),
-        bridgeKind: isTrustedValidationPage() && window.__tabbitBiliLearningBridge?.chat ? 'validation-mock' : 'LLMBridge',
+        bridgeKind: isTrustedValidationPage() && window.__YuzeBiliLearningBridge?.chat ? 'validation-mock' : 'LLMBridge',
         mediaFingerprint: state.artifact?.video_identity?.media_fingerprint || '',
         transcriptCount: state.transcriptSegments.length,
         subtitleBusy: state.subtitleBusy,
@@ -3860,7 +3860,7 @@
       refreshResources,
       cleanup: () => window[CLEANUP_KEY]?.()
     };
-    console.log('[Tabbit Bili Learning] AI 学习伴侣已启用', { videoId: state.video.id, title: state.video.title });
+    console.log('[Yuze Bili Learning] AI 学习伴侣已启用', { videoId: state.video.id, title: state.video.title });
   }
 
   window[CLEANUP_KEY] = async function cleanup() {
@@ -3880,11 +3880,11 @@
     }
     await persistWatchPosition().catch(() => {});
     state.db?.close?.();
-    console.log('[Tabbit Bili Learning] 已清理');
+    console.log('[Yuze Bili Learning] 已清理');
   };
 
   if (document.documentElement) start().catch(error => {
-    console.error('[Tabbit Bili Learning] 启动失败', error);
+    console.error('[Yuze Bili Learning] 启动失败', error);
     window[CLEANUP_KEY]?.();
   });
   else document.addEventListener('DOMContentLoaded', () => start(), { once: true });

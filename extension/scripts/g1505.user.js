@@ -573,9 +573,9 @@
               y=drawCard('🔥 域名忠诚度：'+ly.label,ly.desc,y,'base');
               y=drawCard('🔗 链接年代：'+er.label,er.desc,y,'base');
               var ctaH=180;fillRound(pad,y,cardW,ctaH,30,grad(pad,y,pad+cardW,y+ctaH,[[0,'rgba(255,127,166,.82)'],[.55,'rgba(191,174,255,.82)'],[1,'rgba(255,217,133,.82)']]),'rgba(255,255,255,.9)');
-              ctx.textAlign='center';ctx.textBaseline='top';ctx.font=font(30,800);ctx.fillStyle='#fff';ctx.fillText('来 Tabbit 玩这个测试',W/2,y+34);
+              ctx.textAlign='center';ctx.textBaseline='top';ctx.font=font(30,800);ctx.fillStyle='#fff';ctx.fillText('来 Yuze 玩这个测试',W/2,y+34);
               ctx.font=font(19,600);ctx.fillStyle='rgba(255,255,255,.94)';ctx.fillText('看看你的收藏夹人格，发现自己最好的一面',W/2,y+82);
-              ctx.font=font(15,500);ctx.fillStyle='rgba(255,255,255,.86)';ctx.fillText('Tabbit · 让收藏夹变成你的第二大脑',W/2,y+124);
+              ctx.font=font(15,500);ctx.fillStyle='rgba(255,255,255,.86)';ctx.fillText('Yuze · 让收藏夹变成你的第二大脑',W/2,y+124);
               y+=ctaH+pad;ctx.textAlign='left';
               var out=document.createElement('canvas'),outCtx=out.getContext('2d');
               out.width=canvas.width;out.height=Math.ceil(y*scale);

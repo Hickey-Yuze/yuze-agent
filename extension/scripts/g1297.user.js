@@ -1,7 +1,7 @@
 (function () {
-  const APP_ID = '__tabbit_image_batch_downloader__';
-  const STYLE_ID = '__tabbit_image_batch_downloader_style__';
-  const GLOBAL_KEY = '__TABBIT_IMAGE_BATCH_DOWNLOADER__';
+  const APP_ID = '__Yuze_image_batch_downloader__';
+  const STYLE_ID = '__Yuze_image_batch_downloader_style__';
+  const GLOBAL_KEY = '__Yuze_IMAGE_BATCH_DOWNLOADER__';
 
   const oldApp = document.getElementById(APP_ID);
   if (oldApp) oldApp.remove();

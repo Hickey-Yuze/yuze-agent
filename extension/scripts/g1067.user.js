@@ -1,13 +1,13 @@
 (function () {
   'use strict';
 
-  const SCRIPT_ID = 'tabbit-bilibili-favorites-organizer';
+  const SCRIPT_ID = 'Yuze-bilibili-favorites-organizer';
   const STYLE_ID = `${SCRIPT_ID}-style`;
   const HOST_ID = `${SCRIPT_ID}-host`;
   const BUTTON_ID = `${SCRIPT_ID}-button`;
   const OVERLAY_ID = `${SCRIPT_ID}-overlay`;
-  const CLEANUP_KEY = '__tabbitBilibiliFavoritesOrganizerCleanup';
-  const API_KEY = '__tabbitBilibiliFavoritesOrganizerApi';
+  const CLEANUP_KEY = '__YuzeBilibiliFavoritesOrganizerCleanup';
+  const API_KEY = '__YuzeBilibiliFavoritesOrganizerApi';
   const SCRIPT_VERSION = '1.2.0';
   const API_ORIGIN = 'https://api.bilibili.com';
 
@@ -32,7 +32,7 @@
     defaultAutoGranularity: 'fine',
     testMode: false
   };
-  const overrides = window.__tabbitBilibiliFavoritesOrganizerConfig || {};
+  const overrides = window.__YuzeBilibiliFavoritesOrganizerConfig || {};
   const config = {
     ...defaults,
     ...overrides,
@@ -121,7 +121,7 @@
     state.logs.push(row);
     if (state.logs.length > 500) state.logs.shift();
     const method = level === 'error' ? 'error' : level === 'warn' ? 'warn' : 'debug';
-    console[method]('[Tabbit Bilibili Organizer]', stage, message, details || '');
+    console[method]('[Yuze Bilibili Organizer]', stage, message, details || '');
     return row;
   }
 
@@ -156,15 +156,15 @@
       #${BUTTON_ID}{appearance:none!important;height:42px!important;padding:0 17px!important;border:1px solid rgba(255,255,255,.72)!important;border-radius:12px!important;background:linear-gradient(135deg,#00aeec,#1686e8)!important;box-shadow:0 10px 28px rgba(0,174,236,.28)!important;color:#fff!important;font-size:14px!important;font-weight:720!important;cursor:pointer!important;transition:.18s ease!important}
       #${BUTTON_ID}:hover{transform:translateY(-2px)!important;box-shadow:0 14px 34px rgba(0,174,236,.34)!important}#${BUTTON_ID}:disabled{opacity:.62!important;cursor:wait!important;transform:none!important}
       #${OVERLAY_ID}{position:fixed!important;inset:0!important;z-index:2147483646!important;display:grid!important;place-items:center!important;padding:22px!important;background:rgba(11,17,26,.66)!important;backdrop-filter:blur(10px)!important;-webkit-backdrop-filter:blur(10px)!important;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",sans-serif!important;color:#f6f9fc!important}
-      #${OVERLAY_ID} *{box-sizing:border-box!important}.tabbit-bili-card{width:min(880px,calc(100vw - 28px))!important;max-height:min(800px,calc(100vh - 28px))!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;border:1px solid rgba(255,255,255,.12)!important;border-radius:22px!important;background:linear-gradient(145deg,#202833,#121820)!important;box-shadow:0 32px 100px rgba(0,0,0,.48)!important}
-      .tabbit-bili-head{display:flex!important;justify-content:space-between!important;gap:16px!important;padding:23px 24px 15px!important}.tabbit-bili-kicker{margin:0 0 7px!important;color:#54d7ff!important;font-size:11px!important;font-weight:800!important;letter-spacing:.12em!important}.tabbit-bili-head h2{margin:0!important;color:#fff!important;font-size:23px!important}.tabbit-bili-head p{margin:8px 0 0!important;max-width:650px!important;color:rgba(255,255,255,.61)!important;font-size:13px!important;line-height:1.6!important}.tabbit-bili-close{appearance:none!important;width:35px!important;height:35px!important;border:0!important;border-radius:50%!important;background:rgba(255,255,255,.08)!important;color:#fff!important;font-size:22px!important;cursor:pointer!important}
-      .tabbit-bili-body{min-height:0!important;overflow:auto!important;padding:8px 24px 24px!important}.tabbit-bili-actions{display:flex!important;justify-content:flex-end!important;gap:10px!important;padding:16px 24px 22px!important;border-top:1px solid rgba(255,255,255,.08)!important}.tabbit-bili-action{appearance:none!important;min-width:116px!important;height:48px!important;padding:0 20px!important;border:0!important;border-radius:13px!important;background:rgba(255,255,255,.09)!important;color:#fff!important;font-size:14px!important;font-weight:680!important;cursor:pointer!important}.tabbit-bili-action.primary{background:linear-gradient(135deg,#00aeec,#4bcfff)!important}.tabbit-bili-action.danger{color:#ff9bad!important;background:rgba(251,114,153,.13)!important}.tabbit-bili-action:disabled{opacity:.42!important;cursor:default!important}
-      .tabbit-bili-tabs{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;margin-bottom:17px!important;padding:5px!important;border-radius:14px!important;background:rgba(255,255,255,.055)!important}.tabbit-bili-tab{appearance:none!important;height:46px!important;border:0!important;border-radius:11px!important;background:transparent!important;color:rgba(255,255,255,.50)!important;font-weight:700!important;cursor:pointer!important}.tabbit-bili-tab[aria-selected="true"]{background:rgba(0,174,236,.16)!important;color:#fff!important}.tabbit-bili-pane[hidden]{display:none!important}
-      .tabbit-bili-label{display:block!important;margin:0 0 8px!important;color:rgba(255,255,255,.8)!important;font-size:13px!important;font-weight:680!important}.tabbit-bili-query,.tabbit-bili-input,.tabbit-bili-select{width:100%!important;border:1px solid rgba(255,255,255,.12)!important;border-radius:13px!important;outline:0!important;background:rgba(255,255,255,.07)!important;color:#fff!important;font:14px/1.55 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif!important}.tabbit-bili-query{min-height:108px!important;padding:13px 14px!important;resize:vertical!important}.tabbit-bili-input,.tabbit-bili-select{height:48px!important;padding:0 13px!important}.tabbit-bili-query:focus,.tabbit-bili-input:focus,.tabbit-bili-select:focus{border-color:#00aeec!important;box-shadow:0 0 0 3px rgba(0,174,236,.10)!important}.tabbit-bili-query::placeholder,.tabbit-bili-input::placeholder{color:rgba(255,255,255,.32)!important}
-      .tabbit-bili-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:12px!important;margin-top:14px!important}.tabbit-bili-option{padding:15px!important;border:1px solid rgba(255,255,255,.09)!important;border-radius:15px!important;background:rgba(255,255,255,.03)!important}.tabbit-bili-choice-group{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important}.tabbit-bili-choice{appearance:none!important;min-height:66px!important;padding:10px 13px!important;border:1px solid rgba(255,255,255,.10)!important;border-radius:12px!important;background:rgba(255,255,255,.04)!important;color:rgba(255,255,255,.60)!important;text-align:left!important;cursor:pointer!important}.tabbit-bili-choice[aria-pressed="true"]{border-color:rgba(0,174,236,.72)!important;background:rgba(0,174,236,.13)!important;color:#fff!important}.tabbit-bili-choice strong,.tabbit-bili-choice span{display:block!important}.tabbit-bili-choice span{margin-top:4px!important;font-size:11px!important;color:rgba(255,255,255,.44)!important}.tabbit-bili-switch{display:flex!important;align-items:center!important;gap:8px!important;min-height:40px!important;color:rgba(255,255,255,.72)!important;font-size:13px!important}.tabbit-bili-switch input{width:16px!important;height:16px!important;accent-color:#00aeec!important}
-      .tabbit-bili-note{margin-top:13px!important;padding:12px 13px!important;border-radius:12px!important;background:rgba(0,174,236,.07)!important;color:rgba(255,255,255,.53)!important;font-size:12px!important;line-height:1.55!important}.tabbit-bili-progress{height:8px!important;overflow:hidden!important;border-radius:999px!important;background:rgba(255,255,255,.08)!important}.tabbit-bili-progress span{display:block!important;width:var(--progress,6%)!important;height:100%!important;border-radius:inherit!important;background:linear-gradient(90deg,#00aeec,#fb7299)!important;transition:width .25s ease!important}.tabbit-bili-log{margin:13px 0 0!important;color:rgba(255,255,255,.67)!important;font-size:13px!important;line-height:1.6!important}
-      .tabbit-bili-stats{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:9px!important;margin-bottom:14px!important}.tabbit-bili-stat{padding:11px!important;border-radius:13px!important;background:rgba(255,255,255,.055)!important}.tabbit-bili-stat span{display:block!important;color:rgba(255,255,255,.43)!important;font-size:11px!important}.tabbit-bili-stat b{display:block!important;margin-top:4px!important;color:#fff!important;font-size:20px!important}.tabbit-bili-summary{margin:0 0 13px!important;color:rgba(255,255,255,.64)!important;font-size:13px!important;line-height:1.6!important}.tabbit-bili-list{display:grid!important;gap:8px!important;margin:0!important;padding:0!important;list-style:none!important}.tabbit-bili-item{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:12px!important;align-items:start!important;padding:12px 13px!important;border:1px solid rgba(255,255,255,.08)!important;border-radius:13px!important;background:rgba(255,255,255,.03)!important}.tabbit-bili-item.is-off{opacity:.42!important}.tabbit-bili-item h4{margin:0!important;color:rgba(255,255,255,.91)!important;font-size:13px!important;line-height:1.45!important}.tabbit-bili-item p{margin:4px 0 0!important;color:rgba(255,255,255,.46)!important;font-size:12px!important;line-height:1.45!important}.tabbit-bili-check{display:grid!important;grid-template-columns:20px minmax(0,1fr)!important;gap:10px!important;cursor:pointer!important}.tabbit-bili-check input{width:17px!important;height:17px!important;margin-top:2px!important;accent-color:#00aeec!important}.tabbit-bili-badge{display:inline-flex!important;align-items:center!important;min-height:25px!important;padding:0 9px!important;border-radius:999px!important;background:rgba(0,174,236,.11)!important;color:#75dcff!important;font-size:11px!important;white-space:nowrap!important}.tabbit-bili-remove{appearance:none!important;border:0!important;background:transparent!important;color:rgba(255,255,255,.42)!important;font-size:19px!important;cursor:pointer!important}.tabbit-bili-tools{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;margin-bottom:11px!important}.tabbit-bili-tools p{margin:0!important;color:rgba(255,255,255,.60)!important;font-size:13px!important}.tabbit-bili-mini{appearance:none!important;min-height:31px!important;padding:0 10px!important;border:1px solid rgba(255,255,255,.1)!important;border-radius:9px!important;background:rgba(255,255,255,.05)!important;color:rgba(255,255,255,.7)!important;cursor:pointer!important}
-      @media(max-width:680px){.tabbit-bili-grid{grid-template-columns:1fr!important}.tabbit-bili-stats{grid-template-columns:1fr 1fr!important}#${HOST_ID}{right:14px!important;top:86px!important}}
+      #${OVERLAY_ID} *{box-sizing:border-box!important}.Yuze-bili-card{width:min(880px,calc(100vw - 28px))!important;max-height:min(800px,calc(100vh - 28px))!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;border:1px solid rgba(255,255,255,.12)!important;border-radius:22px!important;background:linear-gradient(145deg,#202833,#121820)!important;box-shadow:0 32px 100px rgba(0,0,0,.48)!important}
+      .Yuze-bili-head{display:flex!important;justify-content:space-between!important;gap:16px!important;padding:23px 24px 15px!important}.Yuze-bili-kicker{margin:0 0 7px!important;color:#54d7ff!important;font-size:11px!important;font-weight:800!important;letter-spacing:.12em!important}.Yuze-bili-head h2{margin:0!important;color:#fff!important;font-size:23px!important}.Yuze-bili-head p{margin:8px 0 0!important;max-width:650px!important;color:rgba(255,255,255,.61)!important;font-size:13px!important;line-height:1.6!important}.Yuze-bili-close{appearance:none!important;width:35px!important;height:35px!important;border:0!important;border-radius:50%!important;background:rgba(255,255,255,.08)!important;color:#fff!important;font-size:22px!important;cursor:pointer!important}
+      .Yuze-bili-body{min-height:0!important;overflow:auto!important;padding:8px 24px 24px!important}.Yuze-bili-actions{display:flex!important;justify-content:flex-end!important;gap:10px!important;padding:16px 24px 22px!important;border-top:1px solid rgba(255,255,255,.08)!important}.Yuze-bili-action{appearance:none!important;min-width:116px!important;height:48px!important;padding:0 20px!important;border:0!important;border-radius:13px!important;background:rgba(255,255,255,.09)!important;color:#fff!important;font-size:14px!important;font-weight:680!important;cursor:pointer!important}.Yuze-bili-action.primary{background:linear-gradient(135deg,#00aeec,#4bcfff)!important}.Yuze-bili-action.danger{color:#ff9bad!important;background:rgba(251,114,153,.13)!important}.Yuze-bili-action:disabled{opacity:.42!important;cursor:default!important}
+      .Yuze-bili-tabs{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;margin-bottom:17px!important;padding:5px!important;border-radius:14px!important;background:rgba(255,255,255,.055)!important}.Yuze-bili-tab{appearance:none!important;height:46px!important;border:0!important;border-radius:11px!important;background:transparent!important;color:rgba(255,255,255,.50)!important;font-weight:700!important;cursor:pointer!important}.Yuze-bili-tab[aria-selected="true"]{background:rgba(0,174,236,.16)!important;color:#fff!important}.Yuze-bili-pane[hidden]{display:none!important}
+      .Yuze-bili-label{display:block!important;margin:0 0 8px!important;color:rgba(255,255,255,.8)!important;font-size:13px!important;font-weight:680!important}.Yuze-bili-query,.Yuze-bili-input,.Yuze-bili-select{width:100%!important;border:1px solid rgba(255,255,255,.12)!important;border-radius:13px!important;outline:0!important;background:rgba(255,255,255,.07)!important;color:#fff!important;font:14px/1.55 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif!important}.Yuze-bili-query{min-height:108px!important;padding:13px 14px!important;resize:vertical!important}.Yuze-bili-input,.Yuze-bili-select{height:48px!important;padding:0 13px!important}.Yuze-bili-query:focus,.Yuze-bili-input:focus,.Yuze-bili-select:focus{border-color:#00aeec!important;box-shadow:0 0 0 3px rgba(0,174,236,.10)!important}.Yuze-bili-query::placeholder,.Yuze-bili-input::placeholder{color:rgba(255,255,255,.32)!important}
+      .Yuze-bili-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:12px!important;margin-top:14px!important}.Yuze-bili-option{padding:15px!important;border:1px solid rgba(255,255,255,.09)!important;border-radius:15px!important;background:rgba(255,255,255,.03)!important}.Yuze-bili-choice-group{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important}.Yuze-bili-choice{appearance:none!important;min-height:66px!important;padding:10px 13px!important;border:1px solid rgba(255,255,255,.10)!important;border-radius:12px!important;background:rgba(255,255,255,.04)!important;color:rgba(255,255,255,.60)!important;text-align:left!important;cursor:pointer!important}.Yuze-bili-choice[aria-pressed="true"]{border-color:rgba(0,174,236,.72)!important;background:rgba(0,174,236,.13)!important;color:#fff!important}.Yuze-bili-choice strong,.Yuze-bili-choice span{display:block!important}.Yuze-bili-choice span{margin-top:4px!important;font-size:11px!important;color:rgba(255,255,255,.44)!important}.Yuze-bili-switch{display:flex!important;align-items:center!important;gap:8px!important;min-height:40px!important;color:rgba(255,255,255,.72)!important;font-size:13px!important}.Yuze-bili-switch input{width:16px!important;height:16px!important;accent-color:#00aeec!important}
+      .Yuze-bili-note{margin-top:13px!important;padding:12px 13px!important;border-radius:12px!important;background:rgba(0,174,236,.07)!important;color:rgba(255,255,255,.53)!important;font-size:12px!important;line-height:1.55!important}.Yuze-bili-progress{height:8px!important;overflow:hidden!important;border-radius:999px!important;background:rgba(255,255,255,.08)!important}.Yuze-bili-progress span{display:block!important;width:var(--progress,6%)!important;height:100%!important;border-radius:inherit!important;background:linear-gradient(90deg,#00aeec,#fb7299)!important;transition:width .25s ease!important}.Yuze-bili-log{margin:13px 0 0!important;color:rgba(255,255,255,.67)!important;font-size:13px!important;line-height:1.6!important}
+      .Yuze-bili-stats{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:9px!important;margin-bottom:14px!important}.Yuze-bili-stat{padding:11px!important;border-radius:13px!important;background:rgba(255,255,255,.055)!important}.Yuze-bili-stat span{display:block!important;color:rgba(255,255,255,.43)!important;font-size:11px!important}.Yuze-bili-stat b{display:block!important;margin-top:4px!important;color:#fff!important;font-size:20px!important}.Yuze-bili-summary{margin:0 0 13px!important;color:rgba(255,255,255,.64)!important;font-size:13px!important;line-height:1.6!important}.Yuze-bili-list{display:grid!important;gap:8px!important;margin:0!important;padding:0!important;list-style:none!important}.Yuze-bili-item{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:12px!important;align-items:start!important;padding:12px 13px!important;border:1px solid rgba(255,255,255,.08)!important;border-radius:13px!important;background:rgba(255,255,255,.03)!important}.Yuze-bili-item.is-off{opacity:.42!important}.Yuze-bili-item h4{margin:0!important;color:rgba(255,255,255,.91)!important;font-size:13px!important;line-height:1.45!important}.Yuze-bili-item p{margin:4px 0 0!important;color:rgba(255,255,255,.46)!important;font-size:12px!important;line-height:1.45!important}.Yuze-bili-check{display:grid!important;grid-template-columns:20px minmax(0,1fr)!important;gap:10px!important;cursor:pointer!important}.Yuze-bili-check input{width:17px!important;height:17px!important;margin-top:2px!important;accent-color:#00aeec!important}.Yuze-bili-badge{display:inline-flex!important;align-items:center!important;min-height:25px!important;padding:0 9px!important;border-radius:999px!important;background:rgba(0,174,236,.11)!important;color:#75dcff!important;font-size:11px!important;white-space:nowrap!important}.Yuze-bili-remove{appearance:none!important;border:0!important;background:transparent!important;color:rgba(255,255,255,.42)!important;font-size:19px!important;cursor:pointer!important}.Yuze-bili-tools{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;margin-bottom:11px!important}.Yuze-bili-tools p{margin:0!important;color:rgba(255,255,255,.60)!important;font-size:13px!important}.Yuze-bili-mini{appearance:none!important;min-height:31px!important;padding:0 10px!important;border:1px solid rgba(255,255,255,.1)!important;border-radius:9px!important;background:rgba(255,255,255,.05)!important;color:rgba(255,255,255,.7)!important;cursor:pointer!important}
+      @media(max-width:680px){.Yuze-bili-grid{grid-template-columns:1fr!important}.Yuze-bili-stats{grid-template-columns:1fr 1fr!important}#${HOST_ID}{right:14px!important;top:86px!important}}
     `;
     document.head.appendChild(style);
   }
@@ -222,10 +222,10 @@
     document.getElementById(OVERLAY_ID)?.remove();
     const overlay = document.createElement('div');
     overlay.id = OVERLAY_ID;
-    overlay.innerHTML = `<section class="tabbit-bili-card" role="dialog" aria-modal="true" aria-label="${escapeHtml(title)}">
-      <header class="tabbit-bili-head"><div><p class="tabbit-bili-kicker">${escapeHtml(kicker)}</p><h2>${escapeHtml(title)}</h2><p>${escapeHtml(description)}</p></div><button class="tabbit-bili-close" type="button" aria-label="关闭">×</button></header>
-      <div class="tabbit-bili-body">${bodyHtml}</div><footer class="tabbit-bili-actions">${actionsHtml}</footer></section>`;
-    overlay.querySelector('.tabbit-bili-close')?.addEventListener('click', closeOverlay);
+    overlay.innerHTML = `<section class="Yuze-bili-card" role="dialog" aria-modal="true" aria-label="${escapeHtml(title)}">
+      <header class="Yuze-bili-head"><div><p class="Yuze-bili-kicker">${escapeHtml(kicker)}</p><h2>${escapeHtml(title)}</h2><p>${escapeHtml(description)}</p></div><button class="Yuze-bili-close" type="button" aria-label="关闭">×</button></header>
+      <div class="Yuze-bili-body">${bodyHtml}</div><footer class="Yuze-bili-actions">${actionsHtml}</footer></section>`;
+    overlay.querySelector('.Yuze-bili-close')?.addEventListener('click', closeOverlay);
     document.body.appendChild(overlay);
     return overlay;
   }
@@ -240,16 +240,16 @@
     let context;
     try { context = getPageContext(); } catch (error) { renderError(error); return; }
     state.context = context;
-    const overlay = renderShell('TABBIT · BILIBILI FAVORITES', 'AI 智能整理 B 站收藏', '读取当前收藏夹的标题、简介和 UP 主，先生成可编辑计划；确认前不会修改任何收藏。', `
-      <div class="tabbit-bili-tabs"><button class="tabbit-bili-tab" data-mode="auto" aria-selected="${state.mode === 'auto'}">自动分类</button><button class="tabbit-bili-tab" data-mode="filter" aria-selected="${state.mode === 'filter'}">按需求筛选</button></div>
-      <section class="tabbit-bili-pane" data-pane="auto" ${state.mode === 'auto' ? '' : 'hidden'}><div class="tabbit-bili-note" style="margin-top:0">AI 会参考已有收藏夹，优先复用合理分类；缺失的分类会在确认后新建。每个分组都可以单独取消。</div></section>
-      <section class="tabbit-bili-pane" data-pane="filter" ${state.mode === 'filter' ? '' : 'hidden'}><label class="tabbit-bili-label" for="tabbit-bili-query">你想整理什么内容？</label><textarea id="tabbit-bili-query" class="tabbit-bili-query" placeholder="例如：筛选 AI Agent、自动化工作流和大模型教程，整理到一个收藏夹">${escapeHtml(state.query)}</textarea></section>
-      <div class="tabbit-bili-grid">
-        <div class="tabbit-bili-option"><label class="tabbit-bili-label">扫描范围</label><div class="tabbit-bili-grid" style="margin:0"><select id="tabbit-bili-start" class="tabbit-bili-select">${numericOptions([0,100,300,500,1000,2000], state.startOffset, ' 起')}</select><select id="tabbit-bili-max" class="tabbit-bili-select">${numericOptions([100,300,500,1000,2000,5000], state.maxItems, ' 个')}</select></div></div>
-        <div class="tabbit-bili-option"><label class="tabbit-bili-label">整理方式</label><div class="tabbit-bili-choice-group"><button class="tabbit-bili-choice" data-operation="move" aria-pressed="${state.operation === 'move'}"><strong>移动</strong><span>加入新分组并移出当前收藏夹</span></button><button class="tabbit-bili-choice" data-operation="copy" aria-pressed="${state.operation === 'copy'}"><strong>复制</strong><span>保留当前收藏夹，同时加入新分组</span></button></div></div>
-        <div class="tabbit-bili-option" data-auto-option ${state.mode === 'auto' ? '' : 'hidden'}><label class="tabbit-bili-label">分类粒度</label><div class="tabbit-bili-choice-group"><button class="tabbit-bili-choice" data-granularity="coarse" aria-pressed="${state.autoGranularity === 'coarse'}"><strong>粗分类</strong><span>稳定、少而清晰</span></button><button class="tabbit-bili-choice" data-granularity="fine" aria-pressed="${state.autoGranularity === 'fine'}"><strong>细分类</strong><span>主题更具体</span></button></div><select id="tabbit-bili-categories" class="tabbit-bili-select" style="margin-top:9px">${numericOptions([5,10,15,20,30,50,100,200], state.maxCategories, ' 类上限')}</select></div>
-        <div class="tabbit-bili-option"><label class="tabbit-bili-switch"><input id="tabbit-bili-private" type="checkbox" ${state.privateFolder ? 'checked' : ''}>新建收藏夹设为私密</label><div class="tabbit-bili-note" style="margin:7px 0 0">源收藏夹 ID：${escapeHtml(context.sourceFolderId)}。失效或证据不足的视频会保留在“待整理”，不会混入专业类目。</div></div>
-      </div>`, '<button class="tabbit-bili-action" data-action="cancel">取消</button><button class="tabbit-bili-action primary" data-action="start">扫描并生成计划</button>');
+    const overlay = renderShell('Yuze · BILIBILI FAVORITES', 'AI 智能整理 B 站收藏', '读取当前收藏夹的标题、简介和 UP 主，先生成可编辑计划；确认前不会修改任何收藏。', `
+      <div class="Yuze-bili-tabs"><button class="Yuze-bili-tab" data-mode="auto" aria-selected="${state.mode === 'auto'}">自动分类</button><button class="Yuze-bili-tab" data-mode="filter" aria-selected="${state.mode === 'filter'}">按需求筛选</button></div>
+      <section class="Yuze-bili-pane" data-pane="auto" ${state.mode === 'auto' ? '' : 'hidden'}><div class="Yuze-bili-note" style="margin-top:0">AI 会参考已有收藏夹，优先复用合理分类；缺失的分类会在确认后新建。每个分组都可以单独取消。</div></section>
+      <section class="Yuze-bili-pane" data-pane="filter" ${state.mode === 'filter' ? '' : 'hidden'}><label class="Yuze-bili-label" for="Yuze-bili-query">你想整理什么内容？</label><textarea id="Yuze-bili-query" class="Yuze-bili-query" placeholder="例如：筛选 AI Agent、自动化工作流和大模型教程，整理到一个收藏夹">${escapeHtml(state.query)}</textarea></section>
+      <div class="Yuze-bili-grid">
+        <div class="Yuze-bili-option"><label class="Yuze-bili-label">扫描范围</label><div class="Yuze-bili-grid" style="margin:0"><select id="Yuze-bili-start" class="Yuze-bili-select">${numericOptions([0,100,300,500,1000,2000], state.startOffset, ' 起')}</select><select id="Yuze-bili-max" class="Yuze-bili-select">${numericOptions([100,300,500,1000,2000,5000], state.maxItems, ' 个')}</select></div></div>
+        <div class="Yuze-bili-option"><label class="Yuze-bili-label">整理方式</label><div class="Yuze-bili-choice-group"><button class="Yuze-bili-choice" data-operation="move" aria-pressed="${state.operation === 'move'}"><strong>移动</strong><span>加入新分组并移出当前收藏夹</span></button><button class="Yuze-bili-choice" data-operation="copy" aria-pressed="${state.operation === 'copy'}"><strong>复制</strong><span>保留当前收藏夹，同时加入新分组</span></button></div></div>
+        <div class="Yuze-bili-option" data-auto-option ${state.mode === 'auto' ? '' : 'hidden'}><label class="Yuze-bili-label">分类粒度</label><div class="Yuze-bili-choice-group"><button class="Yuze-bili-choice" data-granularity="coarse" aria-pressed="${state.autoGranularity === 'coarse'}"><strong>粗分类</strong><span>稳定、少而清晰</span></button><button class="Yuze-bili-choice" data-granularity="fine" aria-pressed="${state.autoGranularity === 'fine'}"><strong>细分类</strong><span>主题更具体</span></button></div><select id="Yuze-bili-categories" class="Yuze-bili-select" style="margin-top:9px">${numericOptions([5,10,15,20,30,50,100,200], state.maxCategories, ' 类上限')}</select></div>
+        <div class="Yuze-bili-option"><label class="Yuze-bili-switch"><input id="Yuze-bili-private" type="checkbox" ${state.privateFolder ? 'checked' : ''}>新建收藏夹设为私密</label><div class="Yuze-bili-note" style="margin:7px 0 0">源收藏夹 ID：${escapeHtml(context.sourceFolderId)}。失效或证据不足的视频会保留在“待整理”，不会混入专业类目。</div></div>
+      </div>`, '<button class="Yuze-bili-action" data-action="cancel">取消</button><button class="Yuze-bili-action primary" data-action="start">扫描并生成计划</button>');
 
     const setMode = mode => {
       state.mode = mode;
@@ -269,32 +269,32 @@
     }));
     overlay.querySelector('[data-action="cancel"]')?.addEventListener('click', closeOverlay);
     overlay.querySelector('[data-action="start"]')?.addEventListener('click', () => {
-      state.query = cleanText(overlay.querySelector('#tabbit-bili-query')?.value);
-      state.startOffset = clampInt(overlay.querySelector('#tabbit-bili-start')?.value, 0, 50000, 0);
-      state.maxItems = clampInt(overlay.querySelector('#tabbit-bili-max')?.value, 1, 5000, config.maxItems);
-      state.maxCategories = clampInt(overlay.querySelector('#tabbit-bili-categories')?.value, 2, 200, config.maxCategories);
-      state.privateFolder = !!overlay.querySelector('#tabbit-bili-private')?.checked;
-      if (state.mode === 'filter' && !state.query) { overlay.querySelector('#tabbit-bili-query')?.focus(); return; }
+      state.query = cleanText(overlay.querySelector('#Yuze-bili-query')?.value);
+      state.startOffset = clampInt(overlay.querySelector('#Yuze-bili-start')?.value, 0, 50000, 0);
+      state.maxItems = clampInt(overlay.querySelector('#Yuze-bili-max')?.value, 1, 5000, config.maxItems);
+      state.maxCategories = clampInt(overlay.querySelector('#Yuze-bili-categories')?.value, 2, 200, config.maxCategories);
+      state.privateFolder = !!overlay.querySelector('#Yuze-bili-private')?.checked;
+      if (state.mode === 'filter' && !state.query) { overlay.querySelector('#Yuze-bili-query')?.focus(); return; }
       runPlanner();
     });
   }
 
   function renderProgress(title, description) {
-    const overlay = renderShell('正在处理', title, description, '<div class="tabbit-bili-progress"><span></span></div><p class="tabbit-bili-log">正在准备…</p>', '<button class="tabbit-bili-action danger" data-action="stop">停止</button>');
+    const overlay = renderShell('正在处理', title, description, '<div class="Yuze-bili-progress"><span></span></div><p class="Yuze-bili-log">正在准备…</p>', '<button class="Yuze-bili-action danger" data-action="stop">停止</button>');
     overlay.querySelector('[data-action="stop"]')?.addEventListener('click', () => { state.cancelled = true; });
     return overlay;
   }
 
   function updateProgress(percent, message) {
     const overlay = document.getElementById(OVERLAY_ID);
-    overlay?.querySelector('.tabbit-bili-progress span')?.style.setProperty('--progress', `${Math.max(2, Math.min(100, Number(percent) || 0))}%`);
-    const text = overlay?.querySelector('.tabbit-bili-log');
+    overlay?.querySelector('.Yuze-bili-progress span')?.style.setProperty('--progress', `${Math.max(2, Math.min(100, Number(percent) || 0))}%`);
+    const text = overlay?.querySelector('.Yuze-bili-log');
     if (text) text.textContent = message;
     log('info', 'progress', message, { percent });
   }
 
   function updateProgressMessage(message, level = 'info') {
-    const text = document.getElementById(OVERLAY_ID)?.querySelector('.tabbit-bili-log');
+    const text = document.getElementById(OVERLAY_ID)?.querySelector('.Yuze-bili-log');
     if (text) text.textContent = message;
     log(level, 'progress', message);
   }
@@ -310,7 +310,7 @@
   }
 
   function renderError(error) {
-    const overlay = renderShell(`未完成 · v${SCRIPT_VERSION}`, 'B 站收藏整理失败', errorText(error), `<div class="tabbit-bili-note" style="margin-top:0">请确认当前打开的是自己的“收藏”页面，已选中具体收藏夹，并保持登录状态。扫描与 AI 分析不会修改收藏；若修改阶段失败，已完成项会保留。若日志中的请求不是 ${escapeHtml(API_ORIGIN)}，说明浏览器仍在运行旧脚本副本。</div>`, '<button class="tabbit-bili-action primary" data-action="close">知道了</button>');
+    const overlay = renderShell(`未完成 · v${SCRIPT_VERSION}`, 'B 站收藏整理失败', errorText(error), `<div class="Yuze-bili-note" style="margin-top:0">请确认当前打开的是自己的“收藏”页面，已选中具体收藏夹，并保持登录状态。扫描与 AI 分析不会修改收藏；若修改阶段失败，已完成项会保留。若日志中的请求不是 ${escapeHtml(API_ORIGIN)}，说明浏览器仍在运行旧脚本副本。</div>`, '<button class="Yuze-bili-action primary" data-action="close">知道了</button>');
     overlay.querySelector('[data-action="close"]')?.addEventListener('click', closeOverlay);
     log('error', 'error', errorText(error));
   }
@@ -664,25 +664,25 @@
   }
 
   function statsHtml(scan, extraLabel, extraValue) {
-    return `<div class="tabbit-bili-stats"><div class="tabbit-bili-stat"><span>收藏夹总数</span><b>${scan.totalCount}</b></div><div class="tabbit-bili-stat"><span>已发现</span><b>${scan.discoveredCount}</b></div><div class="tabbit-bili-stat"><span>送入分析</span><b>${scan.items.length}</b></div><div class="tabbit-bili-stat"><span>${escapeHtml(extraLabel)}</span><b>${escapeHtml(extraValue)}</b></div></div>`;
+    return `<div class="Yuze-bili-stats"><div class="Yuze-bili-stat"><span>收藏夹总数</span><b>${scan.totalCount}</b></div><div class="Yuze-bili-stat"><span>已发现</span><b>${scan.discoveredCount}</b></div><div class="Yuze-bili-stat"><span>送入分析</span><b>${scan.items.length}</b></div><div class="Yuze-bili-stat"><span>${escapeHtml(extraLabel)}</span><b>${escapeHtml(extraValue)}</b></div></div>`;
   }
 
   function renderFilterPlan(scan, analysis) {
     state.analysis = analysis;
-    const rows = analysis.matches.slice(0, 300).map(item => `<li class="tabbit-bili-item" data-id="${item.itemId}"><div><h4>${escapeHtml(item.title)}</h4><p>${escapeHtml(`${item.author || '未知 UP'} · ${item.reason}`)}</p></div><button class="tabbit-bili-remove" data-remove="${item.itemId}" aria-label="移除">×</button></li>`).join('');
-    const overlay = renderShell(analysis.usedFallback ? '本地筛选结果' : 'AI 筛选完成', `找到 ${analysis.matches.length} 个匹配视频`, analysis.summary, `${statsHtml(scan, '筛选命中', analysis.matches.length)}<label class="tabbit-bili-label" for="tabbit-bili-folder-name">目标收藏夹</label><input id="tabbit-bili-folder-name" class="tabbit-bili-input" maxlength="20" value="${escapeHtml(analysis.folderName)}"><ul class="tabbit-bili-list" style="margin-top:13px">${rows || '<li class="tabbit-bili-item"><div><h4>没有匹配项</h4><p>可以返回调整筛选需求。</p></div></li>'}</ul>`, '<button class="tabbit-bili-action" data-action="back">重新设置</button><button class="tabbit-bili-action primary" data-action="organize">确认整理</button>');
+    const rows = analysis.matches.slice(0, 300).map(item => `<li class="Yuze-bili-item" data-id="${item.itemId}"><div><h4>${escapeHtml(item.title)}</h4><p>${escapeHtml(`${item.author || '未知 UP'} · ${item.reason}`)}</p></div><button class="Yuze-bili-remove" data-remove="${item.itemId}" aria-label="移除">×</button></li>`).join('');
+    const overlay = renderShell(analysis.usedFallback ? '本地筛选结果' : 'AI 筛选完成', `找到 ${analysis.matches.length} 个匹配视频`, analysis.summary, `${statsHtml(scan, '筛选命中', analysis.matches.length)}<label class="Yuze-bili-label" for="Yuze-bili-folder-name">目标收藏夹</label><input id="Yuze-bili-folder-name" class="Yuze-bili-input" maxlength="20" value="${escapeHtml(analysis.folderName)}"><ul class="Yuze-bili-list" style="margin-top:13px">${rows || '<li class="Yuze-bili-item"><div><h4>没有匹配项</h4><p>可以返回调整筛选需求。</p></div></li>'}</ul>`, '<button class="Yuze-bili-action" data-action="back">重新设置</button><button class="Yuze-bili-action primary" data-action="organize">确认整理</button>');
     const button = overlay.querySelector('[data-action="organize"]'); if (button) button.disabled = !analysis.matches.length;
     overlay.querySelector('[data-action="back"]')?.addEventListener('click', openStartSheet);
     overlay.querySelectorAll('[data-remove]').forEach(remove => remove.addEventListener('click', () => {
       analysis.matches = analysis.matches.filter(item => item.itemId !== remove.dataset.remove); remove.closest('li')?.remove(); if (button) button.disabled = !analysis.matches.length;
     }));
-    button?.addEventListener('click', () => { analysis.folderName = normalizeFolderName(overlay.querySelector('#tabbit-bili-folder-name')?.value, '智能筛选'); organizeAssignments(analysis.matches.map(item => ({ ...item, category: analysis.folderName }))); });
+    button?.addEventListener('click', () => { analysis.folderName = normalizeFolderName(overlay.querySelector('#Yuze-bili-folder-name')?.value, '智能筛选'); organizeAssignments(analysis.matches.map(item => ({ ...item, category: analysis.folderName }))); });
   }
 
   function renderAutoPlan(scan, plan) {
     state.autoPlan = plan;
-    const rows = plan.categories.map((category, index) => `<li class="tabbit-bili-item" data-category-index="${index}"><label class="tabbit-bili-check"><input type="checkbox" checked data-category-check="${index}"><span><h4>${escapeHtml(category.name)} ${category.existing ? '<span class="tabbit-bili-badge">复用已有</span>' : ''}</h4><p>${escapeHtml(`${category.items.length} 个 · ${category.items.slice(0, 3).map(item => item.title).join(' / ')}`)}</p></span></label><span class="tabbit-bili-badge">${category.items.length}</span></li>`).join('');
-    const overlay = renderShell(plan.usedFallback ? '本地分类计划' : 'AI 分类计划', `准备整理 ${plan.analyzedCount} 个视频`, `共 ${plan.categories.length} 个分组；${state.operation === 'move' ? '移动后会从当前收藏夹移除' : '复制后仍保留在当前收藏夹'}。`, `${statsHtml(scan, '分类分组', plan.categories.length)}<div class="tabbit-bili-tools"><p data-selection-summary>已选择 ${plan.categories.length} 个分组</p><div><button class="tabbit-bili-mini" data-select="all">全选</button> <button class="tabbit-bili-mini" data-select="none">全不选</button></div></div><ul class="tabbit-bili-list">${rows}</ul>`, '<button class="tabbit-bili-action" data-action="back">重新设置</button><button class="tabbit-bili-action primary" data-action="organize">确认整理</button>');
+    const rows = plan.categories.map((category, index) => `<li class="Yuze-bili-item" data-category-index="${index}"><label class="Yuze-bili-check"><input type="checkbox" checked data-category-check="${index}"><span><h4>${escapeHtml(category.name)} ${category.existing ? '<span class="Yuze-bili-badge">复用已有</span>' : ''}</h4><p>${escapeHtml(`${category.items.length} 个 · ${category.items.slice(0, 3).map(item => item.title).join(' / ')}`)}</p></span></label><span class="Yuze-bili-badge">${category.items.length}</span></li>`).join('');
+    const overlay = renderShell(plan.usedFallback ? '本地分类计划' : 'AI 分类计划', `准备整理 ${plan.analyzedCount} 个视频`, `共 ${plan.categories.length} 个分组；${state.operation === 'move' ? '移动后会从当前收藏夹移除' : '复制后仍保留在当前收藏夹'}。`, `${statsHtml(scan, '分类分组', plan.categories.length)}<div class="Yuze-bili-tools"><p data-selection-summary>已选择 ${plan.categories.length} 个分组</p><div><button class="Yuze-bili-mini" data-select="all">全选</button> <button class="Yuze-bili-mini" data-select="none">全不选</button></div></div><ul class="Yuze-bili-list">${rows}</ul>`, '<button class="Yuze-bili-action" data-action="back">重新设置</button><button class="Yuze-bili-action primary" data-action="organize">确认整理</button>');
     const sync = () => {
       overlay.querySelectorAll('[data-category-check]').forEach(input => { plan.categories[Number(input.dataset.categoryCheck)].selected = input.checked; input.closest('li')?.classList.toggle('is-off', !input.checked); });
       const selected = plan.categories.filter(row => row.selected); const count = selected.reduce((sum, row) => sum + row.items.length, 0);
@@ -710,7 +710,7 @@
 
   async function createFolder(name) {
     const token = csrfToken(); if (!token) throw new Error('没有读取到 B 站 CSRF 凭据，请确认已登录。');
-    const payload = await guardedWrite(() => apiJson('/x/v3/fav/folder/add', { method: 'POST', form: { title: name, intro: '由 Tabbit AI 收藏整理生成', privacy: state.privateFolder ? 1 : 0, csrf: token, csrf_token: token } }), `创建收藏夹“${name}”`, { endpoint: '/x/v3/fav/folder/add', folderName: name });
+    const payload = await guardedWrite(() => apiJson('/x/v3/fav/folder/add', { method: 'POST', form: { title: name, intro: '由 Yuze AI 收藏整理生成', privacy: state.privateFolder ? 1 : 0, csrf: token, csrf_token: token } }), `创建收藏夹“${name}”`, { endpoint: '/x/v3/fav/folder/add', folderName: name });
     return normalizeFolder({ ...(payload?.data || {}), title: payload?.data?.title || name });
   }
 
@@ -833,13 +833,13 @@
 
   function renderResult(result) {
     state.lastResult = result;
-    const folders = result.folders.map(row => `<li class="tabbit-bili-item"><div><h4>${escapeHtml(row.name)}</h4><p>${row.count} 个视频</p></div><span class="tabbit-bili-badge">${escapeHtml(row.state)}</span></li>`).join('');
-    const failures = result.failed.slice(0, 80).map(row => `<li class="tabbit-bili-item"><div><h4>${escapeHtml(row.title)}</h4><p>${escapeHtml(row.error)}</p></div><span class="tabbit-bili-badge">失败</span></li>`).join('');
+    const folders = result.folders.map(row => `<li class="Yuze-bili-item"><div><h4>${escapeHtml(row.name)}</h4><p>${row.count} 个视频</p></div><span class="Yuze-bili-badge">${escapeHtml(row.state)}</span></li>`).join('');
+    const failures = result.failed.slice(0, 80).map(row => `<li class="Yuze-bili-item"><div><h4>${escapeHtml(row.title)}</h4><p>${escapeHtml(row.error)}</p></div><span class="Yuze-bili-badge">失败</span></li>`).join('');
     const resultTitle = result.rateLimited ? '已安全停止写入' : '整理完成';
     const resultDescription = result.rateLimited
       ? `检测到 B 站 412 访问保护，已立即熔断剩余请求。已确认 ${result.verified.length} 个；请等待数分钟后重新运行，已创建的空收藏夹会自动复用。`
       : `新建 ${result.created.length} 个收藏夹，复用 ${result.reused.length} 个；未确认 ${result.unverified.length} 个，失败 ${result.failed.length} 个。`;
-    const overlay = renderShell(result.rateLimited ? '访问保护 · 已熔断' : '整理完成', resultTitle, resultDescription, `<div class="tabbit-bili-stats"><div class="tabbit-bili-stat"><span>已确认</span><b>${result.verified.length}</b></div><div class="tabbit-bili-stat"><span>未确认</span><b>${result.unverified.length}</b></div><div class="tabbit-bili-stat"><span>失败</span><b>${result.failed.length}</b></div><div class="tabbit-bili-stat"><span>收藏夹</span><b>${result.folders.length}</b></div></div><ul class="tabbit-bili-list">${folders}${failures}</ul>`, '<button class="tabbit-bili-action primary" data-action="done">完成</button>');
+    const overlay = renderShell(result.rateLimited ? '访问保护 · 已熔断' : '整理完成', resultTitle, resultDescription, `<div class="Yuze-bili-stats"><div class="Yuze-bili-stat"><span>已确认</span><b>${result.verified.length}</b></div><div class="Yuze-bili-stat"><span>未确认</span><b>${result.unverified.length}</b></div><div class="Yuze-bili-stat"><span>失败</span><b>${result.failed.length}</b></div><div class="Yuze-bili-stat"><span>收藏夹</span><b>${result.folders.length}</b></div></div><ul class="Yuze-bili-list">${folders}${failures}</ul>`, '<button class="Yuze-bili-action primary" data-action="done">完成</button>');
     overlay.querySelector('[data-action="done"]')?.addEventListener('click', () => { closeOverlay(); if (!config.testMode) location.reload(); });
   }
 

@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         网页字体工具
-// @namespace    tabbit-font-tool
+// @namespace    Yuze-font-tool
 // @description  调整网页字体、字号、样式、阴影、描边与选中文字颜色。直接运行或丢入油猴皆可
 // @match        *://*/*
 // @icon         data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'><defs><linearGradient id='bg' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='%236D5DF6'/><stop offset='100%' stop-color='%238B5CF6'/></linearGradient><filter id='shadow' x='-20%' y='-20%' width='140%' height='140%'><feDropShadow dx='0' dy='4' stdDeviation='4' flood-color='%23000000' flood-opacity='0.25'/></filter></defs><rect x='8' y='8' width='112' height='112' rx='24' fill='url(%23bg)'/><g filter='url(%23shadow)'><path d='M64 28L87 92H75L69 74H59L53 92H41L64 28ZM64 46L62 52L55 66H73L66 52L64 46Z' fill='white'/><rect x='84' y='34' width='10' height='44' rx='5' fill='%23FDE68A'/><rect x='78' y='40' width='22' height='8' rx='4' fill='%23F59E0B'/><circle cx='91' cy='98' r='10' fill='%2322C55E'/><circle cx='91' cy='98' r='5' fill='white' opacity='0.9'/></g></svg>
@@ -14,7 +14,7 @@
 // ==/UserScript==
 (function(){
 
-const PANEL_ID="tabbit-font-panel",PANEL_STYLE_ID="tabbit-font-panel-style",FONT_STYLE_ID="tabbit-custom-font-style",STORAGE_KEY="tabbit_font_tool_settings",COLOR_MARK_ATTR="data-tabbit-colored",ROOT_FLAG="__TABBIT_FONT_TOOL_INITIALIZED__",MENU_FLAG="__TABBIT_FONT_TOOL_MENU_REGISTERED__",IS_USERSCRIPT=typeof GM_info!="undefined"||typeof GM_addStyle=="function"||typeof GM_registerMenuCommand=="function"||typeof GM_getValue=="function"||typeof GM_setValue=="function"||typeof unsafeWindow!="undefined",HAS_GM_STORAGE=typeof GM_getValue=="function"&&typeof GM_setValue=="function"&&typeof GM_deleteValue=="function";
+const PANEL_ID="Yuze-font-panel",PANEL_STYLE_ID="Yuze-font-panel-style",FONT_STYLE_ID="Yuze-custom-font-style",STORAGE_KEY="Yuze_font_tool_settings",COLOR_MARK_ATTR="data-Yuze-colored",ROOT_FLAG="__Yuze_FONT_TOOL_INITIALIZED__",MENU_FLAG="__Yuze_FONT_TOOL_MENU_REGISTERED__",IS_USERSCRIPT=typeof GM_info!="undefined"||typeof GM_addStyle=="function"||typeof GM_registerMenuCommand=="function"||typeof GM_getValue=="function"||typeof GM_setValue=="function"||typeof unsafeWindow!="undefined",HAS_GM_STORAGE=typeof GM_getValue=="function"&&typeof GM_setValue=="function"&&typeof GM_deleteValue=="function";
 
 const FONT_OPTIONS=[{label:"默认 Sans",value:'system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif'},{label:"微软雅黑",value:'"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif'},{label:'微软雅黑 Light',value:'"Microsoft YaHei UI","Microsoft YaHei",sans-serif'},{label:'苹方',value:'"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif'},{label:'思源黑体',value:'"Noto Sans SC","Microsoft YaHei","PingFang SC",sans-serif'},{label:'冬青黑体',value:'"Hiragino Sans GB","Microsoft YaHei","PingFang SC",sans-serif'},{label:'华文细黑',value:'"STHeiti","Microsoft YaHei",sans-serif'},{label:'阿里巴巴普惠体',value:'"Alibaba PuHuiTi","Microsoft YaHei","PingFang SC",sans-serif'},{label:'OPPO Sans',value:'"OPPOSans","Microsoft YaHei",sans-serif'},{label:'HarmonyOS Sans',value:'"HarmonyOS Sans SC","Microsoft YaHei","PingFang SC",sans-serif'},{label:'Source Han Sans',value:'"Source Han Sans SC","Noto Sans SC","Microsoft YaHei",sans-serif'},{label:'得意黑',value:'"Smiley Sans","Noto Sans SC","Microsoft YaHei",sans-serif'},{label:'宋体',value:'SimSun,"Songti SC",serif'},{label:'新宋体',value:'NSimSun,SimSun,serif'},{label:'仿宋',value:'FangSong,serif'},{label:'楷体',value:'KaiTi,serif'},{label:'黑体',value:'SimHei,sans-serif'},{label:'华文宋体',value:'"STSong","Songti SC",serif'},{label:'华文中宋',value:'"STZhongsong","Songti SC",serif'},{label:'华文仿宋',value:'"STFangsong",FangSong,serif'},{label:'华文楷体',value:'"STKaiti",KaiTi,serif'},{label:'方正书宋',value:'"FZShuSong-Z01","Songti SC",serif'},{label:'方正黑体',value:'"FZHei-B01","Microsoft YaHei",sans-serif'},{label:'Arial',value:'Arial,Helvetica,sans-serif'},{label:'Helvetica',value:'Helvetica,Arial,sans-serif'},{label:'Helvetica Neue',value:'"Helvetica Neue",Helvetica,Arial,sans-serif'},{label:'Segoe UI',value:'"Segoe UI",system-ui,sans-serif'},{label:'Tahoma',value:'Tahoma,Geneva,sans-serif'},{label:'Verdana',value:'Verdana,sans-serif'},{label:'Trebuchet MS',value:'"Trebuchet MS",sans-serif'},{label:'Gill Sans',value:'"Gill Sans","Gill Sans MT",sans-serif'},{label:'Avenir',value:'Avenir,"Avenir Next","Segoe UI",sans-serif'},{label:'Avenir Next',value:'"Avenir Next",Avenir,"Segoe UI",sans-serif'},{label:'Futura',value:'Futura,"Trebuchet MS",sans-serif'},{label:'Optima',value:'Optima,"Segoe UI",sans-serif'},{label:'Inter',value:'Inter,"Segoe UI",system-ui,sans-serif'},{label:'Roboto',value:'Roboto,"Segoe UI",sans-serif'},{label:'Open Sans',value:'"Open Sans","Segoe UI",sans-serif'},{label:'Lato',value:'Lato,"Segoe UI",sans-serif'},{label:'Montserrat',value:'Montserrat,"Segoe UI",sans-serif'},{label:'Ubuntu',value:'Ubuntu,"Segoe UI",sans-serif'},{label:'Nunito',value:'Nunito,"Segoe UI",sans-serif'},{label:'Poppins',value:'Poppins,"Segoe UI",sans-serif'},{label:'Georgia',value:'Georgia,serif'},{label:'Times New Roman',value:'"Times New Roman",serif'},{label:'Garamond',value:'Garamond,serif'},{label:'Baskerville',value:'Baskerville,"Times New Roman",serif'},{label:'Palatino',value:'"Palatino Linotype","Book Antiqua",Palatino,serif'},{label:'Book Antiqua',value:'"Book Antiqua",Palatino,serif'},{label:'Cambria',value:'Cambria,Georgia,serif'},{label:'Didot',value:'Didot,Georgia,serif'},{label:'Constantia',value:'Constantia,Georgia,serif'},{label:'Courier New',value:'"Courier New",monospace'},{label:'Consolas',value:'Consolas,"Courier New",monospace'},{label:'Monaco',value:'Monaco,monospace'},{label:'Menlo',value:'Menlo,Monaco,monospace'},{label:'Source Code Pro',value:'"Source Code Pro",Consolas,monospace'},{label:'JetBrains Mono',value:'"JetBrains Mono",monospace'},{label:'Fira Code',value:'"Fira Code",monospace'},{label:'Cascadia Code',value:'"Cascadia Code",Consolas,monospace'},{label:'IBM Plex Mono',value:'"IBM Plex Mono",Consolas,monospace'},{label:'SF Mono',value:'"SF Mono",Menlo,Monaco,monospace'},{label:'Inconsolata',value:'Inconsolata,Consolas,monospace'},{label:'Ubuntu Mono',value:'"Ubuntu Mono",Consolas,monospace'},{label:'Hack',value:'Hack,"DejaVu Sans Mono",monospace'},{label:'Comic Sans MS',value:'"Comic Sans MS","Comic Sans",cursive'},{label:'Brush Script MT',value:'"Brush Script MT",cursive'},{label:'Segoe Print',value:'"Segoe Print",cursive'},{label:'系统默认 Serif',value:'ui-serif,Georgia,serif'},{label:'系统默认 Monospace',value:'ui-monospace,SFMono-Regular,Menlo,monospace'},{label:'系统默认 Rounded',value:'ui-rounded,"Hiragino Maru Gothic ProN",sans-serif'}];
 
@@ -41,7 +41,7 @@ function injectPanelStyle(){
   document.getElementById(PANEL_STYLE_ID)?.remove();
   const e=document.createElement("style");
   e.id=PANEL_STYLE_ID;
-  e.textContent=`:root{--tp-bg:rgba(255,255,255,.78);--tp-bg2:rgba(255,255,255,.92);--tp-surface:rgba(248,250,252,.86);--tp-surface-2:rgba(255,255,255,.55);--tp-text:#172030;--tp-soft:#5f6b7a;--tp-muted:#7b8794;--tp-border:rgba(148,163,184,.24);--tp-shadow:rgba(15,23,42,.18);--tp-primary:#5b5cf0;--tp-accent:#8b5cf6;--tp-success:#10b981;--tp-warn:#f59e0b;--tp-warn-text:#fff;--tp-input-bg:rgba(255,255,255,.76);--tp-input-text:#172030;--tp-input-border:rgba(148,163,184,.28);--tp-ring:rgba(91,92,240,.22);--tp-btn2-bg:rgba(241,245,249,.9);--tp-btn2-text:#172030;--tp-chip-bg:rgba(238,242,247,.9);--tp-chip-text:#172030;--tp-chip-active:#fff}@media(prefers-color-scheme:dark){:root{--tp-bg:rgba(15,23,42,.72);--tp-bg2:rgba(19,28,49,.88);--tp-surface:rgba(24,34,53,.84);--tp-surface-2:rgba(255,255,255,.03);--tp-text:#e8eef8;--tp-soft:#b7c2d4;--tp-muted:#94a3b8;--tp-border:rgba(148,163,184,.16);--tp-shadow:rgba(0,0,0,.42);--tp-primary:#8b93ff;--tp-accent:#a78bfa;--tp-success:#34d399;--tp-warn:#fbbf24;--tp-warn-text:#1f1605;--tp-input-bg:rgba(22,32,51,.76);--tp-input-text:#e8eef8;--tp-input-border:rgba(148,163,184,.18);--tp-ring:rgba(139,147,255,.28);--tp-btn2-bg:rgba(26,36,56,.88);--tp-btn2-text:#e8eef8;--tp-chip-bg:rgba(26,36,56,.88);--tp-chip-text:#e8eef8;--tp-chip-active:#0f172a}}#${PANEL_ID}{position:fixed;top:24px;right:24px;z-index:2147483647;width:370px;max-width:calc(100vw - 24px);color:var(--tp-text);background:linear-gradient(180deg,var(--tp-bg2),var(--tp-bg));border:1px solid var(--tp-border);border-radius:24px;box-shadow:0 24px 60px var(--tp-shadow);overflow:hidden;font-family:Inter,Arial,sans-serif !important;backdrop-filter:blur(18px) saturate(145%);-webkit-backdrop-filter:blur(18px) saturate(145%)}#${PANEL_ID},#${PANEL_ID} *{box-sizing:border-box}#${PANEL_ID} .tabbit-font-header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 16px;cursor:move;user-select:none;color:#fff;background:linear-gradient(135deg,var(--tp-primary),var(--tp-accent))}#${PANEL_ID} .tabbit-font-title{font-size:14px;font-weight:800;letter-spacing:.2px}#${PANEL_ID} .tabbit-font-badge{font-size:11px;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.18);font-weight:600}#${PANEL_ID} .tabbit-font-body{padding:14px;max-height:72vh;overflow:auto}#${PANEL_ID} .tabbit-font-section{padding:12px;border:1px solid var(--tp-border);background:linear-gradient(180deg,var(--tp-surface),var(--tp-surface-2));border-radius:18px;margin-bottom:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}#${PANEL_ID} .tabbit-font-row{margin-bottom:10px}#${PANEL_ID} .tabbit-font-row:last-child{margin-bottom:0}#${PANEL_ID} .tabbit-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}#${PANEL_ID} .tabbit-section-title{font-size:13px;font-weight:800;color:var(--tp-text)}#${PANEL_ID} .tabbit-section-sub{font-size:11px;color:var(--tp-muted);margin-top:2px}#${PANEL_ID} label{display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:var(--tp-soft)}#${PANEL_ID} select,#${PANEL_ID} input[type="number"],#${PANEL_ID} input[type="color"]{width:100%;border:1px solid var(--tp-input-border);border-radius:12px;padding:9px 11px;font-size:13px;outline:none;background:var(--tp-input-bg);color:var(--tp-input-text);transition:.18s ease}#${PANEL_ID} select:focus,#${PANEL_ID} input[type="number"]:focus,#${PANEL_ID} input[type="color"]:focus{border-color:var(--tp-primary);box-shadow:0 0 0 4px var(--tp-ring)}#${PANEL_ID} input[type="color"]{padding:4px;min-height:42px}#${PANEL_ID} .tabbit-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}#${PANEL_ID} .tabbit-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}#${PANEL_ID} .tabbit-style-btn,#${PANEL_ID} .tabbit-toggle-btn,#${PANEL_ID} .tabbit-collapse-btn,#${PANEL_ID} button{border:none;border-radius:12px;padding:10px 12px;font-size:13px;cursor:pointer;transition:.18s ease}#${PANEL_ID} .tabbit-style-btn,#${PANEL_ID} .tabbit-toggle-btn{background:var(--tp-chip-bg);color:var(--tp-chip-text);font-weight:800;border:1px solid transparent}#${PANEL_ID} .tabbit-style-btn:hover,#${PANEL_ID} .tabbit-toggle-btn:hover,#${PANEL_ID} .tabbit-btn-secondary:hover,#${PANEL_ID} .tabbit-collapse-btn:hover{transform:translateY(-1px)}#${PANEL_ID} .tabbit-style-btn.active,#${PANEL_ID} .tabbit-toggle-btn.active{background:linear-gradient(135deg,var(--tp-primary),var(--tp-accent));color:var(--tp-chip-active);box-shadow:0 10px 24px rgba(91,92,240,.28)}#${PANEL_ID} .tabbit-toggle-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;white-space:nowrap}#${PANEL_ID} .tabbit-toggle-dot{width:10px;height:10px;border-radius:999px;background:currentColor;opacity:.35;box-shadow:0 0 0 3px rgba(255,255,255,.08) inset}#${PANEL_ID} .tabbit-toggle-btn.active .tabbit-toggle-dot{opacity:1;background:#fff}#${PANEL_ID} .tabbit-collapse-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:38px;height:38px;padding:0 12px;background:var(--tp-btn2-bg);color:var(--tp-btn2-text);border:1px solid var(--tp-input-border);border-radius:999px;font-weight:800}#${PANEL_ID} .tabbit-collapse-icon{display:inline-block;font-size:14px;line-height:1;transition:transform .18s ease}#${PANEL_ID} .tabbit-collapsible{overflow:hidden;max-height:500px;opacity:1;transition:max-height .22s ease,opacity .18s ease,margin-top .18s ease}#${PANEL_ID} .tabbit-font-section.collapsed .tabbit-collapsible{max-height:0;opacity:0;margin-top:0;pointer-events:none}#${PANEL_ID} .tabbit-font-section.collapsed .tabbit-section-head{margin-bottom:0}#${PANEL_ID} .tabbit-font-section.collapsed .tabbit-collapse-icon{transform:rotate(-90deg)}#${PANEL_ID} .tabbit-effect-grid{display:grid;grid-template-columns:1fr;gap:10px}#${PANEL_ID} .tabbit-effect-card{padding:10px;border:1px solid var(--tp-border);border-radius:14px;background:rgba(255,255,255,.04)}#${PANEL_ID} .tabbit-effect-card-title{font-size:11px;font-weight:700;color:var(--tp-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}#${PANEL_ID} .tabbit-font-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}#${PANEL_ID} .tabbit-btn-warning{background:linear-gradient(135deg,var(--tp-warn),#ff8a00);color:var(--tp-warn-text);font-weight:800}#${PANEL_ID} .tabbit-btn-secondary{background:var(--tp-btn2-bg);color:var(--tp-btn2-text);border:1px solid var(--tp-input-border);font-weight:700}#${PANEL_ID} .tabbit-font-body::-webkit-scrollbar{width:8px}#${PANEL_ID} .tabbit-font-body::-webkit-scrollbar-thumb{background:rgba(148,163,184,.35);border-radius:999px}`;
+  e.textContent=`:root{--tp-bg:rgba(255,255,255,.78);--tp-bg2:rgba(255,255,255,.92);--tp-surface:rgba(248,250,252,.86);--tp-surface-2:rgba(255,255,255,.55);--tp-text:#172030;--tp-soft:#5f6b7a;--tp-muted:#7b8794;--tp-border:rgba(148,163,184,.24);--tp-shadow:rgba(15,23,42,.18);--tp-primary:#5b5cf0;--tp-accent:#8b5cf6;--tp-success:#10b981;--tp-warn:#f59e0b;--tp-warn-text:#fff;--tp-input-bg:rgba(255,255,255,.76);--tp-input-text:#172030;--tp-input-border:rgba(148,163,184,.28);--tp-ring:rgba(91,92,240,.22);--tp-btn2-bg:rgba(241,245,249,.9);--tp-btn2-text:#172030;--tp-chip-bg:rgba(238,242,247,.9);--tp-chip-text:#172030;--tp-chip-active:#fff}@media(prefers-color-scheme:dark){:root{--tp-bg:rgba(15,23,42,.72);--tp-bg2:rgba(19,28,49,.88);--tp-surface:rgba(24,34,53,.84);--tp-surface-2:rgba(255,255,255,.03);--tp-text:#e8eef8;--tp-soft:#b7c2d4;--tp-muted:#94a3b8;--tp-border:rgba(148,163,184,.16);--tp-shadow:rgba(0,0,0,.42);--tp-primary:#8b93ff;--tp-accent:#a78bfa;--tp-success:#34d399;--tp-warn:#fbbf24;--tp-warn-text:#1f1605;--tp-input-bg:rgba(22,32,51,.76);--tp-input-text:#e8eef8;--tp-input-border:rgba(148,163,184,.18);--tp-ring:rgba(139,147,255,.28);--tp-btn2-bg:rgba(26,36,56,.88);--tp-btn2-text:#e8eef8;--tp-chip-bg:rgba(26,36,56,.88);--tp-chip-text:#e8eef8;--tp-chip-active:#0f172a}}#${PANEL_ID}{position:fixed;top:24px;right:24px;z-index:2147483647;width:370px;max-width:calc(100vw - 24px);color:var(--tp-text);background:linear-gradient(180deg,var(--tp-bg2),var(--tp-bg));border:1px solid var(--tp-border);border-radius:24px;box-shadow:0 24px 60px var(--tp-shadow);overflow:hidden;font-family:Inter,Arial,sans-serif !important;backdrop-filter:blur(18px) saturate(145%);-webkit-backdrop-filter:blur(18px) saturate(145%)}#${PANEL_ID},#${PANEL_ID} *{box-sizing:border-box}#${PANEL_ID} .Yuze-font-header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 16px;cursor:move;user-select:none;color:#fff;background:linear-gradient(135deg,var(--tp-primary),var(--tp-accent))}#${PANEL_ID} .Yuze-font-title{font-size:14px;font-weight:800;letter-spacing:.2px}#${PANEL_ID} .Yuze-font-badge{font-size:11px;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.18);font-weight:600}#${PANEL_ID} .Yuze-font-body{padding:14px;max-height:72vh;overflow:auto}#${PANEL_ID} .Yuze-font-section{padding:12px;border:1px solid var(--tp-border);background:linear-gradient(180deg,var(--tp-surface),var(--tp-surface-2));border-radius:18px;margin-bottom:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}#${PANEL_ID} .Yuze-font-row{margin-bottom:10px}#${PANEL_ID} .Yuze-font-row:last-child{margin-bottom:0}#${PANEL_ID} .Yuze-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}#${PANEL_ID} .Yuze-section-title{font-size:13px;font-weight:800;color:var(--tp-text)}#${PANEL_ID} .Yuze-section-sub{font-size:11px;color:var(--tp-muted);margin-top:2px}#${PANEL_ID} label{display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:var(--tp-soft)}#${PANEL_ID} select,#${PANEL_ID} input[type="number"],#${PANEL_ID} input[type="color"]{width:100%;border:1px solid var(--tp-input-border);border-radius:12px;padding:9px 11px;font-size:13px;outline:none;background:var(--tp-input-bg);color:var(--tp-input-text);transition:.18s ease}#${PANEL_ID} select:focus,#${PANEL_ID} input[type="number"]:focus,#${PANEL_ID} input[type="color"]:focus{border-color:var(--tp-primary);box-shadow:0 0 0 4px var(--tp-ring)}#${PANEL_ID} input[type="color"]{padding:4px;min-height:42px}#${PANEL_ID} .Yuze-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}#${PANEL_ID} .Yuze-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}#${PANEL_ID} .Yuze-style-btn,#${PANEL_ID} .Yuze-toggle-btn,#${PANEL_ID} .Yuze-collapse-btn,#${PANEL_ID} button{border:none;border-radius:12px;padding:10px 12px;font-size:13px;cursor:pointer;transition:.18s ease}#${PANEL_ID} .Yuze-style-btn,#${PANEL_ID} .Yuze-toggle-btn{background:var(--tp-chip-bg);color:var(--tp-chip-text);font-weight:800;border:1px solid transparent}#${PANEL_ID} .Yuze-style-btn:hover,#${PANEL_ID} .Yuze-toggle-btn:hover,#${PANEL_ID} .Yuze-btn-secondary:hover,#${PANEL_ID} .Yuze-collapse-btn:hover{transform:translateY(-1px)}#${PANEL_ID} .Yuze-style-btn.active,#${PANEL_ID} .Yuze-toggle-btn.active{background:linear-gradient(135deg,var(--tp-primary),var(--tp-accent));color:var(--tp-chip-active);box-shadow:0 10px 24px rgba(91,92,240,.28)}#${PANEL_ID} .Yuze-toggle-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;white-space:nowrap}#${PANEL_ID} .Yuze-toggle-dot{width:10px;height:10px;border-radius:999px;background:currentColor;opacity:.35;box-shadow:0 0 0 3px rgba(255,255,255,.08) inset}#${PANEL_ID} .Yuze-toggle-btn.active .Yuze-toggle-dot{opacity:1;background:#fff}#${PANEL_ID} .Yuze-collapse-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:38px;height:38px;padding:0 12px;background:var(--tp-btn2-bg);color:var(--tp-btn2-text);border:1px solid var(--tp-input-border);border-radius:999px;font-weight:800}#${PANEL_ID} .Yuze-collapse-icon{display:inline-block;font-size:14px;line-height:1;transition:transform .18s ease}#${PANEL_ID} .Yuze-collapsible{overflow:hidden;max-height:500px;opacity:1;transition:max-height .22s ease,opacity .18s ease,margin-top .18s ease}#${PANEL_ID} .Yuze-font-section.collapsed .Yuze-collapsible{max-height:0;opacity:0;margin-top:0;pointer-events:none}#${PANEL_ID} .Yuze-font-section.collapsed .Yuze-section-head{margin-bottom:0}#${PANEL_ID} .Yuze-font-section.collapsed .Yuze-collapse-icon{transform:rotate(-90deg)}#${PANEL_ID} .Yuze-effect-grid{display:grid;grid-template-columns:1fr;gap:10px}#${PANEL_ID} .Yuze-effect-card{padding:10px;border:1px solid var(--tp-border);border-radius:14px;background:rgba(255,255,255,.04)}#${PANEL_ID} .Yuze-effect-card-title{font-size:11px;font-weight:700;color:var(--tp-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}#${PANEL_ID} .Yuze-font-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}#${PANEL_ID} .Yuze-btn-warning{background:linear-gradient(135deg,var(--tp-warn),#ff8a00);color:var(--tp-warn-text);font-weight:800}#${PANEL_ID} .Yuze-btn-secondary{background:var(--tp-btn2-bg);color:var(--tp-btn2-text);border:1px solid var(--tp-input-border);font-weight:700}#${PANEL_ID} .Yuze-font-body::-webkit-scrollbar{width:8px}#${PANEL_ID} .Yuze-font-body::-webkit-scrollbar-thumb{background:rgba(148,163,184,.35);border-radius:999px}`;
   (document.head||document.documentElement)?.appendChild(e);
 }
 
@@ -63,9 +63,9 @@ function makePanelDraggable(e,t,n){if(!e||!t)return;let o=false,r=0,i=0,a=0,l=0;
 
 function destroyPanelOnly(){document.getElementById(PANEL_ID)?.remove();document.getElementById(PANEL_STYLE_ID)?.remove();delete window[ROOT_FLAG]}
 
-function setButtonState(e,t){if(!e)return;e.querySelector("#tabbit-style-bold")?.classList.toggle("active",t.fontWeight==="bold");e.querySelector("#tabbit-style-italic")?.classList.toggle("active",t.fontStyle==="italic");e.querySelector("#tabbit-style-underline")?.classList.toggle("active",!!t.underline);e.querySelector("#tabbit-style-strike")?.classList.toggle("active",!!t.strike);e.querySelector("#tabbit-shadow-enabled")?.classList.toggle("active",!!t.shadowEnabled);e.querySelector("#tabbit-stroke-enabled")?.classList.toggle("active",!!t.strokeEnabled);const n=e.querySelector("#tabbit-shadow-section"),o=e.querySelector("#tabbit-stroke-section");n?.classList.toggle("collapsed",!!t.shadowSectionCollapsed);o?.classList.toggle("collapsed",!!t.strokeSectionCollapsed);e.querySelector("#tabbit-shadow-collapse")?.setAttribute("aria-expanded",String(!t.shadowSectionCollapsed));e.querySelector("#tabbit-stroke-collapse")?.setAttribute("aria-expanded",String(!t.strokeSectionCollapsed))}
+function setButtonState(e,t){if(!e)return;e.querySelector("#Yuze-style-bold")?.classList.toggle("active",t.fontWeight==="bold");e.querySelector("#Yuze-style-italic")?.classList.toggle("active",t.fontStyle==="italic");e.querySelector("#Yuze-style-underline")?.classList.toggle("active",!!t.underline);e.querySelector("#Yuze-style-strike")?.classList.toggle("active",!!t.strike);e.querySelector("#Yuze-shadow-enabled")?.classList.toggle("active",!!t.shadowEnabled);e.querySelector("#Yuze-stroke-enabled")?.classList.toggle("active",!!t.strokeEnabled);const n=e.querySelector("#Yuze-shadow-section"),o=e.querySelector("#Yuze-stroke-section");n?.classList.toggle("collapsed",!!t.shadowSectionCollapsed);o?.classList.toggle("collapsed",!!t.strokeSectionCollapsed);e.querySelector("#Yuze-shadow-collapse")?.setAttribute("aria-expanded",String(!t.shadowSectionCollapsed));e.querySelector("#Yuze-stroke-collapse")?.setAttribute("aria-expanded",String(!t.strokeSectionCollapsed))}
 
-function updateThemeBadge(e){const t=e?.querySelector("#tabbit-font-badge");if(!t)return;const n=getCurrentTheme();t.textContent=n==="dark"?"🌙 深色":"☀️ 浅色";t.dataset.theme=n}
+function updateThemeBadge(e){const t=e?.querySelector("#Yuze-font-badge");if(!t)return;const n=getCurrentTheme();t.textContent=n==="dark"?"🌙 深色":"☀️ 浅色";t.dataset.theme=n}
 
 function mk(tag,props,children){
   const el=document.createElement(tag);
@@ -102,90 +102,90 @@ function createPanel(){
 
   const e=load();
 
-  const header=mk("div",{className:"tabbit-font-header"},[
-    mk("div",{className:"tabbit-font-title",textContent:"网页字体工具"}),
-    mk("div",{className:"tabbit-font-badge",id:"tabbit-font-badge"})
+  const header=mk("div",{className:"Yuze-font-header"},[
+    mk("div",{className:"Yuze-font-title",textContent:"网页字体工具"}),
+    mk("div",{className:"Yuze-font-badge",id:"Yuze-font-badge"})
   ]);
 
-  const fontFamilyLabel=mk("label",{htmlFor:"tabbit-font-family",textContent:"选择字体"});
-  const fontFamilySelect=mk("select",{id:"tabbit-font-family"});
+  const fontFamilyLabel=mk("label",{htmlFor:"Yuze-font-family",textContent:"选择字体"});
+  const fontFamilySelect=mk("select",{id:"Yuze-font-family"});
   fontFamilySelect.appendChild(mk("option",{value:"",textContent:"请选择字体"}));
   FONT_OPTIONS.forEach(opt=>{fontFamilySelect.appendChild(mk("option",{value:opt.value,textContent:opt.label}))});
-  const rowFamily=mk("div",{className:"tabbit-font-row"},[fontFamilyLabel,fontFamilySelect]);
+  const rowFamily=mk("div",{className:"Yuze-font-row"},[fontFamilyLabel,fontFamilySelect]);
 
-  const fontSizeLabel=mk("label",{htmlFor:"tabbit-font-size",textContent:"字体大小 (px)"});
-  const fontSizeInput=mk("input",{id:"tabbit-font-size",type:"number",min:"10",max:"72",placeholder:"例如 16"});
-  const rowSize=mk("div",{className:"tabbit-font-row"},[fontSizeLabel,fontSizeInput]);
+  const fontSizeLabel=mk("label",{htmlFor:"Yuze-font-size",textContent:"字体大小 (px)"});
+  const fontSizeInput=mk("input",{id:"Yuze-font-size",type:"number",min:"10",max:"72",placeholder:"例如 16"});
+  const rowSize=mk("div",{className:"Yuze-font-row"},[fontSizeLabel,fontSizeInput]);
 
   const styleLabel=mk("label",{textContent:"文字样式"});
-  const btnBold=mk("button",{className:"tabbit-style-btn",type:"button",id:"tabbit-style-bold",textContent:"B"});
-  const btnItalic=mk("button",{className:"tabbit-style-btn",type:"button",id:"tabbit-style-italic",textContent:"I"});
-  const btnUnderline=mk("button",{className:"tabbit-style-btn",type:"button",id:"tabbit-style-underline",textContent:"U"});
-  const btnStrike=mk("button",{className:"tabbit-style-btn",type:"button",id:"tabbit-style-strike",textContent:"S"});
-  const styleGrid=mk("div",{className:"tabbit-grid-4"},[btnBold,btnItalic,btnUnderline,btnStrike]);
-  const rowStyle=mk("div",{className:"tabbit-font-row"},[styleLabel,styleGrid]);
-  const sec1=mk("div",{className:"tabbit-font-section"},[rowFamily,rowSize,rowStyle]);
+  const btnBold=mk("button",{className:"Yuze-style-btn",type:"button",id:"Yuze-style-bold",textContent:"B"});
+  const btnItalic=mk("button",{className:"Yuze-style-btn",type:"button",id:"Yuze-style-italic",textContent:"I"});
+  const btnUnderline=mk("button",{className:"Yuze-style-btn",type:"button",id:"Yuze-style-underline",textContent:"U"});
+  const btnStrike=mk("button",{className:"Yuze-style-btn",type:"button",id:"Yuze-style-strike",textContent:"S"});
+  const styleGrid=mk("div",{className:"Yuze-grid-4"},[btnBold,btnItalic,btnUnderline,btnStrike]);
+  const rowStyle=mk("div",{className:"Yuze-font-row"},[styleLabel,styleGrid]);
+  const sec1=mk("div",{className:"Yuze-font-section"},[rowFamily,rowSize,rowStyle]);
 
-  const shadowTitle=mk("div",{className:"tabbit-section-title",textContent:"字体阴影"});
-  const shadowSub=mk("div",{className:"tabbit-section-sub",textContent:"颜色、偏移与模糊即时预览"});
+  const shadowTitle=mk("div",{className:"Yuze-section-title",textContent:"字体阴影"});
+  const shadowSub=mk("div",{className:"Yuze-section-sub",textContent:"颜色、偏移与模糊即时预览"});
   const shadowTitleWrap=mk("div",{},[shadowTitle,shadowSub]);
-  const shadowToggleDot=mk("span",{className:"tabbit-toggle-dot"});
+  const shadowToggleDot=mk("span",{className:"Yuze-toggle-dot"});
   const shadowToggleText=mk("span",{textContent:"启用阴影"});
-  const btnShadowEnabled=mk("button",{className:"tabbit-toggle-btn",type:"button",id:"tabbit-shadow-enabled"},[shadowToggleDot,shadowToggleText]);
-  const shadowCollapseIcon=mk("span",{className:"tabbit-collapse-icon",textContent:"▼"});
-  const btnShadowCollapse=mk("button",{className:"tabbit-collapse-btn",type:"button",id:"tabbit-shadow-collapse",title:"收起/展开",ariaExpanded:"false"},[shadowCollapseIcon]);
+  const btnShadowEnabled=mk("button",{className:"Yuze-toggle-btn",type:"button",id:"Yuze-shadow-enabled"},[shadowToggleDot,shadowToggleText]);
+  const shadowCollapseIcon=mk("span",{className:"Yuze-collapse-icon",textContent:"▼"});
+  const btnShadowCollapse=mk("button",{className:"Yuze-collapse-btn",type:"button",id:"Yuze-shadow-collapse",title:"收起/展开",ariaExpanded:"false"},[shadowCollapseIcon]);
   const shadowHeadRight=mk("div",{style:"display:flex;align-items:center;gap:8px;"},[btnShadowEnabled,btnShadowCollapse]);
-  const shadowHead=mk("div",{className:"tabbit-section-head"},[shadowTitleWrap,shadowHeadRight]);
-  const shadowColorLabel=mk("label",{htmlFor:"tabbit-shadow-color",textContent:"阴影颜色"});
-  const shadowColorInput=mk("input",{id:"tabbit-shadow-color",type:"color"});
-  const shadowBlurLabel=mk("label",{htmlFor:"tabbit-shadow-blur",textContent:"模糊 (px)"});
-  const shadowBlurInput=mk("input",{id:"tabbit-shadow-blur",type:"number",min:"0",max:"50"});
-  const shadowCard1=mk("div",{className:"tabbit-effect-card"},[
-    mk("div",{className:"tabbit-effect-card-title",textContent:"颜色与模糊"}),
-    mk("div",{className:"tabbit-grid-2"},[mk("div",{},[shadowColorLabel,shadowColorInput]),mk("div",{},[shadowBlurLabel,shadowBlurInput])])
+  const shadowHead=mk("div",{className:"Yuze-section-head"},[shadowTitleWrap,shadowHeadRight]);
+  const shadowColorLabel=mk("label",{htmlFor:"Yuze-shadow-color",textContent:"阴影颜色"});
+  const shadowColorInput=mk("input",{id:"Yuze-shadow-color",type:"color"});
+  const shadowBlurLabel=mk("label",{htmlFor:"Yuze-shadow-blur",textContent:"模糊 (px)"});
+  const shadowBlurInput=mk("input",{id:"Yuze-shadow-blur",type:"number",min:"0",max:"50"});
+  const shadowCard1=mk("div",{className:"Yuze-effect-card"},[
+    mk("div",{className:"Yuze-effect-card-title",textContent:"颜色与模糊"}),
+    mk("div",{className:"Yuze-grid-2"},[mk("div",{},[shadowColorLabel,shadowColorInput]),mk("div",{},[shadowBlurLabel,shadowBlurInput])])
   ]);
-  const shadowXLabel=mk("label",{htmlFor:"tabbit-shadow-x",textContent:"水平偏移 (px)"});
-  const shadowXInput=mk("input",{id:"tabbit-shadow-x",type:"number",min:"-50",max:"50"});
-  const shadowYLabel=mk("label",{htmlFor:"tabbit-shadow-y",textContent:"垂直偏移 (px)"});
-  const shadowYInput=mk("input",{id:"tabbit-shadow-y",type:"number",min:"-50",max:"50"});
-  const shadowCard2=mk("div",{className:"tabbit-effect-card"},[
-    mk("div",{className:"tabbit-effect-card-title",textContent:"位置偏移"}),
-    mk("div",{className:"tabbit-grid-2"},[mk("div",{},[shadowXLabel,shadowXInput]),mk("div",{},[shadowYLabel,shadowYInput])])
+  const shadowXLabel=mk("label",{htmlFor:"Yuze-shadow-x",textContent:"水平偏移 (px)"});
+  const shadowXInput=mk("input",{id:"Yuze-shadow-x",type:"number",min:"-50",max:"50"});
+  const shadowYLabel=mk("label",{htmlFor:"Yuze-shadow-y",textContent:"垂直偏移 (px)"});
+  const shadowYInput=mk("input",{id:"Yuze-shadow-y",type:"number",min:"-50",max:"50"});
+  const shadowCard2=mk("div",{className:"Yuze-effect-card"},[
+    mk("div",{className:"Yuze-effect-card-title",textContent:"位置偏移"}),
+    mk("div",{className:"Yuze-grid-2"},[mk("div",{},[shadowXLabel,shadowXInput]),mk("div",{},[shadowYLabel,shadowYInput])])
   ]);
-  const shadowCollapsible=mk("div",{className:"tabbit-collapsible"},[mk("div",{className:"tabbit-effect-grid"},[shadowCard1,shadowCard2])]);
-  const sec2=mk("div",{className:"tabbit-font-section collapsed",id:"tabbit-shadow-section"},[shadowHead,shadowCollapsible]);
+  const shadowCollapsible=mk("div",{className:"Yuze-collapsible"},[mk("div",{className:"Yuze-effect-grid"},[shadowCard1,shadowCard2])]);
+  const sec2=mk("div",{className:"Yuze-font-section collapsed",id:"Yuze-shadow-section"},[shadowHead,shadowCollapsible]);
 
-  const strokeTitle=mk("div",{className:"tabbit-section-title",textContent:"字体描边"});
-  const strokeSub=mk("div",{className:"tabbit-section-sub",textContent:"适合深浅底色对比增强"});
+  const strokeTitle=mk("div",{className:"Yuze-section-title",textContent:"字体描边"});
+  const strokeSub=mk("div",{className:"Yuze-section-sub",textContent:"适合深浅底色对比增强"});
   const strokeTitleWrap=mk("div",{},[strokeTitle,strokeSub]);
-  const strokeToggleDot=mk("span",{className:"tabbit-toggle-dot"});
+  const strokeToggleDot=mk("span",{className:"Yuze-toggle-dot"});
   const strokeToggleText=mk("span",{textContent:"启用描边"});
-  const btnStrokeEnabled=mk("button",{className:"tabbit-toggle-btn",type:"button",id:"tabbit-stroke-enabled"},[strokeToggleDot,strokeToggleText]);
-  const strokeCollapseIcon=mk("span",{className:"tabbit-collapse-icon",textContent:"▼"});
-  const btnStrokeCollapse=mk("button",{className:"tabbit-collapse-btn",type:"button",id:"tabbit-stroke-collapse",title:"收起/展开",ariaExpanded:"false"},[strokeCollapseIcon]);
+  const btnStrokeEnabled=mk("button",{className:"Yuze-toggle-btn",type:"button",id:"Yuze-stroke-enabled"},[strokeToggleDot,strokeToggleText]);
+  const strokeCollapseIcon=mk("span",{className:"Yuze-collapse-icon",textContent:"▼"});
+  const btnStrokeCollapse=mk("button",{className:"Yuze-collapse-btn",type:"button",id:"Yuze-stroke-collapse",title:"收起/展开",ariaExpanded:"false"},[strokeCollapseIcon]);
   const strokeHeadRight=mk("div",{style:"display:flex;align-items:center;gap:8px;"},[btnStrokeEnabled,btnStrokeCollapse]);
-  const strokeHead=mk("div",{className:"tabbit-section-head"},[strokeTitleWrap,strokeHeadRight]);
-  const strokeColorLabel=mk("label",{htmlFor:"tabbit-stroke-color",textContent:"描边颜色"});
-  const strokeColorInput=mk("input",{id:"tabbit-stroke-color",type:"color"});
-  const strokeWidthLabel=mk("label",{htmlFor:"tabbit-stroke-width",textContent:"描边宽度 (px)"});
-  const strokeWidthInput=mk("input",{id:"tabbit-stroke-width",type:"number",min:"0",max:"10",step:"0.5"});
-  const strokeCard=mk("div",{className:"tabbit-effect-card"},[
-    mk("div",{className:"tabbit-effect-card-title",textContent:"描边参数"}),
-    mk("div",{className:"tabbit-grid-2"},[mk("div",{},[strokeColorLabel,strokeColorInput]),mk("div",{},[strokeWidthLabel,strokeWidthInput])])
+  const strokeHead=mk("div",{className:"Yuze-section-head"},[strokeTitleWrap,strokeHeadRight]);
+  const strokeColorLabel=mk("label",{htmlFor:"Yuze-stroke-color",textContent:"描边颜色"});
+  const strokeColorInput=mk("input",{id:"Yuze-stroke-color",type:"color"});
+  const strokeWidthLabel=mk("label",{htmlFor:"Yuze-stroke-width",textContent:"描边宽度 (px)"});
+  const strokeWidthInput=mk("input",{id:"Yuze-stroke-width",type:"number",min:"0",max:"10",step:"0.5"});
+  const strokeCard=mk("div",{className:"Yuze-effect-card"},[
+    mk("div",{className:"Yuze-effect-card-title",textContent:"描边参数"}),
+    mk("div",{className:"Yuze-grid-2"},[mk("div",{},[strokeColorLabel,strokeColorInput]),mk("div",{},[strokeWidthLabel,strokeWidthInput])])
   ]);
-  const strokeCollapsible=mk("div",{className:"tabbit-collapsible"},[mk("div",{className:"tabbit-effect-grid"},[strokeCard])]);
-  const sec3=mk("div",{className:"tabbit-font-section collapsed",id:"tabbit-stroke-section"},[strokeHead,strokeCollapsible]);
+  const strokeCollapsible=mk("div",{className:"Yuze-collapsible"},[mk("div",{className:"Yuze-effect-grid"},[strokeCard])]);
+  const sec3=mk("div",{className:"Yuze-font-section collapsed",id:"Yuze-stroke-section"},[strokeHead,strokeCollapsible]);
 
-  const colorLabel=mk("label",{htmlFor:"tabbit-font-color",textContent:"选中文字颜色"});
-  const colorInput=mk("input",{id:"tabbit-font-color",type:"color"});
-  const rowColor=mk("div",{className:"tabbit-font-row"},[colorLabel,colorInput]);
-  const btnApplyColor=mk("button",{className:"tabbit-btn-warning",type:"button",id:"tabbit-apply-color",textContent:"选中文字上色"});
-  const btnResetFont=mk("button",{className:"tabbit-btn-secondary",type:"button",id:"tabbit-reset-font",textContent:"重置页面"});
-  const btnStop=mk("button",{className:"tabbit-btn-secondary",type:"button",id:"tabbit-stop-script",style:"grid-column:1 / span 2;",textContent:"关闭面板"});
-  const actions=mk("div",{className:"tabbit-font-actions"},[btnApplyColor,btnResetFont,btnStop]);
-  const sec4=mk("div",{className:"tabbit-font-section"},[rowColor,actions]);
+  const colorLabel=mk("label",{htmlFor:"Yuze-font-color",textContent:"选中文字颜色"});
+  const colorInput=mk("input",{id:"Yuze-font-color",type:"color"});
+  const rowColor=mk("div",{className:"Yuze-font-row"},[colorLabel,colorInput]);
+  const btnApplyColor=mk("button",{className:"Yuze-btn-warning",type:"button",id:"Yuze-apply-color",textContent:"选中文字上色"});
+  const btnResetFont=mk("button",{className:"Yuze-btn-secondary",type:"button",id:"Yuze-reset-font",textContent:"重置页面"});
+  const btnStop=mk("button",{className:"Yuze-btn-secondary",type:"button",id:"Yuze-stop-script",style:"grid-column:1 / span 2;",textContent:"关闭面板"});
+  const actions=mk("div",{className:"Yuze-font-actions"},[btnApplyColor,btnResetFont,btnStop]);
+  const sec4=mk("div",{className:"Yuze-font-section"},[rowColor,actions]);
 
-  const body=mk("div",{className:"tabbit-font-body"},[sec1,sec2,sec3,sec4]);
+  const body=mk("div",{className:"Yuze-font-body"},[sec1,sec2,sec3,sec4]);
   const t=mk("div",{id:PANEL_ID},[header,body]);
   document.body.appendChild(t);
 
@@ -193,22 +193,22 @@ function createPanel(){
   updateThemeBadge(t);
 
   const n=s=>t.querySelector(s);
-  const r=n("#tabbit-font-family");
-  const i=n("#tabbit-font-size");
-  const a=n("#tabbit-font-color");
-  const s=n("#tabbit-shadow-enabled");
-  const f=n("#tabbit-shadow-collapse");
-  const p=n("#tabbit-shadow-color");
-  const m=n("#tabbit-shadow-blur");
-  const g=n("#tabbit-shadow-x");
-  const h=n("#tabbit-shadow-y");
-  const y=n("#tabbit-stroke-enabled");
-  const bk=n("#tabbit-stroke-collapse");
-  const v=n("#tabbit-stroke-color");
-  const w=n("#tabbit-stroke-width");
-  const x=n("#tabbit-apply-color");
-  const k=n("#tabbit-reset-font");
-  const q=n("#tabbit-stop-script");
+  const r=n("#Yuze-font-family");
+  const i=n("#Yuze-font-size");
+  const a=n("#Yuze-font-color");
+  const s=n("#Yuze-shadow-enabled");
+  const f=n("#Yuze-shadow-collapse");
+  const p=n("#Yuze-shadow-color");
+  const m=n("#Yuze-shadow-blur");
+  const g=n("#Yuze-shadow-x");
+  const h=n("#Yuze-shadow-y");
+  const y=n("#Yuze-stroke-enabled");
+  const bk=n("#Yuze-stroke-collapse");
+  const v=n("#Yuze-stroke-color");
+  const w=n("#Yuze-stroke-width");
+  const x=n("#Yuze-apply-color");
+  const k=n("#Yuze-reset-font");
+  const q=n("#Yuze-stop-script");
 
   r&&(r.value=e.fontFamily||"");
   i&&(i.value=e.fontSize!==""?String(e.fontSize):"");
@@ -232,10 +232,10 @@ function createPanel(){
 
   r?.addEventListener("change",()=>S({fontFamily:r.value||""}));
   i?.addEventListener("input",()=>{const e=i.value.trim(),t=e===""?"":Math.max(10,Math.min(72,parseInt(e,10)||10));S({fontSize:t});i.value=t===""?"":String(t)});
-  n("#tabbit-style-bold")?.addEventListener("click",()=>S({fontWeight:load().fontWeight==="bold"?"normal":"bold"}));
-  n("#tabbit-style-italic")?.addEventListener("click",()=>S({fontStyle:load().fontStyle==="italic"?"normal":"italic"}));
-  n("#tabbit-style-underline")?.addEventListener("click",()=>S({underline:!load().underline}));
-  n("#tabbit-style-strike")?.addEventListener("click",()=>S({strike:!load().strike}));
+  n("#Yuze-style-bold")?.addEventListener("click",()=>S({fontWeight:load().fontWeight==="bold"?"normal":"bold"}));
+  n("#Yuze-style-italic")?.addEventListener("click",()=>S({fontStyle:load().fontStyle==="italic"?"normal":"italic"}));
+  n("#Yuze-style-underline")?.addEventListener("click",()=>S({underline:!load().underline}));
+  n("#Yuze-style-strike")?.addEventListener("click",()=>S({strike:!load().strike}));
   s?.addEventListener("click",()=>S({shadowEnabled:!load().shadowEnabled}));
   y?.addEventListener("click",()=>S({strokeEnabled:!load().strokeEnabled}));
   f?.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();const t=load();S({shadowSectionCollapsed:!t.shadowSectionCollapsed})});

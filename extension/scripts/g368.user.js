@@ -1,11 +1,11 @@
 async function run(args) {
   // ══════════════════════════════════════════════════════════════════════════
   // 🃏 划词制卡 v2 — 选中文字秒变精美知识卡片 + 多尺寸 + 竞赛标识
-  // Tabbit 妙招大赛 · 脚本赛道参赛作品
+  // Yuze 技炉大赛 · 脚本赛道参赛作品
   // ══════════════════════════════════════════════════════════════════════════
 
   // ── Cleanup previous instance ─────────────────────────────────────────────
-  if (document.getElementById('tabbit-cardmaker-modal')) {
+  if (document.getElementById('Yuze-cardmaker-modal')) {
     cleanup();
     return { ok: true, summary: '划词制卡已关闭' };
   }
@@ -35,13 +35,13 @@ async function run(args) {
 
   // ── Styles ────────────────────────────────────────────────────────────────
   const style = document.createElement('style');
-  style.id = 'tabbit-cardmaker-style';
+  style.id = 'Yuze-cardmaker-style';
   style.textContent = `
     @keyframes cmFadeIn  { from{opacity:0;transform:scale(.94)} to{opacity:1;transform:scale(1)} }
     @keyframes cmSlideUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
     @keyframes cmPulse   { 0%,100%{opacity:1} 50%{opacity:.5} }
-    #tabbit-cardmaker-modal { animation: cmFadeIn .22s ease; }
-    #tabbit-cardmaker-fab   { animation: cmSlideUp .18s ease; }
+    #Yuze-cardmaker-modal { animation: cmFadeIn .22s ease; }
+    #Yuze-cardmaker-fab   { animation: cmSlideUp .18s ease; }
     .cm-theme-dot {
       width:22px;height:22px;border-radius:50%;border:2px solid transparent;
       cursor:pointer;transition:transform .18s,border-color .18s;outline:none;
@@ -140,7 +140,7 @@ async function run(args) {
     ctx.save(); ctx.globalAlpha = .6;
     ctx.fillStyle = t.accent;
     ctx.font = `bold ${11*scale}px -apple-system,sans-serif`;
-    ctx.fillText('KNOWLEDGE CARD  ·  Tabbit', 64*scale, 46*scale);
+    ctx.fillText('KNOWLEDGE CARD  ·  Yuze', 64*scale, 46*scale);
     ctx.restore();
 
     // Main quote text
@@ -170,7 +170,7 @@ async function run(args) {
     ctx.fillText('\uD83D\uDCCD ' + (location.hostname || '网页'), 64*scale, divY + 22*scale);
     const dateStr = new Date().toLocaleDateString('zh-CN', { month:'short', day:'numeric' });
     ctx.textAlign = 'right';
-    ctx.fillText(dateStr + '  #Tabbit\u5999\u62DB\u5927\u8D5B', W - 64*scale, divY + 22*scale);
+    ctx.fillText(dateStr + '  #Yuze\u5999\u62DB\u5927\u8D5B', W - 64*scale, divY + 22*scale);
     ctx.textAlign = 'left';
     ctx.restore();
 
@@ -181,11 +181,11 @@ async function run(args) {
   let modalOverlay = null;
 
   const showModal = (text) => {
-    document.getElementById('tabbit-cardmaker-modal')?.remove();
+    document.getElementById('Yuze-cardmaker-modal')?.remove();
     activeText = text;
 
     const overlay = document.createElement('div');
-    overlay.id = 'tabbit-cardmaker-modal';
+    overlay.id = 'Yuze-cardmaker-modal';
     overlay.style.cssText = `
       position:fixed;top:0;left:0;right:0;bottom:0;
       background:rgba(0,0,0,.72);backdrop-filter:blur(6px);
@@ -352,7 +352,7 @@ async function run(args) {
   const showFabAtRect = (rect, text) => {
     removeFab();
     fab = document.createElement('button');
-    fab.id = 'tabbit-cardmaker-fab';
+    fab.id = 'Yuze-cardmaker-fab';
     fab.textContent = '🃏 制成卡片';
     fab.style.cssText = `
       position:fixed;
@@ -412,7 +412,7 @@ async function run(args) {
     document.removeEventListener('mousedown', onMouseDown);
     document.removeEventListener('selectionchange', onSelectChange);
     document.removeEventListener('keydown', onKeydown);
-    ['tabbit-cardmaker-modal','tabbit-cardmaker-fab','tabbit-cardmaker-style'].forEach(id =>
+    ['Yuze-cardmaker-modal','Yuze-cardmaker-fab','Yuze-cardmaker-style'].forEach(id =>
       document.getElementById(id)?.remove()
     );
     modalOverlay = null;
@@ -420,7 +420,7 @@ async function run(args) {
   }
 
   // ── Show demo only on first activation ────────────────────────────────────
-  const HAS_RUN_KEY = 'tabbit_cardmaker_has_run';
+  const HAS_RUN_KEY = 'Yuze_cardmaker_has_run';
   const hasRun = (() => { try { return localStorage.getItem(HAS_RUN_KEY) === '1'; } catch { return false; } })();
 
   if (!hasRun) {
