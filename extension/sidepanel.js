@@ -3550,6 +3550,13 @@ function openSkillDetail(s) {
   fixSkillMdList();
   const runBtn = $('btnSkillRun');
   if (runBtn) runBtn.style.display = s.codeFile ? '' : 'none';
+  const pauseBtn = $('btnSkillPause');
+  if (pauseBtn) {
+    pauseBtn.style.display = 'none';
+    pauseBtn.textContent = '⏸ 暂停运行';
+    pauseBtn.classList.remove('paused');
+    pauseBtn.disabled = false;
+  }
   (async () => {
     try {
       const { skillSites = {} } = await chrome.storage.local.get('skillSites');
@@ -3601,6 +3608,43 @@ function runSkillNow(s, text) {
   inpMsg.focus();
 }
 
+$('btnSkillPause')?.addEventListener('click', async () => {
+  if (!mzCurrent) return;
+  const b = $('btnSkillPause');
+  const origText = '⏸ 暂停运行';
+  b.disabled = true;
+  b.textContent = '暂停中…';
+  let wasAuto = false;
+  try {
+    const { autoSkills = [] } = await chrome.storage.local.get('autoSkills');
+    wasAuto = autoSkills.some((x) => x.id === mzCurrent.id);
+    if (wasAuto) {
+      await chrome.storage.local.set({ autoSkills: autoSkills.filter((x) => x.id !== mzCurrent.id) });
+      const modes = document.querySelectorAll('.sd-mode');
+      modes.forEach((m) => m.classList.toggle('active', m.dataset.mode === 'manual'));
+    }
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab && tab.id) await chrome.tabs.reload(tab.id).catch(() => {});
+    if (attachedTabId !== null && tab && tab.id === attachedTabId) attachedTabId = null;
+    b.textContent = '✓ 已暂停';
+    b.classList.add('paused');
+    setStatus('已暂停：页面已刷新，脚本已停止' + (wasAuto ? '（自动运行已关闭）' : ''));
+    setTimeout(() => setStatus(''), 3200);
+  } catch (e) {
+    b.textContent = origText;
+    setStatus('暂停失败：' + ((e && e.message) || e));
+    setTimeout(() => setStatus(''), 3200);
+  } finally {
+    b.disabled = false;
+    setTimeout(() => {
+      if (b.textContent === '✓ 已暂停') {
+        b.textContent = origText;
+        b.classList.remove('paused');
+      }
+    }, 2200);
+  }
+});
+
 function setRunBtn(state, text, ms) {
   const b = $('btnSkillRun');
   if (!b) return;
@@ -3643,6 +3687,8 @@ $('btnSkillRun')?.addEventListener('click', async () => {
       setRunBtn('ok', '✓ 已运行', 2500);
       setStatus('已运行：' + mzCurrent.name);
     }
+    const pb = document.getElementById('btnSkillPause');
+    if (pb) pb.style.display = '';
     setTimeout(() => setStatus(''), 2500);
   } catch (e) {
     const msg = (e && e.message) || String(e);
