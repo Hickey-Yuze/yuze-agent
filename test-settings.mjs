@@ -35,6 +35,7 @@ try {
         const rows = [...document.querySelectorAll('#settings .set-row b')].map(x => x.textContent).join(',');
         const save = document.querySelector('#btnSave')?.textContent;
         const provEdit = !!document.querySelector('#provList .prov-edit');
+        const status = document.querySelector('#provList .prov-status')?.textContent;
         document.querySelector('#btnSettingsClose').click();
         await new Promise(r => setTimeout(r, 200));
         const closed = document.querySelector('#settings').classList.contains('hidden');
@@ -44,7 +45,7 @@ try {
         document.querySelector('#btnSettingsClose').click();
         await new Promise(r => setTimeout(r, 200));
         document.querySelector('#btnSettings').click();
-        return JSON.stringify({ card, title, rows, save, provEdit, closed, at, swInWrap });
+        return JSON.stringify({ card, title, rows, save, provEdit, status, closed, at, swInWrap });
       } catch (e) { return 'ERR: ' + ((e && e.message) || e); }
     })()`,
     awaitPromise: true, returnByValue: true,

@@ -1300,10 +1300,11 @@ function renderProvList() {
 
     const head = document.createElement('div');
     head.className = 'prov-head';
-    head.innerHTML = '<span class="prov-dot"></span><span class="prov-name"></span><span class="prov-tag"></span><button class="prov-edit">编辑</button>'
+    head.innerHTML = '<div class="prov-main"><span class="prov-dot"></span><div class="prov-info"><span class="prov-name"></span><span class="prov-meta"><span class="prov-tag"></span><span class="prov-status"></span></span></div></div><button class="prov-edit">编辑</button>'
       + (provState.list.length > 1 ? '<button class="prov-del">删除</button>' : '');
     head.querySelector('.prov-name').textContent = p.name;
     head.querySelector('.prov-tag').textContent = p.id === 'workbuddy' ? '本机' : '自定义';
+    head.querySelector('.prov-status').textContent = p.id === provState.active ? '已连接' : '';
 
     const body = document.createElement('div');
     body.className = 'prov-body hidden';
