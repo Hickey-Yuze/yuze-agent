@@ -143,7 +143,17 @@
   <aside id="drawer" class="drawer hidden">
     <div class="drawer-head">
       <input id="inpSearch" type="text" placeholder="搜索对话…" spellcheck="false">
+      <button id="btnDrawerManage" class="icon-btn" title="批量删除" aria-label="批量删除">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="8" height="8" rx="2"/><path d="M16 8h5M21 3v5" opacity="0"/><path d="M6.5 8l1.6 1.6L11 6.7"/><path d="M15 8h6M3 15h8M3 19h8"/></svg>
+      </button>
       <button id="btnCloseDrawer" class="icon-btn" aria-label="关闭">×</button>
+    </div>
+    <div id="drawerBatch" class="drawer-batch hidden">
+      <label class="db-check"><input type="checkbox" id="cbDrawerAll">全选</label>
+      <span id="dbCount" class="db-count">已选 0</span>
+      <span class="db-flex"></span>
+      <button id="btnDrawerDelete" class="db-del" type="button">删除</button>
+      <button id="btnDrawerDone" class="db-done" type="button">完成</button>
     </div>
     <div id="sessionList" class="sessions"></div>
   </aside>

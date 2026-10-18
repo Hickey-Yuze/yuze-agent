@@ -1700,3 +1700,18 @@ body {
   font-size: 12.5px; color: var(--text-dim); cursor: pointer;
 }
 .wl-chip:hover { border-color: var(--line); color: var(--text); }
+
+/* 抽屉批量删除 */
+.drawer-batch { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: 8px 14px 6px; font-size: 12.5px; color: var(--text-dim); }
+.drawer-batch.hidden { display: none; }
+.db-check { display: flex; align-items: center; gap: 6px; cursor: pointer; color: var(--text); font-weight: 500; }
+.db-check input { accent-color: #1B6EFF; width: 14px; height: 14px; }
+.db-count { color: var(--accent); font-weight: 500; }
+.db-flex { flex: 1; }
+.db-del { border: 0; background: rgba(255,59,48,.1); color: var(--danger); font-size: 12.5px; font-weight: 500; border-radius: 8px; padding: 5px 12px; cursor: pointer; }
+.db-del:hover { background: rgba(255,59,48,.18); }
+.db-done { border: 1px solid var(--line); background: #fff; color: var(--text); font-size: 12.5px; border-radius: 8px; padding: 5px 12px; cursor: pointer; }
+.sess.picked { background: rgba(27,110,255,.08); }
+.sess.picked .sess-t { color: var(--accent); }
+.sess-cb { flex: none; width: 17px; height: 17px; border-radius: 50%; border: 1.5px solid #c9c9ce; background: #fff; display: inline-flex; align-items: center; justify-content: center; color: #fff; }
+.sess-cb.on { background: #1B6EFF; border-color: #1B6EFF; }

@@ -1581,9 +1581,18 @@ async function pageHost() {
   }
 }
 
+let drawerBatchMode = false;
+let drawerSel = new Set();
+
 function sessRow(s) {
   const row = document.createElement('div');
-  row.className = 'sess' + (s.id === sessionId ? ' on' : '');
+  row.className = 'sess' + (s.id === sessionId ? ' on' : '') + (drawerBatchMode && drawerSel.has(s.id) ? ' picked' : '');
+  if (drawerBatchMode) {
+    const cb = document.createElement('span');
+    cb.className = 'sess-cb' + (drawerSel.has(s.id) ? ' on' : '');
+    cb.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>';
+    row.appendChild(cb);
+  }
 
   const t = document.createElement('span');
   t.className = 'sess-t';
@@ -1602,7 +1611,17 @@ function sessRow(s) {
   more.addEventListener('click', (e) => { e.stopPropagation(); openSessMenu(more, s); });
 
   row.append(t, d, more);
-  row.addEventListener('click', () => openSession(s.id));
+  row.addEventListener('click', () => {
+    if (drawerBatchMode) {
+      drawerSel.has(s.id) ? drawerSel.delete(s.id) : drawerSel.add(s.id);
+      const batch = document.getElementById('drawerBatch');
+      const cnt = document.getElementById('dbCount');
+      if (cnt) cnt.textContent = '已选 ' + drawerSel.size;
+      renderDrawer(document.getElementById('inpSearch').value);
+      return;
+    }
+    openSession(s.id);
+  });
   return row;
 }
 
@@ -1693,6 +1712,17 @@ async function renderDrawer(q = '') {
     return;
   }
 
+  const db = document.getElementById('drawerBatch');
+  if (db) {
+    db.classList.toggle('hidden', !drawerBatchMode);
+    const cnt = document.getElementById('dbCount');
+    if (cnt) cnt.textContent = '已选 ' + drawerSel.size;
+    const all = document.getElementById('cbDrawerAll');
+    if (all) all.checked = shown.length > 0 && shown.every((s) => drawerSel.has(s.id));
+  }
+  const mg = document.getElementById('btnDrawerManage');
+  if (mg) mg.classList.toggle('hidden', drawerBatchMode);
+
   const host = await pageHost();
   const related = host ? shown.filter((s) => s.host === host) : [];
 
@@ -1708,6 +1738,52 @@ function closePops() {
   closeDrawer();
 }
 
+async function drawerBatchDelete() {
+  if (!drawerSel.size) return;
+  const list = await loadSessions();
+  const del = new Set(drawerSel);
+  await saveSessions(list.filter((s) => !del.has(s.id)));
+  drawerSel.clear();
+  if (del.has(sessionId)) {
+    sessionId = Date.now().toString(36);
+    messages = [];
+    lastShot = null;
+    setDot('idle');
+    setStatus('');
+    render();
+  }
+  await renderDrawer(document.getElementById('inpSearch').value);
+}
+function drawerBatchExit() {
+  drawerBatchMode = false;
+  drawerSel.clear();
+  document.getElementById('drawerBatch')?.classList.add('hidden');
+  document.getElementById('btnDrawerManage')?.classList.remove('hidden');
+  renderDrawer(document.getElementById('inpSearch').value);
+}
+document.getElementById('btnDrawerManage')?.addEventListener('click', () => {
+  drawerBatchMode = true;
+  drawerSel.clear();
+  closeSessMenu();
+  renderDrawer(document.getElementById('inpSearch').value);
+});
+document.getElementById('btnDrawerDone')?.addEventListener('click', drawerBatchExit);
+document.getElementById('cbDrawerAll')?.addEventListener('change', async (e) => {
+  const list = await loadSessions();
+  const kw = String(document.getElementById('inpSearch').value || '').trim().toLowerCase();
+  const shown = kw
+    ? list.filter((s) => String(s.title || '').toLowerCase().includes(kw) || JSON.stringify(s.messages || []).toLowerCase().includes(kw))
+    : list;
+  if (e.target.checked) shown.forEach((s) => drawerSel.add(s.id));
+  else drawerSel.clear();
+  renderDrawer(document.getElementById('inpSearch').value);
+});
+document.getElementById('btnDrawerDelete')?.addEventListener('click', () => {
+  const n = drawerSel.size;
+  if (!n) return;
+  if (confirm('确定删除选中的 ' + n + ' 个对话？删除后不可恢复。')) drawerBatchDelete();
+});
+
 async function openDrawer() {
   modelMenu.classList.add('hidden');
   skillMenu.classList.add('hidden');
@@ -1722,6 +1798,7 @@ async function openDrawer() {
 function closeDrawer() {
   scrimEl.classList.add('hidden');
   drawerEl.classList.add('hidden');
+  drawerBatchExit();
 }
 
 /* ══ 模型切换 ═════════════════════════════════════════════ */
