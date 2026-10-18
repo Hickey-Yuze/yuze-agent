@@ -1624,3 +1624,4 @@ body {
 .settings .prov-status { font-size: 12.5px; color: var(--ok); font-weight: 500; }
 .settings .prov-head { align-items: center; }
 .settings .set-add { justify-content: flex-start; padding-left: 16px; gap: 9px; }
+.set-ver { margin-left: 8px; font-size: 12px; font-weight: 500; color: var(--text-faint); vertical-align: 2px; }

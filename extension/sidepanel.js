@@ -2172,6 +2172,7 @@ $('btnSkillsManage').addEventListener('click', () => {
   settingsEl.classList.add('hidden');
   openSkillPanel();
 });
+const sv = document.getElementById('setVer'); if (sv) sv.textContent = 'v' + chrome.runtime.getManifest().version;
 $('btnSettingsClose').addEventListener('click', () => $('settings').classList.add('hidden'));
 $('btnMcpManage').addEventListener('click', openMcpPanel);
 $('btnMcpClose').addEventListener('click', closeMcpPanel);
