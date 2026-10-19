@@ -10,6 +10,31 @@ window.Engine = (function () {
   let stopRequested = false;
   let agentMode = 'task';
   let lastShot = null;
+  let statusSink = null;
+  let fileSink = null;
+  let errorSink = null;
+
+  function setStatus(t) { if (statusSink) { try { statusSink(t); } catch (_) {} } }
+
+  async function addFileCard(f) {
+    let arr = null;
+    try {
+      const bin = atob(f.b64);
+      arr = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    } catch (e) {
+      throw new Error('文件内容解码失败：' + (e?.message || e));
+    }
+    const url = URL.createObjectURL(new Blob([arr], { type: f.mime || 'application/octet-stream' }));
+    let downloadId = null;
+    try {
+      downloadId = await APIC.downloads.download({ url, filename: f.name, saveAs: false, conflictAction: 'uniquify' });
+    } catch (e) {
+      // 下载被拦截时仍交给 UI 显示卡片，便于重试
+    }
+    if (fileSink) { try { fileSink(Object.assign({}, f, { downloadId })); } catch (_) {} }
+    return downloadId;
+  }
 
 const DEFAULT_BASE = 'http://127.0.0.1:7863/v1';
 const DEFAULT_MODEL = 'cn:hy4-preview-f';
@@ -569,12 +594,7 @@ function friendlyError(raw) {
 
 function pushError(text) {
   const clean = '⚠️ ' + friendlyError(text);
-  const last = messages[messages.length - 1];
-  if (last && last.role === 'assistant' && last._err === clean) {
-    last._repeat = (last._repeat || 1) + 1;
-    return;
-  }
-  messages.push({ role: 'assistant', content: clean, _err: clean, _repeat: 1 });
+  if (errorSink) { try { errorSink(clean); } catch (_) {} }
 }
 
 async function toolSaveJs({ filename, code }) {
@@ -689,6 +709,9 @@ async function connectMcp(server) {
     getTools() { return mcpTools; },
     setAbort(ctrl) { abortCtrl = ctrl; },
     abort() { try { abortCtrl?.abort(); } catch (_) {} },
+    setStatusSink(fn) { statusSink = fn; },
+    setFileSink(fn) { fileSink = fn; },
+    setErrorSink(fn) { errorSink = fn; },
     setMode(m) { agentMode = m === 'ask' ? 'ask' : 'task'; },
     get mode() { return agentMode; },
     requestStop() { stopRequested = true; },

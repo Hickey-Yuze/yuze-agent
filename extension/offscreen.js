@@ -27,6 +27,19 @@ const APIC = {
 const E = window.Engine;
 const RUN_KEY = 'agentRun';
 
+/* 引擎回调：状态条、文件卡片、错误合并 */
+E.setStatusSink((t) => snapshot({ status: t || '' }));
+E.setFileSink((f) => { messages.push({ role: 'file', file: f }); snapshot(); });
+E.setErrorSink((clean) => {
+  const last = messages[messages.length - 1];
+  if (last && last.role === 'assistant' && last._err === clean) {
+    last._repeat = (last._repeat || 1) + 1;
+  } else {
+    messages.push({ role: 'assistant', content: clean, _err: clean, _repeat: 1 });
+  }
+  snapshot();
+});
+
 let running = false;
 let sessionId = '';
 let messages = [];
