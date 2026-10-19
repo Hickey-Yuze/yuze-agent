@@ -473,7 +473,15 @@ async function callLLM(onDelta) {
 
   const ctrl = new AbortController();
   abortCtrl = ctrl;
-  const timer = setTimeout(() => ctrl.abort(), 180000);
+  let idleTimer = null;
+  let idleHit = false;
+  let hardHit = false;
+  const bumpIdle = () => {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => { idleHit = true; try { ctrl.abort(); } catch (_) {} }, 120000);
+  };
+  bumpIdle();
+  const hardTimer = setTimeout(() => { hardHit = true; try { ctrl.abort(); } catch (_) {} }, 600000);
   const allTools = agentMode === 'ask' ? [] : TOOLS.concat(mcpTools);
 
   let res;
@@ -495,14 +503,16 @@ async function callLLM(onDelta) {
     });
   } catch (e) {
     if (e.name === 'AbortError') {
-      throw new Error(stopRequested ? '已停止' : '模型响应超时（180s）');
+      if (stopRequested) throw new Error('已停止');
+      throw new Error(idleHit ? '模型 120 秒没有新输出，已中断（可重试）' : hardHit ? '单轮请求超过 10 分钟，已中断' : '请求被中断');
     }
     throw new Error('连不上模型网关：' + (e.message || e));
   }
 
   if (!res.ok) {
     const body = await res.text().catch(() => '');
-    clearTimeout(timer);
+    clearTimeout(idleTimer);
+    clearTimeout(hardTimer);
     abortCtrl = null;
     throw new Error(`网关返回 ${res.status}：${body.slice(0, 400)}`);
   }
@@ -541,6 +551,7 @@ async function callLLM(onDelta) {
     for (;;) {
       const { value, done } = await reader.read();
       if (done) break;
+      bumpIdle();
       buf += dec.decode(value, { stream: true });
       let at;
       while ((at = buf.indexOf('\n')) >= 0) {
@@ -550,10 +561,20 @@ async function callLLM(onDelta) {
     }
     if (buf.trim()) handleLine(buf);
   } catch (e) {
-    if (e.name === 'AbortError') throw new Error(stopRequested ? '已停止' : '流式读取中断');
+    if (e.name === 'AbortError') {
+      if (stopRequested) throw new Error('已停止');
+      const hint = idleHit ? '模型 120 秒没有新输出，已中断（可重试）' : hardHit ? '单轮请求超过 10 分钟，已中断' : '流式读取中断（可重试）';
+      if (out.content || out.reasoning) {
+        out._interrupted = true;
+        out.content = (out.content || '') + '\n\n> ⚠️ ' + hint + '。上面已生成的内容已保留，可直接再发一条消息继续。';
+        return out;
+      }
+      throw new Error(hint);
+    }
     throw new Error('流式读取失败：' + (e.message || e));
   } finally {
-    clearTimeout(timer);
+    clearTimeout(idleTimer);
+    clearTimeout(hardTimer);
     abortCtrl = null;
   }
 
