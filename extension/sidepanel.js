@@ -689,6 +689,10 @@ function stopRun() {
 
 let resumeStep = 0;
 let backgroundMode = false;
+let stickBottom = true;
+chatEl.addEventListener('scroll', () => {
+  stickBottom = chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight < 110;
+});
 
 function saveSnap(step, isRunning, interrupted) {
   try {
@@ -818,7 +822,7 @@ async function runAgent(userText, imageUrl, meta) {
     ? [{ type: 'text', text: userText }, { type: 'image_url', image_url: { url: imageUrl } }]
     : userText;
   messages.push({ role: 'user', content: userContent, display: (meta && meta.display) || '', quotes: (meta && meta.quotes) || [] });
-  render();
+  render(true);
   persist();
   saveSnap(1, true);
   await agentLoop();
@@ -849,7 +853,7 @@ async function startInBackground(userText, imageUrl, meta) {
     ? [{ type: 'text', text: userText }, { type: 'image_url', image_url: { url: imageUrl } }]
     : userText;
   messages.push({ role: 'user', content: userContent, display: (meta && meta.display) || '', quotes: (meta && meta.quotes) || [] });
-  render();
+  render(true);
   persist();
   saveSnap(1, true);
 
@@ -1593,7 +1597,9 @@ function openFileMenu(anchor, file) {
   placePop(pop, anchor, true);
 }
 
-function render() {
+function render(forceToBottom) {
+  // 记住“距底距离”：用户主动上翻看历史时，重建后不要把他拽回底部
+  const fromBottom = chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight;
   chatEl.innerHTML = '';
 
   if (!messages.length) {
@@ -1643,7 +1649,11 @@ function render() {
     chatEl.appendChild(bar);
   }
   if (hasAssistant && !running && resumeStep === 0) chatEl.appendChild(feedbackNode());
-  chatEl.scrollTop = chatEl.scrollHeight;
+  if (forceToBottom || fromBottom < 120) {
+    chatEl.scrollTop = chatEl.scrollHeight;
+  } else {
+    chatEl.scrollTop = Math.max(0, chatEl.scrollHeight - chatEl.clientHeight - fromBottom);
+  }
   if (inpFindEl.value.trim()) runFind(inpFindEl.value);
 }
 
@@ -1679,7 +1689,7 @@ function updateLive(msg) {
     md.innerHTML = mdToHtml(msg.content);
   }
 
-  chatEl.scrollTop = chatEl.scrollHeight;
+  if (stickBottom) chatEl.scrollTop = chatEl.scrollHeight;
 }
 
 /* ══ UI ═══════════════════════════════════════════════════ */
