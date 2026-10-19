@@ -105,16 +105,41 @@ async function loop() {
   try {
     for (step = 1; step <= MAX; step++) {
       if (E.stopped) throw new Error('已停止');
-      snapshot({ running: true, status: `思考中 · 第 ${step}/${MAX} 轮` });
-
+      // 先 push live 再写快照：否则快照里最后一条还是 user，
+      // 侧边栏会照着快照把 messages 覆盖成「末尾是 user」，增量就无处可贴。
       const live = { role: 'assistant', content: '', reasoning: '', _live: true };
       messages.push(live);
+      snapshot({ running: true, status: `思考中 · 第 ${step}/${MAX} 轮` });
 
       let msg;
+      // 流式期间绝不写整条 messages（思考越长序列化越慢，最后把 offscreen 拖死）。
+      // 改为 80ms 一包、只装「新增尾巴」的小对象写 agentStream，单条 <2KB，
+      // 写入量恒定，侧边栏按 seq 去重后追加。
+      let sentC = 0;
+      let sentR = 0;
+      let pendC = '';
+      let pendR = '';
+      let flushT = null;
+      let streamSeq = 0;
+      const flushStream = () => {
+        flushT = null;
+        if (!pendC && !pendR) return;
+        const payload = { requestId: activeRequestId, sessionId, dContent: pendC, dReasoning: pendR, seq: ++streamSeq, at: Date.now() };
+        pendC = '';
+        pendR = '';
+        APIC.storage.local.set({ agentStream: payload }).catch(() => {});
+      };
       const paint = (acc) => {
         live.content = acc.content;
         live.reasoning = acc.reasoning;
-        snapshot();
+        const dC = acc.content.slice(sentC);
+        const dR = acc.reasoning.slice(sentR);
+        if (!dC && !dR) return;
+        sentC = acc.content.length;
+        sentR = acc.reasoning.length;
+        pendC += dC;
+        pendR += dR;
+        if (!flushT) flushT = setTimeout(flushStream, 80);
       };
       try {
         msg = await E.callLLM(paint);

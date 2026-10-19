@@ -1037,8 +1037,32 @@ function armPrepareWatchdog() {
   }, 15000);
 }
 
+/* 后台流式增量：后台只写「新增尾巴」的小对象（<2KB/包），这里按 seq 去重后追加。
+   不走整条 messages 回传——那正是长思考被拖死的原因。 */
+let lastStreamSeq = 0;
+
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area !== 'local' || !changes.agentRun) return;
+  if (area !== 'local') return;
+  // 流式增量包：只含新增尾巴，按 seq 去重后追加到当前 assistant 消息
+  if (changes.agentStream) {
+    const s = changes.agentStream.newValue;
+    if (s && s.sessionId === sessionId && s.seq > lastStreamSeq) {
+      lastStreamSeq = s.seq;
+      let last = messages[messages.length - 1];
+      // 快照可能落在「刚 push user、还没 push assistant」的空档，末条是 user 时先补一条
+      if (!last || last.role !== 'assistant') {
+        last = { role: 'assistant', content: '', reasoning: '' };
+        messages.push(last);
+        lastMsgCount = messages.length;
+        render();
+      }
+      if (s.dReasoning) last.reasoning = (last.reasoning || '') + s.dReasoning;
+      if (s.dContent) last.content = (last.content || '') + s.dContent;
+      if (!running) { running = true; setSendMode('stop'); setDot('busy'); }
+      updateLive(last);
+    }
+  }
+  if (!changes.agentRun) return;
   const run = changes.agentRun.newValue;
   if (!run || (run.sessionId && run.sessionId !== sessionId)) return;
   // 后台快照可能是「刚启动、还没消息」的空数组，直接覆盖会把用户刚发的消息吞掉
@@ -2045,7 +2069,16 @@ $('btnSave').addEventListener('click', async () => {
 });
 
 function send() {
-  if (running) { stopRun(); return; }
+  if (running) {
+    // 运行中：输入框有内容说明用户想发新消息，不能静默变成「停止任务」（那样消息就吞了）
+    if ((inpMsg.value || '').trim()) {
+      setStatus('任务还在运行，先点停止或等它结束');
+      setTimeout(() => { if (/任务还在运行/.test(statusEl.textContent || '')) setStatus(''); }, 2500);
+      return;
+    }
+    stopRun();
+    return;
+  }
   if (/准备中/.test(statusEl.textContent || '')) setStatus('');
   const text = inpMsg.value.trim();
   if (!text && !quoteRefs.length && !pendingShot) return;
@@ -2139,6 +2172,7 @@ function newSession() {
     stopRun();
   }
   sessionId = Date.now().toString(36);
+  lastStreamSeq = 0;
   messages = [];
   lastShot = null;
   setDot('idle');
@@ -2153,6 +2187,7 @@ async function openSession(id) {
   const rec = list.find((s) => s.id === id);
   if (!rec) return;
   sessionId = rec.id;
+  lastStreamSeq = 0;   // 新会话的增量包从 1 开始，旧 seq 会把新流式全挡掉
   messages = rec.messages || [];
   lastShot = null;
   closeDrawer();
