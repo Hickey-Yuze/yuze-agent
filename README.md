@@ -157,6 +157,17 @@ Yuze-agent/
 
 ## 更新记录
 
+### v0.5.5 — 回执语义对齐
+
+逆向 Tabbit 运行时（`TabbitDance/runtime/src`，36 个 .mjs）后把 receipt 状态机补齐，调用关系见 [`docs/tabbit-runtime-callgraph.md`](docs/tabbit-runtime-callgraph.md)。
+
+| 改动 | 说明 |
+|---|---|
+| 终态即复位 | 侧边栏读 `completedAt + taskStatus`（succeeded/failed/interrupted）立即复位，不再靠 `running` 字段猜 |
+| 停止即回执 | `agent:stop` 带 requestId 只停对应投递；后台立刻落 `interrupted` 终态快照 |
+| 请求级幂等 | 同 requestId 重复投递返回 `duplicate:true`，不重复执行 |
+| 串行队列 | 后台单循环，与 Tabbit `tail.then(execute)` 同构 |
+
 ### v0.7 — 交互对齐轮
 
 | 改动 | 说明 |

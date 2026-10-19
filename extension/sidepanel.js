@@ -1039,9 +1039,14 @@ chrome.storage.onChanged.addListener((changes, area) => {
   // 后台快照可能是「刚启动、还没消息」的空数组，直接覆盖会把用户刚发的消息吞掉
   const incoming = Array.isArray(run.messages) ? run.messages : null;
   if (incoming && (incoming.length || !messages.length)) messages = incoming;
-  running = !!run.running;
+  // Tabbit 语义：客户端只认终态。receipt 带 completedAt + taskStatus 就是结束，
+  // 立刻复位，不再依赖 running 字段（否则后台已结束、侧边栏还挂着「准备中」）。
+  const TERMINAL = ['succeeded', 'failed', 'interrupted'];
+  const done = !!run.completedAt && TERMINAL.indexOf(run.taskStatus) !== -1;
+  running = done ? false : !!run.running;
   setSendMode(running ? 'stop' : 'send');
   let st = run.status || '';
+  if (done && /准备中|执行 /.test(st)) st = '';
   if (!running && /准备中/.test(st)) st = '后台任务已结束';
   setStatus(st);
   setDot(running ? 'busy' : 'ok');

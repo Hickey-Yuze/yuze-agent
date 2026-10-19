@@ -221,9 +221,18 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     return true;
   }
   if (msg?.type === 'offscreen:stop') {
+    const want = String(msg.requestId || '');
+    // 指定了 requestId 却不是当前任务：说明用户停的是另一条投递，别误杀新任务
+    if (want && activeRequestId && want !== activeRequestId) {
+      reply({ ok: true, ignored: true, requestId: activeRequestId });
+      return true;
+    }
     E.requestStop();
     E.abort();
-    reply({ ok: true });
+    // 停止即刻落终态 receipt：侧边栏认到 completedAt 就复位，不用等心跳
+    taskStatus = 'interrupted';
+    snapshot({ running: false, status: '已停止', completedAt: Date.now() });
+    reply({ ok: true, requestId: activeRequestId });
     return true;
   }
   if (msg?.type === 'offscreen:ping') {

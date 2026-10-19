@@ -112,8 +112,11 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   }
   if (msg?.type === 'agent:stop') {
     (async () => {
-      try { await chrome.runtime.sendMessage({ type: 'offscreen:stop' }); } catch (_) {}
-      reply({ ok: true });
+      try {
+        // 带上 requestId：后台只停这条投递，避免误杀刚发的新任务
+        const r = await chrome.runtime.sendMessage({ type: 'offscreen:stop', requestId: msg.requestId || '' });
+        reply(r || { ok: true });
+      } catch (_) { reply({ ok: true }); }
     })();
     return true;
   }
