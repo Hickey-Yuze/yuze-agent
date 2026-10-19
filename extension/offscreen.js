@@ -50,7 +50,9 @@ function snapshot(patch) {
   const now = Date.now();
   if (!patch && now - lastWrite < 120) return;
   lastWrite = now;
-  const data = { messages, running, step, sessionId, at: now };
+  // messages 为空时不要写：侧边栏收到空数组会覆盖掉用户刚发的消息
+  const data = { running, step, sessionId, at: now };
+  if (messages.length) data.messages = messages;
   Object.assign(data, patch || {});
   // 必须挂 catch：api:call 是异步的，同步 try 抓不到 rejection，
   // 写入失败会让侧边栏永远收不到最终状态（卡在「准备中」）。
