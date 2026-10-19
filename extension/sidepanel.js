@@ -770,7 +770,7 @@ setInterval(async () => {
   backgroundMode = false;
   setSendMode('send');
   setDot('ok');
-  setStatus(sameSess && run.running ? '后台任务已结束' : '');
+  setStatus('');
   render();
 }, 2000);
 let lastPersist = 0;
@@ -1046,8 +1046,9 @@ chrome.storage.onChanged.addListener((changes, area) => {
   running = done ? false : !!run.running;
   setSendMode(running ? 'stop' : 'send');
   let st = run.status || '';
-  if (done && /准备中|执行 /.test(st)) st = '';
-  if (!running && /准备中/.test(st)) st = '后台任务已结束';
+  // 任务已收尾：状态条一律清空。用户看助手回复就知道结束了，
+  // 不需要「后台任务已结束」这种吓人的残留提示。
+  if (done || (!running && /准备中|执行 /.test(st))) st = '';
   setStatus(st);
   setDot(running ? 'busy' : 'ok');
   if (running) {
