@@ -744,11 +744,11 @@ setInterval(async () => {
   const alive = sameSess && run.running && fresh;
   if (alive) {
     staleRunTicks = 0;
-    // 准备阶段超过 12 秒就把后台真实状态露出来，避免用户只看到「准备中」无法判断
+    // 准备阶段第 3 秒起就把后台真实状态和秒数露出来，用户随时能判断是不是卡住
     const st = (statusEl.textContent || '');
-    if (prepareAt && Date.now() - prepareAt > 12000 && /准备/.test(st)) {
+    if (prepareAt && Date.now() - prepareAt > 3000 && /准备/.test(st)) {
       const secs = Math.round((Date.now() - prepareAt) / 1000);
-      setStatus(`准备中…（后台 ${run.status || '无状态'}，${secs}s）`);
+      setStatus(`准备中… ${secs}s · 后台 ${run.status || '无状态'}`);
     }
     return;
   }
