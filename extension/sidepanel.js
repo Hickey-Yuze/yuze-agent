@@ -1221,6 +1221,61 @@ function errorNode(text, repeat) {
   return d;
 }
 
+function humanSize(bytes) {
+  const n = Number(bytes) || 0;
+  if (n >= 1024 * 1024) return (n / 1024 / 1024).toFixed(1) + ' MB';
+  if (n >= 1024) return (n / 1024).toFixed(1) + ' KB';
+  return n + ' B';
+}
+function bytesOf(text) {
+  try { return new TextEncoder().encode(String(text || '')).length; } catch (_) { return String(text || '').length; }
+}
+
+/* 工具调用 → 图一那种「写入文件 xxx 859 B」「执行命令 xxx」的展示语义 */
+function toolMeta(name, args, raw) {
+  const a = args || {};
+  const text = String(raw == null ? '' : raw);
+  if (name === 'save_js') {
+    return { icon: 'file', title: '写入文件', detail: String(a.filename || 'script.js'), size: humanSize(bytesOf(a.code)) };
+  }
+  if (/^mcp_gen_/.test(name)) {
+    const m = text.match(/"name"\s*:\s*"([^"]+)"/);
+    const sz = text.match(/"size"\s*:\s*(\d+)/);
+    return { icon: 'file', title: '写入文件', detail: m ? m[1] : (a.filename || '生成文件'), size: sz ? humanSize(+sz[1]) : '' };
+  }
+  if (name === 'run_skill_script' || name === 'run_script') {
+    return { icon: 'term', title: '执行脚本', detail: String(a.name || a.id || ''), size: '' };
+  }
+  if (name === 'screenshot') return { icon: 'image', title: '截图', detail: '', size: '' };
+  if (/^(navigate|open_url|open_tab)/.test(name)) {
+    let host = String(a.url || '');
+    try { host = new URL(host).host; } catch (_) {}
+    return { icon: 'globe', title: '打开页面', detail: host, size: '' };
+  }
+  if (/^(click|move_mouse|type_text|key_press|scroll|hover)/.test(name)) {
+    return { icon: 'cursor', title: '页面操作', detail: name, size: '' };
+  }
+  if (/^(read_page|get_dom|page_text|evaluate|browser_snapshot)/.test(name)) {
+    return { icon: 'globe', title: '读取页面', detail: '', size: '' };
+  }
+  if (/^mcp_/.test(name)) {
+    const t = name.replace(/^mcp_[^_]+_/, '');
+    return { icon: 'tool', title: '调用 MCP', detail: t, size: '' };
+  }
+  return { icon: 'tool', title: name, detail: hasResultText(raw), size: '' };
+}
+function hasResultText(raw) { return raw === undefined ? '' : ''; }
+
+function ticon(kind) {
+  const w = 'width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"';
+  if (kind === 'file') return '<svg ' + w + '><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
+  if (kind === 'term') return '<svg ' + w + '><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 2 2-2 2"/><path d="M12 15h5"/></svg>';
+  if (kind === 'image') return '<svg ' + w + '><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>';
+  if (kind === 'globe') return '<svg ' + w + '><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>';
+  if (kind === 'cursor') return '<svg ' + w + '><path d="M4 3l7 17 2.5-7L21 11z"/></svg>';
+  return '<svg ' + w + '><path d="M14.7 6.3a4 4 0 0 0 5 5L10 21H4v-6z"/></svg>';
+}
+
 function toolNode(tc, rawResult) {
   const name = tc.function?.name || 'tool';
   const args = parseArgs(tc.function?.arguments);
@@ -1232,19 +1287,26 @@ function toolNode(tc, rawResult) {
   d.dataset.state = !hasResult ? 'run' : failed ? 'err' : 'ok';
   if (name === 'generate_image' && hasResult && !failed) d.open = true;
 
+  const meta = toolMeta(name, args, rawResult);
   const sm = document.createElement('summary');
   const chev = document.createElement('span');
   chev.className = 'chev';
-  chev.textContent = '›';
+  chev.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
   const state = document.createElement('span');
   state.className = 'state';
-  const nm = document.createElement('span');
-  nm.className = 'name';
-  nm.textContent = name;
-  const sum = document.createElement('span');
-  sum.className = 'sum';
-  sum.textContent = hasResult ? summarizeTool(name, rawResult) : '执行中…';
-  sm.append(chev, state, nm, sum);
+  const ic = document.createElement('span');
+  ic.className = 'ticon';
+  ic.innerHTML = ticon(meta.icon);
+  const tlabel = document.createElement('span');
+  tlabel.className = 'tlabel';
+  tlabel.textContent = meta.title;
+  const tdetail = document.createElement('span');
+  tdetail.className = 'tdetail';
+  tdetail.textContent = hasResult ? (meta.detail || summarizeTool(name, rawResult)) : '执行中…';
+  const tsize = document.createElement('span');
+  tsize.className = 'tsize';
+  tsize.textContent = hasResult ? (meta.size || '') : '';
+  sm.append(state, ic, tlabel, tdetail, tsize, chev);
   d.appendChild(sm);
 
   if (hasResult) {
