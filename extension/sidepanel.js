@@ -737,17 +737,21 @@ setInterval(async () => {
   let run = null;
   try { run = (await chrome.storage.local.get('agentRun')).agentRun; } catch (_) { return; }
   const sameSess = !!(run && run.sessionId === sessionId);
-  const alive = sameSess && run.running;
+  // 关键：running=true 但快照 30 秒没更新 = 僵尸任务（异常退出没走到 finally）。
+  // 只认 running 会让 UI 永远停在「准备中」，所以还要看 at 的新鲜度。
+  const fresh = !!(run && Date.now() - (run.at || 0) < 30000);
+  const alive = sameSess && run.running && fresh;
   if (alive) { staleRunTicks = 0; return; }
   if (!sameSess && !backgroundMode) { staleRunTicks = 0; return; }
   staleRunTicks += 1;
   if (staleRunTicks < 3) return;   // 连续 3 次（约 6 秒）都对不上才复位
   staleRunTicks = 0;
+  try { chrome.runtime.sendMessage({ type: 'agent:stop' }); } catch (_) {}
   running = false;
   backgroundMode = false;
   setSendMode('send');
-  setDot('idle');
-  setStatus('');
+  setDot('ok');
+  setStatus(sameSess && run.running ? '后台任务已结束' : '');
   render();
 }, 2000);
 let lastPersist = 0;
@@ -932,12 +936,24 @@ async function startInBackground(userText, imageUrl, meta) {
   } catch (e) {
     r = { ok: false, error: String(e?.message || e) };
   }
-  if (r && r.ok) { backgroundMode = true; return; }
+  if (r && r.ok) { backgroundMode = true; armPrepareWatchdog(); return; }
+  // 后台明确表示「上一个任务还在跑」：不要停在这里干等，直接说清楚，
+  // 并把本地 running 复位，让用户能点停止或等它结束。
+  if (r && r.busy) {
+    messages.pop();
+    running = false;
+    setSendMode('send');
+    setDot('busy');
+    setStatus('上一个任务还在跑，等它结束或点停止');
+    render();
+    return;
+  }
   armPrepareWatchdog();
   // 回执丢了/超时：先看后台是不是其实已经跑起来，避免误判为失败
   try {
     const { agentRun } = await chrome.storage.local.get('agentRun');
-    if (agentRun && agentRun.sessionId === sessionId && agentRun.running) {
+    const fresh = agentRun && Date.now() - (agentRun.at || 0) < 15000;
+    if (agentRun && agentRun.sessionId === sessionId && agentRun.running && fresh) {
       backgroundMode = true;
       return;
     }
@@ -964,6 +980,11 @@ function armPrepareWatchdog() {
     try {
       const { agentRun } = await chrome.storage.local.get('agentRun');
       diag += ' run:' + (agentRun ? (agentRun.running ? '跑' : '停') + '/' + (agentRun.status || '') : '无');
+      // 后台 15 秒内有快照 = 它真的活着（只是还在准备 MCP/首轮），别误杀
+      if (agentRun && agentRun.running && Date.now() - (agentRun.at || 0) < 15000) {
+        setStatus(agentRun.status || '还在准备…');
+        return;
+      }
     } catch (_) {}
     try { chrome.runtime.sendMessage({ type: 'agent:stop' }); } catch (_) {}
     const last = messages[messages.length - 1];

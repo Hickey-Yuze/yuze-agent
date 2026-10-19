@@ -52,7 +52,11 @@ function snapshot(patch) {
   lastWrite = now;
   const data = { messages, running, step, sessionId, at: now };
   Object.assign(data, patch || {});
-  try { APIC.storage.local.set({ [RUN_KEY]: data }); } catch (_) {}
+  // 必须挂 catch：api:call 是异步的，同步 try 抓不到 rejection，
+  // 写入失败会让侧边栏永远收不到最终状态（卡在「准备中」）。
+  APIC.storage.local.set({ [RUN_KEY]: data }).catch((e) => {
+    try { console.warn('[yz] agentRun 写入失败', e && e.message); } catch (_) {}
+  });
 }
 
 async function prepareTools() {
@@ -154,7 +158,17 @@ async function loop() {
 }
 
 async function start(payload) {
-  if (running) return { ok: false, error: '已有任务在运行' };
+  if (running) {
+    // 僵尸任务检测：60 秒内没有任何快照更新（loop 每轮/每次工具/流式 paint 都会写），
+    // 说明上一个任务其实已经死了（异常退出但没走到 finally），必须让新任务进得来。
+    // 否则用户再发消息会永远停在「准备中」。
+    if (Date.now() - lastWrite > 60000) {
+      try { E.requestStop(); E.abort(); } catch (_) {}
+      running = false;
+    } else {
+      return { ok: false, busy: true, error: '上一个任务还在运行' };
+    }
+  }
   running = true;
   sessionId = payload.sessionId || Date.now().toString(36);
   messages = Array.isArray(payload.messages) ? payload.messages : [];
