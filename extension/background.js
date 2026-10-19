@@ -57,6 +57,22 @@ async function ensureOffscreen() {
   }
 }
 
+/* 等 offscreen 的 JS 真正就绪：createDocument 返回不代表页面已加载完成，
+   立刻发 offscreen:start 会无人接收，被误判成「启动成功」，侧边栏就会停在准备中。 */
+async function waitOffscreenReady(timeoutMs = 5000) {
+  const t0 = Date.now();
+  let delay = 60;
+  while (Date.now() - t0 < timeoutMs) {
+    try {
+      const r = await chrome.runtime.sendMessage({ type: 'offscreen:ping' });
+      if (r && r.ok) return true;
+    } catch (_) {}
+    await new Promise((res) => setTimeout(res, delay));
+    delay = Math.min(delay * 1.6, 400);
+  }
+  return false;
+}
+
 /* offscreen 的通用 API 代理：offscreen 只能访问 chrome.runtime，其余 API 由这里代执行 */
 chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   if (msg?.type === 'api:call') {
@@ -83,9 +99,11 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     (async () => {
       const ok = await ensureOffscreen();
       if (!ok) { reply({ ok: false, error: '无法创建后台执行器' }); return; }
+      const ready = await waitOffscreenReady();
+      if (!ready) { reply({ ok: false, error: '后台执行器无响应' }); return; }
       try {
         const r = await chrome.runtime.sendMessage({ type: 'offscreen:start', payload: msg.payload || {} });
-        reply(r || { ok: true });
+        reply(r || { ok: false, error: '后台执行器无响应' });
       } catch (e) {
         reply({ ok: false, error: String(e?.message || e) });
       }
