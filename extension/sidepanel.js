@@ -914,6 +914,7 @@ async function startInBackground(userText, imageUrl, meta) {
     r = { ok: false, error: String(e?.message || e) };
   }
   if (r && r.ok) { backgroundMode = true; return; }
+  armPrepareWatchdog();
   // 回执丢了/超时：先看后台是不是其实已经跑起来，避免误判为失败
   try {
     const { agentRun } = await chrome.storage.local.get('agentRun');
@@ -928,6 +929,34 @@ async function startInBackground(userText, imageUrl, meta) {
   setDot('idle');
   setStatus('后台不可用，改在本页执行');
   runAgent(userText, imageUrl, meta);
+}
+
+/* 看门狗：后台 25 秒还没离开「准备中」就直接降级到本页执行，绝不让用户干等 */
+function armPrepareWatchdog() {
+  setTimeout(async () => {
+    if (!running || backgroundMode) return;
+    const st = (statusEl.textContent || '').trim();
+    if (!/准备中|正在停止/.test(st)) return;
+    let diag = '';
+    try {
+      const ctx = await chrome.runtime.getContexts({ contextTypes: ['OFFSCREEN_DOCUMENT'] });
+      diag = 'offscreen:' + (ctx || []).length;
+    } catch (_) { diag = 'offscreen:?'; }
+    try {
+      const { agentRun } = await chrome.storage.local.get('agentRun');
+      diag += ' run:' + (agentRun ? (agentRun.running ? '跑' : '停') + '/' + (agentRun.status || '') : '无');
+    } catch (_) {}
+    try { chrome.runtime.sendMessage({ type: 'agent:stop' }); } catch (_) {}
+    const last = messages[messages.length - 1];
+    const lastText = last && typeof last.content === 'string' ? last.content : '';
+    messages.pop();
+    running = false;
+    setSendMode('send');
+    setDot('idle');
+    render();
+    setStatus('后台卡住（' + diag + '），已改在本页执行');
+    if (lastText) runAgent(lastText, null, { display: last.display || '' });
+  }, 25000);
 }
 
 chrome.storage.onChanged.addListener((changes, area) => {
