@@ -1182,9 +1182,16 @@ function thinkNode(text, collapsed) {
   return d;
 }
 
+let midSeq = 0;
+function midOf(msg) {
+  if (!msg._id) msg._id = 'm' + (++midSeq) + '_' + Date.now().toString(36);
+  return msg._id;
+}
+
 function botNode(msg) {
   const d = document.createElement('div');
   d.className = 'msg-bot';
+  d.dataset.mid = midOf(msg);
   if (msg.reasoning) d.appendChild(thinkNode(msg.reasoning, !msg._live && !!msg.content));
   if (msg.content) {
     const body = document.createElement('div');
@@ -1580,8 +1587,14 @@ function render() {
 
 /* 流式增量更新：只改最后一条消息里的文本，不重建 DOM（避免闪烁） */
 function updateLive(msg) {
-  const node = chatEl.lastElementChild;
-  if (!node || !node.classList.contains('msg-bot')) { render(); return; }
+  const id = msg._id || midOf(msg);
+  let node = chatEl.querySelector('[data-mid="' + id + '"]');
+  if (!node || !node.classList.contains('msg-bot')) {
+    // 节点被重建/被插入的其他消息顶掉：先尝试全量渲染，再按 id 取回
+    render();
+    node = chatEl.querySelector('[data-mid="' + id + '"]');
+    if (!node) return;
+  }
 
   if (msg.reasoning) {
     let think = node.querySelector(':scope > .think');
@@ -1864,7 +1877,7 @@ function newSession() {
 }
 
 async function openSession(id) {
-  if (running) stopRun();
+  // 后台任务属于原会话：切走只换 UI，不中断它（重开原会话时按 sessionId 恢复进度）
   const list = await loadSessions();
   const rec = list.find((s) => s.id === id);
   if (!rec) return;
@@ -1873,6 +1886,13 @@ async function openSession(id) {
   lastShot = null;
   closeDrawer();
   render();
+  // 状态条跟随目标会话：有后台任务就显示进度，否则清空
+  const { agentRun } = await chrome.storage.local.get('agentRun');
+  running = !!(agentRun && agentRun.sessionId === sessionId && agentRun.running);
+  backgroundMode = running;
+  setSendMode(running ? 'stop' : 'send');
+  setStatus(running ? (agentRun.status || '') : '');
+  setDot(running ? 'busy' : 'idle');
 }
 
 function sessTime(at) {
