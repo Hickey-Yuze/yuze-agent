@@ -690,6 +690,7 @@ async function runAgent(userText, imageUrl, meta) {
   if (running) return;
   running = true;
   stopRequested = false;
+  document.querySelectorAll('#chat .feedback').forEach((n) => n.remove());
   setSendMode('stop');
   setDot('busy');
   setStatus('');
@@ -1302,7 +1303,8 @@ function feedbackNode() {
     b.type = 'button';
     b.className = 'fb-btn';
     b.textContent = label;
-    b.onclick = () => {
+    b.onclick = (ev) => {
+      if (ev) ev.stopPropagation();
       row.querySelectorAll('.fb-btn').forEach((x) => x.classList.remove('on'));
       b.classList.add('on');
       setStatus('已记录反馈：' + label);
@@ -1740,7 +1742,10 @@ function persist() {
 }
 
 function newSession() {
-  if (running) stopRun();
+  if (running) {
+    if (!window.confirm('任务还在运行，新建对话会中断它。确定要新建吗？')) return;
+    stopRun();
+  }
   sessionId = Date.now().toString(36);
   messages = [];
   lastShot = null;
