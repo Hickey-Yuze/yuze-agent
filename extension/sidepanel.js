@@ -966,7 +966,9 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (Array.isArray(run.messages)) messages = run.messages;
   running = !!run.running;
   setSendMode(running ? 'stop' : 'send');
-  setStatus(run.status || '');
+  let st = run.status || '';
+  if (!running && /准备中/.test(st)) st = '后台任务已结束';
+  setStatus(st);
   setDot(running ? 'busy' : 'ok');
   if (running) {
     // 消息条数变了（工具结果/文件卡片/新的一轮）必须重建，否则工具卡片不显示
@@ -1958,6 +1960,7 @@ $('btnSave').addEventListener('click', async () => {
 
 function send() {
   if (running) { stopRun(); return; }
+  if (/准备中/.test(statusEl.textContent || '')) setStatus('');
   const text = inpMsg.value.trim();
   if (!text && !quoteRefs.length && !pendingShot) return;
   const prefix = quoteRefs.map((q) => q.content).join('\n\n');
