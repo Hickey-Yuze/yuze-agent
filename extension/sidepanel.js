@@ -750,7 +750,12 @@ setInterval(async () => {
   // 诊断：只要还在「准备」阶段，第 3 秒起就把后台真实状态和秒数露出来。
   // 不放在 alive 分支里——正是「后台根本没起来」时最需要看到它。
   const stNow = (statusEl.textContent || '');
-  if (prepareAt && Date.now() - prepareAt > 1000 && /准备/.test(stNow)) {
+  // 后台已经报出真实阶段（准备工具 / 思考中 · 第 n 轮 / 执行 xxx）时看门狗不抢文案，
+  // 否则「准备工具」会被反复改回「准备中…」，看上去永远卡在准备阶段。
+  const bStatus = run && run.status ? String(run.status).trim() : '';
+  if (bStatus && /^(准备工具|思考中|执行 |已停止|已中断)/.test(bStatus)) {
+    setStatus(bStatus);
+  } else if (prepareAt && Date.now() - prepareAt > 1000 && /准备/.test(stNow)) {
     const secs = Math.round((Date.now() - prepareAt) / 1000);
     const age = run && run.at ? Math.round((Date.now() - run.at) / 1000) : -1;
     const bg = !run ? '无记录' : !sameSess ? '别的会话'

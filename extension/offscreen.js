@@ -51,13 +51,17 @@ let lastWrite = 0;
    侧边栏只认 receipt，不再靠本地 running 猜。 */
 let activeRequestId = '';
 let taskStatus = '';
+let statusText = '';   // 当前阶段文案（准备工具 / 思考中 · 第 n 轮 / 执行 xxx）
 
 function snapshot(patch) {
   const now = Date.now();
   if (!patch && now - lastWrite < 120) return;
   lastWrite = now;
+  // 阶段文案要保住：流式 paint 调 snapshot() 不带 patch，若这里不存 status，
+  // 侧边栏会收到 status=undefined → 状态条在思考中途变空。
+  if (patch && patch.status !== undefined) statusText = patch.status;
   // messages 为空时不要写：侧边栏收到空数组会覆盖掉用户刚发的消息
-  const data = { requestId: activeRequestId, taskStatus, running, step, sessionId, at: now };
+  const data = { requestId: activeRequestId, taskStatus, running, step, sessionId, status: statusText, at: now };
   if (!running) data.completedAt = now;
   if (messages.length) data.messages = messages;
   Object.assign(data, patch || {});
@@ -74,14 +78,14 @@ async function prepareTools() {
   const servers = E.getServers();
   const tools = [];
   if (!servers.length) { E.setTools(tools); return; }
-  // 并行探测，每个 3 秒封顶：串行 10s×N 会让「准备中」停十几秒，
+  // 并行探测，每个 2 秒封顶：串行 10s×N 会让「准备中」停十几秒，
   // 用户会以为任务卡死。任何一个慢/失效的服务器都不该拖住整轮对话。
   let doneCount = 0;
   const probe = async (srv) => {
     try {
       const t = await Promise.race([
         E.connectMcp(srv),
-        new Promise((_, rej) => setTimeout(() => rej(new Error('MCP 准备超时')), 3000))
+        new Promise((_, rej) => setTimeout(() => rej(new Error('MCP 准备超时')), 2000))
       ]);
       tools.push(...t);
     } catch (_) {} finally {
@@ -204,11 +208,11 @@ async function start(payload) {
   step = 0;
   E.clearStop();
   snapshot({ running: true, status: '准备工具' });
-  // 整体最多等 8 秒：prepareTools 内部已并行 + 3 秒封顶，
-  // 这里再兜一层，确保任何配置都不会让「准备中」停太久
+  // 整体最多等 5 秒：prepareTools 内部已并行 + 2 秒封顶，
+  // 这里再兜一层，确保任何配置都不会让准备阶段停太久
   await Promise.race([
     prepareTools(),
-    new Promise((res) => setTimeout(res, 8000))
+    new Promise((res) => setTimeout(res, 5000))
   ]);
   if (E.stopped) { snapshot({ running: false, status: '已停止' }); running = false; return { ok: true }; }
   loop();
