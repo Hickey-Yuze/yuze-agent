@@ -733,6 +733,7 @@ let stickBottom = true;
 let lastMsgCount = 0;
 let staleRunTicks = 0;
 let prepareAt = 0;
+const APP_VER = (() => { try { return chrome.runtime.getManifest().version; } catch (_) { return '?'; } })();
 setInterval(async () => {
   if (!running) { staleRunTicks = 0; return; }
   let run = null;
@@ -745,10 +746,10 @@ setInterval(async () => {
   // 诊断：只要还在「准备」阶段，第 3 秒起就把后台真实状态和秒数露出来。
   // 不放在 alive 分支里——正是「后台根本没起来」时最需要看到它。
   const stNow = (statusEl.textContent || '');
-  if (prepareAt && Date.now() - prepareAt > 3000 && /准备/.test(stNow)) {
+  if (prepareAt && Date.now() - prepareAt > 1000 && /准备/.test(stNow)) {
     const secs = Math.round((Date.now() - prepareAt) / 1000);
     const bg = !run ? '无记录' : !sameSess ? '别的会话' : run.running ? (run.status || '运行中') : '已停止';
-    setStatus(`准备中… ${secs}s · 后台 ${bg}`);
+    setStatus(`准备中… v${APP_VER} ${secs}s · 后台 ${bg}`);
   }
   if (alive) { staleRunTicks = 0; return; }
   if (!sameSess && !backgroundMode) { staleRunTicks = 0; return; }
@@ -927,7 +928,7 @@ async function startInBackground(userText, imageUrl, meta) {
   setSendMode('stop');
   setDot('busy');
   prepareAt = Date.now();
-  setStatus('准备中…');
+  setStatus('准备中… v' + APP_VER);
 
   const userContent = imageUrl
     ? [{ type: 'text', text: userText }, { type: 'image_url', image_url: { url: imageUrl } }]
