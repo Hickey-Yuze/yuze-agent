@@ -62,18 +62,25 @@ function snapshot(patch) {
 async function prepareTools() {
   const s = await APIC.storage.local.get(['mcp', 'model', 'providers', 'activeProvider']);
   E.setServers(Array.isArray(s.mcp) ? s.mcp : []);
+  const servers = E.getServers();
   const tools = [];
-  for (const srv of E.getServers()) {
-    if (E.stopped) return;   // 准备阶段也能被「停止」打断
+  if (!servers.length) { E.setTools(tools); return; }
+  // 并行探测，每个 3 秒封顶：串行 10s×N 会让「准备中」停十几秒，
+  // 用户会以为任务卡死。任何一个慢/失效的服务器都不该拖住整轮对话。
+  let doneCount = 0;
+  const probe = async (srv) => {
     try {
-      // 单个服务器最多等 10 秒，避免任何 MCP 拖死整个任务
       const t = await Promise.race([
         E.connectMcp(srv),
-        new Promise((_, rej) => setTimeout(() => rej(new Error('MCP 准备超时')), 10000))
+        new Promise((_, rej) => setTimeout(() => rej(new Error('MCP 准备超时')), 3000))
       ]);
       tools.push(...t);
-    } catch (_) {}
-  }
+    } catch (_) {} finally {
+      doneCount += 1;
+      if (!E.stopped) snapshot({ running: true, status: `准备工具 ${doneCount}/${servers.length}` });
+    }
+  };
+  await Promise.allSettled(servers.map(probe));
   E.setTools(tools);
 }
 
@@ -174,11 +181,12 @@ async function start(payload) {
   messages = Array.isArray(payload.messages) ? payload.messages : [];
   step = 0;
   E.clearStop();
-  snapshot({ running: true, status: '准备中' });
-  // 整体最多等 20 秒：哪怕 MCP 配置一堆失效地址，也绝不卡死在准备阶段
+  snapshot({ running: true, status: '准备工具' });
+  // 整体最多等 8 秒：prepareTools 内部已并行 + 3 秒封顶，
+  // 这里再兜一层，确保任何配置都不会让「准备中」停太久
   await Promise.race([
     prepareTools(),
-    new Promise((res) => setTimeout(res, 20000))
+    new Promise((res) => setTimeout(res, 8000))
   ]);
   if (E.stopped) { snapshot({ running: false, status: '已停止' }); running = false; return { ok: true }; }
   loop();

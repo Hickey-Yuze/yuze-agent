@@ -732,6 +732,7 @@ let backgroundMode = false;
 let stickBottom = true;
 let lastMsgCount = 0;
 let staleRunTicks = 0;
+let prepareAt = 0;
 setInterval(async () => {
   if (!running) { staleRunTicks = 0; return; }
   let run = null;
@@ -741,7 +742,16 @@ setInterval(async () => {
   // 只认 running 会让 UI 永远停在「准备中」，所以还要看 at 的新鲜度。
   const fresh = !!(run && Date.now() - (run.at || 0) < 30000);
   const alive = sameSess && run.running && fresh;
-  if (alive) { staleRunTicks = 0; return; }
+  if (alive) {
+    staleRunTicks = 0;
+    // 准备阶段超过 12 秒就把后台真实状态露出来，避免用户只看到「准备中」无法判断
+    const st = (statusEl.textContent || '');
+    if (prepareAt && Date.now() - prepareAt > 12000 && /准备/.test(st)) {
+      const secs = Math.round((Date.now() - prepareAt) / 1000);
+      setStatus(`准备中…（后台 ${run.status || '无状态'}，${secs}s）`);
+    }
+    return;
+  }
   if (!sameSess && !backgroundMode) { staleRunTicks = 0; return; }
   staleRunTicks += 1;
   if (staleRunTicks < 3) return;   // 连续 3 次（约 6 秒）都对不上才复位
@@ -917,6 +927,7 @@ async function startInBackground(userText, imageUrl, meta) {
   document.querySelectorAll('#chat .feedback').forEach((n) => n.remove());
   setSendMode('stop');
   setDot('busy');
+  prepareAt = Date.now();
   setStatus('准备中…');
 
   const userContent = imageUrl
