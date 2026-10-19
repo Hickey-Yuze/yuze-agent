@@ -1020,7 +1020,9 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local' || !changes.agentRun) return;
   const run = changes.agentRun.newValue;
   if (!run || (run.sessionId && run.sessionId !== sessionId)) return;
-  if (Array.isArray(run.messages)) messages = run.messages;
+  // 后台快照可能是「刚启动、还没消息」的空数组，直接覆盖会把用户刚发的消息吞掉
+  const incoming = Array.isArray(run.messages) ? run.messages : null;
+  if (incoming && (incoming.length || !messages.length)) messages = incoming;
   running = !!run.running;
   setSendMode(running ? 'stop' : 'send');
   let st = run.status || '';
