@@ -934,9 +934,9 @@ async function startInBackground(userText, imageUrl, meta) {
 /* 看门狗：后台 25 秒还没离开「准备中」就直接降级到本页执行，绝不让用户干等 */
 function armPrepareWatchdog() {
   setTimeout(async () => {
-    if (!running || backgroundMode) return;
+    if (!running) return;
     const st = (statusEl.textContent || '').trim();
-    if (!/准备中|正在停止/.test(st)) return;
+    if (!/准备中/.test(st)) return;
     let diag = '';
     try {
       const ctx = await chrome.runtime.getContexts({ contextTypes: ['OFFSCREEN_DOCUMENT'] });
@@ -1759,25 +1759,42 @@ function updateLive(msg) {
     if (!node) return;
   }
 
-  if (msg.reasoning) {
-    let think = node.querySelector(':scope > .think');
-    if (!think) {
-      think = thinkNode(msg.reasoning, false);
-      node.insertBefore(think, node.firstChild);
-    } else {
-      const body = think.querySelector('.think-body');
-      if (body && body.textContent !== msg.reasoning) body.textContent = msg.reasoning;
+  // 只把新增的尾巴 append 进节点，避免每帧整段替换导致文字闪
+  const streamAppend = (el, text) => {
+    if (!el) return;
+    const prev = Number(el.dataset.streamLen || 0);
+    if (text.length > prev) {
+      el.appendChild(document.createTextNode(text.slice(prev)));
+    } else if (text.length < prev) {
+      el.textContent = text;
     }
+    el.dataset.streamLen = text.length;
+  };
+
+  if (msg.reasoning) {
+    let body = node.querySelector('.think-body');
+    if (!body) {
+      const think = thinkNode('', false);
+      node.insertBefore(think, node.firstChild);
+      body = think.querySelector('.think-body');
+    }
+    streamAppend(body, msg.reasoning);
   }
 
   if (msg.content) {
-    let md = node.querySelector(':scope > .bot-md');
+    let md = node.querySelector('.bot-md');
     if (!md) {
       md = document.createElement('div');
       md.className = 'bot-md';
       node.appendChild(md);
     }
-    md.innerHTML = mdToHtml(msg.content);
+    if (msg._live) {
+      md.classList.add('streaming');
+      streamAppend(md, msg.content);
+    } else {
+      md.classList.remove('streaming');
+      md.innerHTML = mdToHtml(msg.content);
+    }
   }
 
   if (stickBottom) chatEl.scrollTop = chatEl.scrollHeight;
@@ -2006,9 +2023,11 @@ async function saveSessions(list) {
 function sessionTitle(msgs) {
   const u = msgs.find((m) => m.role === 'user');
   let t = '';
-  if (typeof u?.content === 'string') t = u.content;
-  else if (Array.isArray(u?.content)) t = (u.content.find((p) => p.type === 'text')?.text || '');
-  return t.replace(/\s+/g, ' ').trim().slice(0, 46) || '新对话';
+  if (u?.display) t = String(u.display);
+  if (!t && typeof u?.content === 'string') t = u.content;
+  if (!t && Array.isArray(u?.content)) t = (u.content.find((p) => p.type === 'text')?.text || '');
+  t = t.replace(/【引用(?:文件|标签页)[：:][^】]*】/g, ' ').replace(/\s+/g, ' ').trim();
+  return t.slice(0, 46) || '新对话';
 }
 
 let persistTimer = null;
