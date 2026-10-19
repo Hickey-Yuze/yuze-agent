@@ -690,6 +690,7 @@ function stopRun() {
 let resumeStep = 0;
 let backgroundMode = false;
 let stickBottom = true;
+let lastMsgCount = 0;
 chatEl.addEventListener('scroll', () => {
   stickBottom = chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight < 110;
 });
@@ -752,8 +753,7 @@ async function agentLoop() {
         render();
       } else {
         updateLive(live);
-        const th = chatEl.lastElementChild && chatEl.lastElementChild.querySelector(':scope > .think');
-        if (th && live.content) th.classList.add('collapsed');
+        // 思考过程保持展开，用户想看过程时不用再点开
       }
 
       const calls = msg.tool_calls || [];
@@ -884,10 +884,14 @@ chrome.storage.onChanged.addListener((changes, area) => {
   setStatus(run.status || '');
   setDot(running ? 'busy' : 'ok');
   if (running) {
-    const node = chatEl.lastElementChild;
-    const live = messages[messages.length - 1];
-    if (live && (live._live || live.reasoning || live.content)) updateLive(live);
-    else render();
+    // 消息条数变了（工具结果/文件卡片/新的一轮）必须重建，否则工具卡片不显示
+    if (messages.length !== lastMsgCount) {
+      render();
+    } else {
+      const live = messages[messages.length - 1];
+      if (live && (live._live || live.reasoning || live.content)) updateLive(live);
+      else render();
+    }
   } else {
     render();
     persist();
@@ -1598,6 +1602,7 @@ function openFileMenu(anchor, file) {
 }
 
 function render(forceToBottom) {
+  lastMsgCount = messages.length;
   // 记住“距底距离”：用户主动上翻看历史时，重建后不要把他拽回底部
   const fromBottom = chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight;
   chatEl.innerHTML = '';
