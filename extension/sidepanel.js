@@ -976,7 +976,8 @@ async function startInBackground(userText, imageUrl, meta) {
   runAgent(userText, imageUrl, meta);
 }
 
-/* 看门狗：后台 25 秒还没离开「准备中」就直接降级到本页执行，绝不让用户干等 */
+/* 看门狗：后台 15 秒还没离开「准备中」就直接降级到本页执行，绝不让用户干等
+   （准备阶段已压到 8 秒封顶，15 秒还没动静基本可以判定后台没起来） */
 function armPrepareWatchdog() {
   setTimeout(async () => {
     if (!running) return;
@@ -1006,7 +1007,7 @@ function armPrepareWatchdog() {
     render();
     setStatus('后台卡住（' + diag + '），已改在本页执行');
     if (lastText) runAgent(lastText, null, { display: last.display || '' });
-  }, 25000);
+  }, 15000);
 }
 
 chrome.storage.onChanged.addListener((changes, area) => {
