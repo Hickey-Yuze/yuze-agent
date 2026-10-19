@@ -866,19 +866,28 @@ async function startInBackground(userText, imageUrl, meta) {
 
   let r = null;
   try {
-    r = await chrome.runtime.sendMessage({ type: 'agent:start', payload: { sessionId, messages: messages.map(cleanMsg) } });
+    r = await Promise.race([
+      chrome.runtime.sendMessage({ type: 'agent:start', payload: { sessionId, messages: messages.map(cleanMsg) } }),
+      new Promise((res) => setTimeout(() => res(null), 12000))
+    ]);
   } catch (e) {
     r = { ok: false, error: String(e?.message || e) };
   }
-  if (r && r.ok) backgroundMode = true;
-  if (!r || !r.ok) {
-    messages.pop();
-    running = false;
-    setSendMode('send');
-    setDot('idle');
-    setStatus('后台不可用，改在本页执行');
-    runAgent(userText, imageUrl, meta);
-  }
+  if (r && r.ok) { backgroundMode = true; return; }
+  // 回执丢了/超时：先看后台是不是其实已经跑起来，避免误判为失败
+  try {
+    const { agentRun } = await chrome.storage.local.get('agentRun');
+    if (agentRun && agentRun.sessionId === sessionId && agentRun.running) {
+      backgroundMode = true;
+      return;
+    }
+  } catch (_) {}
+  messages.pop();
+  running = false;
+  setSendMode('send');
+  setDot('idle');
+  setStatus('后台不可用，改在本页执行');
+  runAgent(userText, imageUrl, meta);
 }
 
 chrome.storage.onChanged.addListener((changes, area) => {
@@ -2357,11 +2366,22 @@ async function mcpRpc(server, method, params = {}) {
   const url = typeof server === 'string' ? server : server.url;
   const id = mcpSeq++;
   const body = { jsonrpc: '2.0', id, method, params };
-  const r = await fetch(url, {
-    method: 'POST',
-    headers: mcpHeaderObject(typeof server === 'string' ? null : server),
-    body: JSON.stringify(body)
-  });
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 8000);
+  let r;
+  try {
+    r = await fetch(url, {
+      method: 'POST',
+      headers: mcpHeaderObject(typeof server === 'string' ? null : server),
+      body: JSON.stringify(body),
+      signal: ctrl.signal
+    });
+  } catch (e) {
+    clearTimeout(timer);
+    if (e && e.name === 'AbortError') throw new Error('MCP 连接超时（8 秒）：' + url);
+    throw e;
+  }
+  clearTimeout(timer);
   if (!r.ok) throw new Error('HTTP ' + r.status);
   const ct = r.headers.get('content-type') || '';
   const txt = await r.text();

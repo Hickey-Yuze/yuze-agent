@@ -650,11 +650,22 @@ async function mcpRpc(server, method, params = {}) {
   const url = typeof server === 'string' ? server : server.url;
   const id = mcpSeq++;
   const body = { jsonrpc: '2.0', id, method, params };
-  const r = await fetch(url, {
-    method: 'POST',
-    headers: mcpHeaderObject(typeof server === 'string' ? null : server),
-    body: JSON.stringify(body)
-  });
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 8000);
+  let r;
+  try {
+    r = await fetch(url, {
+      method: 'POST',
+      headers: mcpHeaderObject(typeof server === 'string' ? null : server),
+      body: JSON.stringify(body),
+      signal: ctrl.signal
+    });
+  } catch (e) {
+    clearTimeout(timer);
+    if (e && e.name === 'AbortError') throw new Error('MCP 连接超时（8 秒）：' + url);
+    throw e;
+  }
+  clearTimeout(timer);
   if (!r.ok) throw new Error('HTTP ' + r.status);
   const ct = r.headers.get('content-type') || '';
   const txt = await r.text();
