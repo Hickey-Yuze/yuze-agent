@@ -554,7 +554,9 @@ async function callLLM(onDelta) {
     if (!payload || payload === '[DONE]') return;
     let j;
     try { j = JSON.parse(payload); } catch (_) { return; }
-    const delta = j.choices && j.choices[0] && j.choices[0].delta;
+    const choice = j.choices && j.choices[0];
+    if (choice && choice.finish_reason) out._finish = choice.finish_reason;
+    const delta = choice && choice.delta;
     if (!delta) return;
     let touched = false;
     if (delta.reasoning_content) { out.reasoning += delta.reasoning_content; touched = true; }
@@ -793,6 +795,7 @@ window.addEventListener('pagehide', () => {
 async function agentLoop() {
   let lastSig = '';
   let noProgress = 0;
+  let autoCont = 0;
 
   try {
     for (let step = 1; step <= MAX_STEPS; step++) {
@@ -843,6 +846,16 @@ async function agentLoop() {
 
       const calls = msg.tool_calls || [];
       if (!calls.length) {
+        // 模型在思考里写到一半就停了（finish_reason=length），或只有思考没有正文：
+        // 直接收工会让用户看到半句话就结束，这里自动续写最多两轮。
+        const truncated = msg._finish === 'length' || (!msg.content && !!msg.reasoning);
+        if (truncated && autoCont < 2) {
+          autoCont += 1;
+          if (!live.content) { live.content = live.reasoning || ''; live.reasoning = ''; }
+          messages.push({ role: 'user', content: '（上一条输出被截断）继续接着写，直接给出最终结果，不要再解释。' });
+          render();
+          continue;
+        }
         setStatus('');
         setDot('ok');
         return;

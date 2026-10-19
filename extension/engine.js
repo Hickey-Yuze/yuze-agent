@@ -538,7 +538,9 @@ async function callLLM(onDelta) {
     if (!payload || payload === '[DONE]') return;
     let j;
     try { j = JSON.parse(payload); } catch (_) { return; }
-    const delta = j.choices && j.choices[0] && j.choices[0].delta;
+    const choice = j.choices && j.choices[0];
+    if (choice && choice.finish_reason) out._finish = choice.finish_reason;
+    const delta = choice && choice.delta;
     if (!delta) return;
     let touched = false;
     if (delta.reasoning_content) { out.reasoning += delta.reasoning_content; touched = true; }
