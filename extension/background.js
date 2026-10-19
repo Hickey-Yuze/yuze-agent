@@ -22,3 +22,19 @@ chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
     }
   } catch (_) {}
 });
+
+
+// 注入脚本的持久存储桥：脚本数据存进扩展 chrome.storage，重启浏览器不丢
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (!msg || typeof msg !== 'object') return;
+  try {
+    if (msg.type === 'yz:store:get') {
+      chrome.storage.local.get(msg.key).then((o) => sendResponse({ ok: true, value: o[msg.key] ?? null })).catch(() => sendResponse({ ok: false }));
+      return true;
+    }
+    if (msg.type === 'yz:store:set') {
+      chrome.storage.local.set({ [msg.key]: msg.value }).then(() => sendResponse({ ok: true })).catch(() => sendResponse({ ok: false }));
+      return true;
+    }
+  } catch (_) {}
+});

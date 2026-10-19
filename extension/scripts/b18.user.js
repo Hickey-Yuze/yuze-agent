@@ -60,6 +60,13 @@
         try {
           if (hasSync) return jp(GM_getValue(k, null), d);
           if (hasAsync) return jp(await GM.getValue(k, null), d);
+          // 扩展环境：优先读扩展持久存储（跨站点、重启浏览器都不丢）
+          if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.id) {
+            try {
+              const r = await chrome.runtime.sendMessage({ type: "yz:store:get", key: k });
+              if (r && r.ok && r.value != null) return jp(r.value, d);
+            } catch {}
+          }
           return jp(localStorage.getItem(k), d);
         } catch { return d; }
       },
@@ -69,6 +76,9 @@
           if (hasSync) GM_setValue(k, p);
           else if (hasAsync) await GM.setValue(k, p);
           else localStorage.setItem(k, p);
+          if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.id) {
+            try { await chrome.runtime.sendMessage({ type: "yz:store:set", key: k, value: p }); } catch {}
+          }
         } catch {}
       },
     };
