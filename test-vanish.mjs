@@ -105,6 +105,15 @@ try {
     return info;
   })()`, sessionId);
 
+  // 幂等：同一 requestId 连投两次，后台应只认一次
+  out.idem = await ev(`(async () => {
+    const body = { sessionId, messages: messages.map(m => ({ role: m.role, content: m.content })), requestId: 'r_idem_test' };
+    const a = await chrome.runtime.sendMessage({ type: 'agent:start', payload: body });
+    const b = await chrome.runtime.sendMessage({ type: 'agent:start', payload: body });
+    return { a, b };
+  })()`, sessionId);
+  await sleep(600);
+
   const g = await ev(`chrome.storage.local.get('agentRun')`, sessionId);
   const agentRun = g && g.agentRun;
   out.finalRun = agentRun ? { running: agentRun.running, status: agentRun.status, n: (agentRun.messages || []).length } : null;

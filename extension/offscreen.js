@@ -45,13 +45,20 @@ let sessionId = '';
 let messages = [];
 let step = 0;
 let lastWrite = 0;
+/* Tabbit 式回执：一次投递 = 一个 requestId 的 receipt。
+   - 同一 requestId 重复投递直接返回，绝不重复执行（幂等）
+   - taskStatus 是终态语义：running / succeeded / failed / interrupted
+   侧边栏只认 receipt，不再靠本地 running 猜。 */
+let activeRequestId = '';
+let taskStatus = '';
 
 function snapshot(patch) {
   const now = Date.now();
   if (!patch && now - lastWrite < 120) return;
   lastWrite = now;
   // messages 为空时不要写：侧边栏收到空数组会覆盖掉用户刚发的消息
-  const data = { running, step, sessionId, at: now };
+  const data = { requestId: activeRequestId, taskStatus, running, step, sessionId, at: now };
+  if (!running) data.completedAt = now;
   if (messages.length) data.messages = messages;
   Object.assign(data, patch || {});
   // 必须挂 catch：api:call 是异步的，同步 try 抓不到 rejection，
@@ -125,6 +132,7 @@ async function loop() {
 
       const calls = msg.tool_calls || [];
       if (!calls.length) {
+        taskStatus = 'succeeded';
         snapshot({ running: false, status: '' });
         return;
       }
@@ -134,6 +142,7 @@ async function loop() {
       if (hasNew) noProgress = 0; else noProgress += 1;
       lastSig = sig;
       if (noProgress >= 4) {
+        taskStatus = 'interrupted';
         snapshot({ running: false, status: '连续 4 轮没有新进展，先停在这里' });
         return;
       }
@@ -150,23 +159,32 @@ async function loop() {
         snapshot({ running: true });
       }
     }
+    taskStatus = 'interrupted';
     snapshot({ running: false, status: '达到最大轮次，先停在这里' });
   } catch (e) {
     const msg = String(e?.message || e);
     if (msg === '已停止') {
+      taskStatus = 'interrupted';
       snapshot({ running: false, status: '已停止' });
     } else {
+      taskStatus = 'failed';
       messages.push({ role: 'assistant', content: '⚠️ ' + msg, _err: true });
       snapshot({ running: false, status: '' });
     }
   } finally {
     running = false;
+    if (!taskStatus || taskStatus === 'running') taskStatus = 'interrupted';
     E.clearStop();
     snapshot({ running: false });
   }
 }
 
 async function start(payload) {
+  const reqId = String(payload.requestId || '');
+  // 幂等：同一 requestId 已经在跑（或刚跑完），直接回执，不重复执行
+  if (reqId && reqId === activeRequestId) {
+    return { ok: true, duplicate: true, requestId: reqId };
+  }
   if (running) {
     // 僵尸任务检测：60 秒内没有任何快照更新（loop 每轮/每次工具/流式 paint 都会写），
     // 说明上一个任务其实已经死了（异常退出但没走到 finally），必须让新任务进得来。
@@ -179,6 +197,8 @@ async function start(payload) {
     }
   }
   running = true;
+  activeRequestId = reqId || ('r_' + Date.now().toString(36));
+  taskStatus = 'running';
   sessionId = payload.sessionId || Date.now().toString(36);
   messages = Array.isArray(payload.messages) ? payload.messages : [];
   step = 0;

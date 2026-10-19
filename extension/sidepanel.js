@@ -712,7 +712,7 @@ function stopRun() {
   if (!running) return;
   stopRequested = true;
   try { abortCtrl?.abort(); } catch (_) {}
-  try { chrome.runtime.sendMessage({ type: 'agent:stop' }); } catch (_) {}
+  try { chrome.runtime.sendMessage({ type: 'agent:stop', requestId: currentRequestId }); } catch (_) {}
   setStatus('正在停止…');
   // 兜底：后台 6 秒内还没停（例如卡在 MCP 准备阶段），直接复位界面状态
   setTimeout(() => {
@@ -731,6 +731,8 @@ function stopRun() {
 
 let resumeStep = 0;
 let backgroundMode = false;
+/* 每次投递一个 requestId：重复发送同一条时后台按 ID 幂等，不会再起一个循环 */
+let currentRequestId = '';
 let stickBottom = true;
 let lastMsgCount = 0;
 let staleRunTicks = 0;
@@ -763,7 +765,7 @@ setInterval(async () => {
   staleRunTicks += 1;
   if (staleRunTicks < 3) return;   // 连续 3 次（约 6 秒）都对不上才复位
   staleRunTicks = 0;
-  try { chrome.runtime.sendMessage({ type: 'agent:stop' }); } catch (_) {}
+  try { chrome.runtime.sendMessage({ type: 'agent:stop', requestId: currentRequestId }); } catch (_) {}
   running = false;
   backgroundMode = false;
   setSendMode('send');
@@ -946,6 +948,7 @@ async function startInBackground(userText, imageUrl, meta) {
   setSendMode('stop');
   setDot('busy');
   prepareAt = Date.now();
+  currentRequestId = 'r_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
   setStatus('准备中… v' + APP_VER);
 
   const userContent = imageUrl
@@ -959,7 +962,7 @@ async function startInBackground(userText, imageUrl, meta) {
   let r = null;
   try {
     r = await Promise.race([
-      chrome.runtime.sendMessage({ type: 'agent:start', payload: { sessionId, messages: messages.map(cleanMsg) } }),
+      chrome.runtime.sendMessage({ type: 'agent:start', payload: { sessionId, messages: messages.map(cleanMsg), requestId: currentRequestId } }),
       new Promise((res) => setTimeout(() => res(null), 12000))
     ]);
   } catch (e) {
@@ -1016,7 +1019,7 @@ function armPrepareWatchdog() {
         return;
       }
     } catch (_) {}
-    try { chrome.runtime.sendMessage({ type: 'agent:stop' }); } catch (_) {}
+    try { chrome.runtime.sendMessage({ type: 'agent:stop', requestId: currentRequestId }); } catch (_) {}
     const last = messages[messages.length - 1];
     const lastText = last && typeof last.content === 'string' ? last.content : '';
     messages.pop();
