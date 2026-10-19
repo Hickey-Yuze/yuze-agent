@@ -3317,6 +3317,11 @@ loadSettings().then(() => loadMcp());
   render();
 })();
 
+$('btnHide')?.addEventListener('click', () => {
+  if (running) saveSnap(0, false, true);
+  try { window.close(); } catch (_) {}
+});
+
 $('btnSkillsLibrary')?.addEventListener('click', () => {
   modelMenu.classList.add('hidden');
   skillMenu.classList.add('hidden');
