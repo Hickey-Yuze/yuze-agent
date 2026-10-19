@@ -686,28 +686,27 @@ function stopRun() {
   setStatus('正在停止…');
 }
 
-async function runAgent(userText, imageUrl, meta) {
-  if (running) return;
-  running = true;
-  stopRequested = false;
-  document.querySelectorAll('#chat .feedback').forEach((n) => n.remove());
-  setSendMode('stop');
-  setDot('busy');
-  setStatus('');
+let resumeStep = 0;
 
-  const userContent = imageUrl
-    ? [{ type: 'text', text: userText }, { type: 'image_url', image_url: { url: imageUrl } }]
-    : userText;
-  messages.push({ role: 'user', content: userContent, display: (meta && meta.display) || '', quotes: (meta && meta.quotes) || [] });
-  render();
-  persist();
+function saveSnap(step, isRunning, interrupted) {
+  try {
+    chrome.storage.local.set({ taskSnap: { sessionId, messages, step: step || 0, running: !!isRunning, interrupted: !!interrupted, at: Date.now() } });
+  } catch (_) {}
+}
 
+window.addEventListener('pagehide', () => {
+  if (running) saveSnap(0, false, true);
+});
+
+async function agentLoop() {
   let lastSig = '';
   let noProgress = 0;
 
   try {
     for (let step = 1; step <= MAX_STEPS; step++) {
+      if (stopRequested) throw new Error('已停止');
       setStatus(`思考中 · 第 ${step}/${MAX_STEPS} 轮`);
+      saveSnap(step, true);
 
       const live = { role: 'assistant', content: '', reasoning: '', _live: true };
       messages.push(live);
@@ -758,7 +757,6 @@ async function runAgent(userText, imageUrl, meta) {
         return;
       }
 
-      // 按进展停：连续多轮重复同样的工具调用且没有新内容 → 判定卡死
       const sig = calls.map((c) => (c.function?.name || '') + ':' + String(c.function?.arguments || '').slice(0, 160)).join('|');
       const hasNew = !!(msg.content && String(msg.content).trim()) || sig !== lastSig;
       if (hasNew) noProgress = 0; else noProgress += 1;
@@ -779,6 +777,7 @@ async function runAgent(userText, imageUrl, meta) {
           content: typeof out === 'string' ? out : JSON.stringify(out)
         });
         render();
+        saveSnap(step, true);
       }
     }
     setStatus('达到最大轮次，先停在这里');
@@ -798,8 +797,41 @@ async function runAgent(userText, imageUrl, meta) {
     running = false;
     abortCtrl = null;
     setSendMode('send');
+    saveSnap(0, false);
     persist();
   }
+}
+
+async function runAgent(userText, imageUrl, meta) {
+  if (running) return;
+  running = true;
+  stopRequested = false;
+  resumeStep = 0;
+  document.querySelectorAll('#chat .feedback').forEach((n) => n.remove());
+  setSendMode('stop');
+  setDot('busy');
+  setStatus('');
+
+  const userContent = imageUrl
+    ? [{ type: 'text', text: userText }, { type: 'image_url', image_url: { url: imageUrl } }]
+    : userText;
+  messages.push({ role: 'user', content: userContent, display: (meta && meta.display) || '', quotes: (meta && meta.quotes) || [] });
+  render();
+  persist();
+  saveSnap(1, true);
+  await agentLoop();
+}
+
+async function continueRun() {
+  if (running || !messages.length) return;
+  resumeStep = 0;
+  running = true;
+  stopRequested = false;
+  setSendMode('stop');
+  setDot('busy');
+  setStatus('继续上次任务…');
+  render();
+  await agentLoop();
 }
 
 /* ══ 渲染 ═════════════════════════════════════════════════ */
@@ -1465,7 +1497,14 @@ function render() {
   }
 
   flushFiles();
-  if (hasAssistant && !running) chatEl.appendChild(feedbackNode());
+  if (resumeStep > 0 && !running) {
+    const bar = document.createElement('div');
+    bar.className = 'resume-bar';
+    bar.innerHTML = '<span>上次任务在关闭侧边栏时中断（第 ' + resumeStep + ' 轮），已保留上下文</span><button id="btnResume">继续任务</button>';
+    bar.querySelector('#btnResume').onclick = () => continueRun();
+    chatEl.appendChild(bar);
+  }
+  if (hasAssistant && !running && resumeStep === 0) chatEl.appendChild(feedbackNode());
   chatEl.scrollTop = chatEl.scrollHeight;
   if (inpFindEl.value.trim()) runFind(inpFindEl.value);
 }
@@ -3267,6 +3306,12 @@ loadSettings().then(() => loadMcp());
         messages = rec.messages;
         lastShot = null;
       }
+    }
+    const { taskSnap } = await chrome.storage.local.get('taskSnap');
+    if (taskSnap && taskSnap.sessionId === sessionId && Array.isArray(taskSnap.messages)
+        && (taskSnap.running || taskSnap.interrupted)) {
+      messages = taskSnap.messages;
+      resumeStep = taskSnap.step || 1;
     }
   } catch (_) {}
   render();
