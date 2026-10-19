@@ -60,8 +60,13 @@ async function prepareTools() {
   E.setServers(Array.isArray(s.mcp) ? s.mcp : []);
   const tools = [];
   for (const srv of E.getServers()) {
+    if (E.stopped) return;   // 准备阶段也能被「停止」打断
     try {
-      const t = await E.connectMcp(srv);
+      // 单个服务器最多等 10 秒，避免任何 MCP 拖死整个任务
+      const t = await Promise.race([
+        E.connectMcp(srv),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('MCP 准备超时')), 10000))
+      ]);
       tools.push(...t);
     } catch (_) {}
   }
@@ -156,7 +161,12 @@ async function start(payload) {
   step = 0;
   E.clearStop();
   snapshot({ running: true, status: '准备中' });
-  await prepareTools();
+  // 整体最多等 20 秒：哪怕 MCP 配置一堆失效地址，也绝不卡死在准备阶段
+  await Promise.race([
+    prepareTools(),
+    new Promise((res) => setTimeout(res, 20000))
+  ]);
+  if (E.stopped) { snapshot({ running: false, status: '已停止' }); running = false; return { ok: true }; }
   loop();
   return { ok: true };
 }

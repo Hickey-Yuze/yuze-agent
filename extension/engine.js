@@ -476,7 +476,8 @@ async function callLLM(onDelta) {
       body: JSON.stringify(Object.assign({
         model,
         messages: (() => {
-          const wm = wireMessages();
+          let wm = wireMessages();
+          wm = trimMessages(wm);
           if (agentMode !== 'ask') wm.unshift({ role: 'system', content: SYSTEM_PROMPT });
           return wm;
         })(),

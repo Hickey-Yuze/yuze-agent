@@ -492,7 +492,8 @@ async function callLLM(onDelta) {
       body: JSON.stringify(Object.assign({
         model,
         messages: (() => {
-          const wm = wireMessages();
+          let wm = wireMessages();
+          wm = trimMessages(wm);
           if (agentMode !== 'ask') wm.unshift({ role: 'system', content: SYSTEM_PROMPT });
           return wm;
         })(),
@@ -679,12 +680,50 @@ function setSendMode(mode) {
   }
 }
 
+/* 上下文保护：消息过长时保留首条任务描述 + 最近内容，避免 400 把任务打挂 */
+function trimMessages(list) {
+  const sizeOf = (m) => {
+    const c = m && m.content;
+    if (typeof c === 'string') return c.length;
+    try { return JSON.stringify(c || '').length; } catch (_) { return 0; }
+  };
+  let total = 0;
+  for (const m of list) total += sizeOf(m);
+  if (total < 360000) return list;
+  const keep = [];
+  let cur = 0;
+  for (let i = list.length - 1; i >= 0; i--) {
+    const sz = sizeOf(list[i]);
+    if (cur + sz > 280000 && keep.length > 8) break;
+    keep.unshift(list[i]);
+    cur += sz;
+  }
+  // 开头补一条说明，告诉模型前面被截断了
+  if (keep.length && keep[0].role === 'user') {
+    keep.unshift({ role: 'system', content: '（更早的对话已因长度限制被截断，下面是最近的部分，请基于这些继续。）' });
+  }
+  return keep;
+}
+
 function stopRun() {
   if (!running) return;
   stopRequested = true;
   try { abortCtrl?.abort(); } catch (_) {}
   try { chrome.runtime.sendMessage({ type: 'agent:stop' }); } catch (_) {}
   setStatus('正在停止…');
+  // 兜底：后台 6 秒内还没停（例如卡在 MCP 准备阶段），直接复位界面状态
+  setTimeout(() => {
+    if (!running) return;
+    chrome.storage.local.get('agentRun').then(({ agentRun }) => {
+      if (agentRun && agentRun.sessionId === sessionId && agentRun.running) return;
+      running = false;
+      backgroundMode = false;
+      setSendMode('send');
+      setDot('idle');
+      setStatus('已停止');
+      render();
+    }).catch(() => {});
+  }, 6000);
 }
 
 let resumeStep = 0;
