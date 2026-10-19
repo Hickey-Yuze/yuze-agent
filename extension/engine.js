@@ -42,6 +42,32 @@ const MAX_STEPS = 300;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/* 上下文保护：消息过长时保留首条任务描述 + 最近内容，避免 400 把任务打挂 */
+function trimMessages(list) {
+  const sizeOf = (m) => {
+    const c = m && m.content;
+    if (typeof c === 'string') return c.length;
+    try { return JSON.stringify(c || '').length; } catch (_) { return 0; }
+  };
+  let total = 0;
+  for (const m of list) total += sizeOf(m);
+  if (total < 360000) return list;
+  const keep = [];
+  let cur = 0;
+  for (let i = list.length - 1; i >= 0; i--) {
+    const sz = sizeOf(list[i]);
+    if (cur + sz > 280000 && keep.length > 8) break;
+    keep.unshift(list[i]);
+    cur += sz;
+  }
+  // 开头补一条说明，告诉模型前面被截断了
+  if (keep.length && keep[0].role === 'user') {
+    keep.unshift({ role: 'system', content: '（更早的对话已因长度限制被截断，下面是最近的部分，请基于这些继续。）' });
+  }
+  return keep;
+}
+
+
 /* ══ CDP 层 ═══════════════════════════════════════════════ */
 
 async function activeTab() {

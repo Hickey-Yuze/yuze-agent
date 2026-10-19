@@ -50,6 +50,32 @@ let modelIds = [];             // 网关返回的模型 id 列表
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/* 上下文保护：消息过长时保留首条任务描述 + 最近内容，避免 400 把任务打挂 */
+function trimMessages(list) {
+  const sizeOf = (m) => {
+    const c = m && m.content;
+    if (typeof c === 'string') return c.length;
+    try { return JSON.stringify(c || '').length; } catch (_) { return 0; }
+  };
+  let total = 0;
+  for (const m of list) total += sizeOf(m);
+  if (total < 360000) return list;
+  const keep = [];
+  let cur = 0;
+  for (let i = list.length - 1; i >= 0; i--) {
+    const sz = sizeOf(list[i]);
+    if (cur + sz > 280000 && keep.length > 8) break;
+    keep.unshift(list[i]);
+    cur += sz;
+  }
+  // 开头补一条说明，告诉模型前面被截断了
+  if (keep.length && keep[0].role === 'user') {
+    keep.unshift({ role: 'system', content: '（更早的对话已因长度限制被截断，下面是最近的部分，请基于这些继续。）' });
+  }
+  return keep;
+}
+
+
 /* ══ CDP 层 ═══════════════════════════════════════════════ */
 
 async function activeTab() {
@@ -678,31 +704,6 @@ function setSendMode(mode) {
     btnSend.title = '发送';
     btnSend.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
   }
-}
-
-/* 上下文保护：消息过长时保留首条任务描述 + 最近内容，避免 400 把任务打挂 */
-function trimMessages(list) {
-  const sizeOf = (m) => {
-    const c = m && m.content;
-    if (typeof c === 'string') return c.length;
-    try { return JSON.stringify(c || '').length; } catch (_) { return 0; }
-  };
-  let total = 0;
-  for (const m of list) total += sizeOf(m);
-  if (total < 360000) return list;
-  const keep = [];
-  let cur = 0;
-  for (let i = list.length - 1; i >= 0; i--) {
-    const sz = sizeOf(list[i]);
-    if (cur + sz > 280000 && keep.length > 8) break;
-    keep.unshift(list[i]);
-    cur += sz;
-  }
-  // 开头补一条说明，告诉模型前面被截断了
-  if (keep.length && keep[0].role === 'user') {
-    keep.unshift({ role: 'system', content: '（更早的对话已因长度限制被截断，下面是最近的部分，请基于这些继续。）' });
-  }
-  return keep;
 }
 
 function stopRun() {
