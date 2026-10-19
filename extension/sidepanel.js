@@ -660,7 +660,7 @@ function stopRun() {
   setStatus('正在停止…');
 }
 
-async function runAgent(userText, imageUrl) {
+async function runAgent(userText, imageUrl, meta) {
   if (running) return;
   running = true;
   stopRequested = false;
@@ -671,7 +671,7 @@ async function runAgent(userText, imageUrl) {
   const userContent = imageUrl
     ? [{ type: 'text', text: userText }, { type: 'image_url', image_url: { url: imageUrl } }]
     : userText;
-  messages.push({ role: 'user', content: userContent });
+  messages.push({ role: 'user', content: userContent, display: (meta && meta.display) || '', quotes: (meta && meta.quotes) || [] });
   render();
   persist();
 
@@ -855,6 +855,45 @@ function userNode(m) {
   const d = document.createElement('div');
   d.className = 'msg-user';
   const content = m && typeof m === 'object' && 'role' in m ? m.content : m;
+
+  if (m && typeof m === 'object' && typeof m.display === 'string' && (m.display || (m.quotes || []).length)) {
+    if (Array.isArray(m.quotes) && m.quotes.length) {
+      const qb = document.createElement('div');
+      qb.className = 'uq-quotes';
+      for (const q of m.quotes.slice(0, 3)) {
+        const c = document.createElement('span');
+        c.className = 'uq-q';
+        const ic = q.kind === 'tab' ? '💡 ' : q.kind === 'file' ? '📄 ' : q.kind === 'dir' ? '📁 ' : q.kind === 'skill' ? '✦ ' : '';
+        c.textContent = ic + String(q.label || '').slice(0, 40);
+        c.title = q.label || '';
+        qb.appendChild(c);
+      }
+      if (m.quotes.length > 3) {
+        const more = document.createElement('span');
+        more.className = 'uq-q';
+        more.textContent = '+' + (m.quotes.length - 3);
+        qb.appendChild(more);
+      }
+      d.appendChild(qb);
+    }
+    if (m.display) {
+      const p = document.createElement('div');
+      p.className = 'q-text';
+      p.textContent = m.display;
+      d.appendChild(p);
+    }
+    if (Array.isArray(content)) {
+      for (const part of content) {
+        if (part && part.type === 'image_url') {
+          const img = document.createElement('img');
+          img.className = 'q-img';
+          img.src = part.image_url?.url || '';
+          d.appendChild(img);
+        }
+      }
+    }
+    return d;
+  }
 
   if (typeof content === 'string') {
     d.textContent = content;
@@ -1466,10 +1505,15 @@ function send() {
   if (!text && !quoteRefs.length && !pendingShot) return;
   const prefix = quoteRefs.map((q) => q.content).join('\n\n');
   const img = pendingShot;
+  const quotes = quoteRefs.map((q) => ({
+    label: q.label || '',
+    kind: (q.meta || {}).kind || '',
+    url: (q.meta || {}).url || '',
+  }));
   clearQuotes();
   inpMsg.value = '';
   inpMsg.style.height = 'auto';
-  runAgent(((prefix ? prefix + '\n\n' : '') + text).trim(), img);
+  runAgent(((prefix ? prefix + '\n\n' : '') + text).trim(), img, { display: text, quotes });
 }
 
 btnSend.addEventListener('click', send);
@@ -1537,6 +1581,7 @@ function persist() {
     const i = list.findIndex((s) => s.id === sessionId);
     if (i >= 0) list[i] = rec; else list.unshift(rec);
     await saveSessions(list.slice(0, SESS_LIMIT));
+    try { await chrome.storage.local.set({ lastSessionId: sessionId }); } catch (_) {}
   }, 300);
 }
 
@@ -3053,7 +3098,27 @@ document.addEventListener('keydown', (e) => {
 });
 
 loadSettings().then(() => loadMcp());
-render();
+(async function restoreAndRender() {
+  try {
+    const { lastSessionId, sessions } = await chrome.storage.local.get(['lastSessionId', 'sessions']);
+    if (lastSessionId && Array.isArray(sessions)) {
+      const rec = sessions.find((s) => s && s.id === lastSessionId);
+      if (rec && Array.isArray(rec.messages) && rec.messages.length) {
+        sessionId = rec.id;
+        messages = rec.messages;
+        lastShot = null;
+      }
+    }
+  } catch (_) {}
+  render();
+})();
+
+$('btnSkillsLibrary')?.addEventListener('click', () => {
+  modelMenu.classList.add('hidden');
+  skillMenu.classList.add('hidden');
+  quoteMenu.classList.add('hidden');
+  openSkillPanel();
+});
 
 /* ══ 点弹层外关闭 ════════════════════════════════════════════ */
 document.addEventListener('mousedown', (e) => {
