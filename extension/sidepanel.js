@@ -683,10 +683,12 @@ function stopRun() {
   if (!running) return;
   stopRequested = true;
   try { abortCtrl?.abort(); } catch (_) {}
+  try { chrome.runtime.sendMessage({ type: 'agent:stop' }); } catch (_) {}
   setStatus('正在停止…');
 }
 
 let resumeStep = 0;
+let backgroundMode = false;
 
 function saveSnap(step, isRunning, interrupted) {
   try {
@@ -695,7 +697,7 @@ function saveSnap(step, isRunning, interrupted) {
 }
 
 window.addEventListener('pagehide', () => {
-  if (running) saveSnap(0, false, true);
+  if (running && !backgroundMode) saveSnap(0, false, true);
 });
 
 async function agentLoop() {
@@ -821,6 +823,73 @@ async function runAgent(userText, imageUrl, meta) {
   saveSnap(1, true);
   await agentLoop();
 }
+
+function cleanMsg(m) {
+  const o = { role: m.role };
+  if (m.content != null) o.content = m.content;
+  if (m.tool_calls) o.tool_calls = m.tool_calls;
+  if (m.tool_call_id) o.tool_call_id = m.tool_call_id;
+  if (m.display) o.display = m.display;
+  if (m.quotes) o.quotes = m.quotes;
+  if (m._err) o._err = true;
+  return o;
+}
+
+async function startInBackground(userText, imageUrl, meta) {
+  if (running) return;
+  running = true;
+  stopRequested = false;
+  resumeStep = 0;
+  document.querySelectorAll('#chat .feedback').forEach((n) => n.remove());
+  setSendMode('stop');
+  setDot('busy');
+  setStatus('准备中…');
+
+  const userContent = imageUrl
+    ? [{ type: 'text', text: userText }, { type: 'image_url', image_url: { url: imageUrl } }]
+    : userText;
+  messages.push({ role: 'user', content: userContent, display: (meta && meta.display) || '', quotes: (meta && meta.quotes) || [] });
+  render();
+  persist();
+  saveSnap(1, true);
+
+  let r = null;
+  try {
+    r = await chrome.runtime.sendMessage({ type: 'agent:start', payload: { sessionId, messages: messages.map(cleanMsg) } });
+  } catch (e) {
+    r = { ok: false, error: String(e?.message || e) };
+  }
+  if (r && r.ok) backgroundMode = true;
+  if (!r || !r.ok) {
+    messages.pop();
+    running = false;
+    setSendMode('send');
+    setDot('idle');
+    setStatus('后台不可用，改在本页执行');
+    runAgent(userText, imageUrl, meta);
+  }
+}
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== 'local' || !changes.agentRun) return;
+  const run = changes.agentRun.newValue;
+  if (!run || (run.sessionId && run.sessionId !== sessionId)) return;
+  if (Array.isArray(run.messages)) messages = run.messages;
+  running = !!run.running;
+  setSendMode(running ? 'stop' : 'send');
+  setStatus(run.status || '');
+  setDot(running ? 'busy' : 'ok');
+  if (running) {
+    const node = chatEl.lastElementChild;
+    const live = messages[messages.length - 1];
+    if (live && (live._live || live.reasoning || live.content)) updateLive(live);
+    else render();
+  } else {
+    render();
+    persist();
+    saveSnap(0, false);
+  }
+});
 
 async function continueRun() {
   if (running || !messages.length) return;
@@ -1708,7 +1777,7 @@ function send() {
   clearQuotes();
   inpMsg.value = '';
   inpMsg.style.height = 'auto';
-  runAgent(((prefix ? prefix + '\n\n' : '') + text).trim(), img, { display: text, quotes });
+  startInBackground(((prefix ? prefix + '\n\n' : '') + text).trim(), img, { display: text, quotes });
 }
 
 btnSend.addEventListener('click', send);
@@ -3306,6 +3375,15 @@ loadSettings().then(() => loadMcp());
         messages = rec.messages;
         lastShot = null;
       }
+    }
+    const { agentRun } = await chrome.storage.local.get('agentRun');
+    if (agentRun && agentRun.sessionId === sessionId && Array.isArray(agentRun.messages)) {
+      messages = agentRun.messages;
+      running = !!agentRun.running;
+      backgroundMode = !!agentRun.running;
+      setStatus(agentRun.status || '');
+      setSendMode(agentRun.running ? 'stop' : 'send');
+      setDot(agentRun.running ? 'busy' : 'ok');
     }
     const { taskSnap } = await chrome.storage.local.get('taskSnap');
     if (taskSnap && taskSnap.sessionId === sessionId && Array.isArray(taskSnap.messages)

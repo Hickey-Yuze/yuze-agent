@@ -12,7 +12,9 @@
     "activeTab",
     "downloads",
     "downloads.open",
-    "scripting"
+    "scripting",
+    "offscreen",
+    "unlimitedStorage"
   ],
   "host_permissions": [
     "http://127.0.0.1/*",

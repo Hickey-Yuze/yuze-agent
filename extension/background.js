@@ -38,3 +38,66 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     }
   } catch (_) {}
 });
+
+/* ══ 后台任务执行器（offscreen）══ */
+async function ensureOffscreen() {
+  try {
+    const ctx = await chrome.runtime.getContexts({ contextTypes: ['OFFSCREEN_DOCUMENT'] });
+    if (ctx && ctx.length) return true;
+  } catch (_) {}
+  try {
+    await chrome.offscreen.createDocument({
+      url: 'offscreen.html',
+      reasons: ['WORKERS'],
+      justification: '运行 agent 任务循环，让关闭侧边栏后任务继续执行'
+    });
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+/* offscreen 的通用 API 代理：offscreen 只能访问 chrome.runtime，其余 API 由这里代执行 */
+chrome.runtime.onMessage.addListener((msg, sender, reply) => {
+  if (msg?.type === 'api:call') {
+    (async () => {
+      try {
+        const parts = String(msg.path || '').split('.');
+        let obj = chrome;
+        for (let i = 0; i < parts.length - 1; i++) obj = obj[parts[i]];
+        const fn = obj[parts[parts.length - 1]];
+        if (typeof fn !== 'function') throw new Error('未找到 API: ' + msg.path);
+        const out = await fn.apply(obj, msg.args || []);
+        reply({ ok: true, result: out });
+      } catch (e) {
+        reply({ ok: false, error: String(e?.message || e) });
+      }
+    })();
+    return true;
+  }
+  return false;
+});
+
+chrome.runtime.onMessage.addListener((msg, sender, reply) => {
+  if (msg?.type === 'agent:start') {
+    (async () => {
+      const ok = await ensureOffscreen();
+      if (!ok) { reply({ ok: false, error: '无法创建后台执行器' }); return; }
+      try {
+        const r = await chrome.runtime.sendMessage({ type: 'offscreen:start', payload: msg.payload || {} });
+        reply(r || { ok: true });
+      } catch (e) {
+        reply({ ok: false, error: String(e?.message || e) });
+      }
+    })();
+    return true;
+  }
+  if (msg?.type === 'agent:stop') {
+    (async () => {
+      try { await chrome.runtime.sendMessage({ type: 'offscreen:stop' }); } catch (_) {}
+      reply({ ok: true });
+    })();
+    return true;
+  }
+  return false;
+});

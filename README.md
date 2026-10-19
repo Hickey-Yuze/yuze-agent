@@ -120,6 +120,16 @@ node server.mjs      # 保持运行
 
 注意：卡片只对**本次运行生成**的文件有效；重开侧边栏后历史卡片仍显示，但打不开（Blob URL 已释放），重新生成即可。
 
+
+## 后台常驻（v0.5.1）
+
+任务循环跑在 `chrome.offscreen` 文档里（`extension/offscreen.js` + `extension/engine.js`），**关闭侧边栏后任务继续执行**：
+
+- 侧边栏只负责 UI：发送任务时把消息交给 background → offscreen，进度通过 `chrome.storage.local.agentRun` 回传并实时渲染
+- offscreen 文档只暴露 `chrome.runtime`，`storage/debugger/tabs/downloads` 全部经 background 的 `api:call` 代理执行
+- 重开侧边栏：按 `sessionId` 从 `agentRun` 恢复对话与运行状态（思考中显示在第几轮，停止按钮可中断后台任务）
+- `extension/engine.js` 由 `node gen-engine.mjs` 从 `sidepanel.js` 自动抽取，请勿手改；改了引擎相关函数后重新生成
+
 ## 项目结构
 
 ![Yuze-agent 项目结构](docs/structure.jpg)
