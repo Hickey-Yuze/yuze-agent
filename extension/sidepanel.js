@@ -1173,6 +1173,94 @@ async function addFileCard(f) {
   persist();
 }
 
+function fileGroupNode(files) {
+  const wrap = document.createElement('div');
+  wrap.className = 'filegroup';
+  const head = document.createElement('div');
+  head.className = 'fg-head';
+  head.textContent = '生成的文件';
+  wrap.appendChild(head);
+  const grid = document.createElement('div');
+  grid.className = 'fg-grid';
+  const PAGE = 4;
+  let expanded = false;
+  const paint = () => {
+    grid.innerHTML = '';
+    const list = expanded ? files : files.slice(0, PAGE);
+    for (const f of list) grid.appendChild(fgItem(f));
+  };
+  paint();
+  wrap.appendChild(grid);
+  if (files.length > PAGE) {
+    const exp = document.createElement('button');
+    exp.type = 'button';
+    exp.className = 'fg-expand';
+    const setLabel = () => { exp.textContent = expanded ? '收起' : '展开查看剩余 ' + (files.length - PAGE) + ' 个文件'; };
+    setLabel();
+    exp.onclick = () => { expanded = !expanded; paint(); setLabel(); };
+    wrap.appendChild(exp);
+  }
+  const tip = document.createElement('div');
+  tip.className = 'fg-tip';
+  tip.textContent = '已保存至文件，点击查看';
+  tip.onclick = () => { try { chrome.downloads.showDefaultFolder(); } catch (_) {} };
+  wrap.appendChild(tip);
+  return wrap;
+}
+
+function fgItem(file) {
+  const el = document.createElement('div');
+  el.className = 'fg-item';
+  const ic = document.createElement('div');
+  const ext = String(file.name).split('.').pop().toLowerCase();
+  ic.className = 'fg-ico f-' + ext;
+  ic.textContent = fileGlyph(file.name);
+  const meta = document.createElement('div');
+  meta.className = 'fg-meta';
+  const nm = document.createElement('div');
+  nm.className = 'fg-name';
+  nm.textContent = file.name;
+  nm.title = file.name;
+  const sub = document.createElement('div');
+  sub.className = 'fg-sub';
+  sub.textContent = fileGlyph(file.name) + ' · ' + humanSize(file.size);
+  meta.append(nm, sub);
+  const dl = document.createElement('button');
+  dl.type = 'button';
+  dl.className = 'fg-dl';
+  dl.title = '打开下载文件';
+  dl.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/></svg>';
+  dl.onclick = (e) => { e.stopPropagation(); openFileFile(file, 'open'); };
+  el.append(ic, meta, dl);
+  return el;
+}
+
+function feedbackNode() {
+  const el = document.createElement('div');
+  el.className = 'feedback';
+  const t = document.createElement('div');
+  t.className = 'fb-title';
+  t.textContent = '本次任务完成得怎么样？';
+  el.appendChild(t);
+  const row = document.createElement('div');
+  row.className = 'fb-row';
+  for (const label of ['成功交付', '部分完成', '未完成']) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'fb-btn';
+    b.textContent = label;
+    b.onclick = () => {
+      row.querySelectorAll('.fb-btn').forEach((x) => x.classList.remove('on'));
+      b.classList.add('on');
+      setStatus('已记录反馈：' + label);
+      setTimeout(() => setStatus(''), 2000);
+    };
+    row.appendChild(b);
+  }
+  el.appendChild(row);
+  return el;
+}
+
 function fileCardNode(file) {
   const el = document.createElement('div');
   el.className = 'filecard';
@@ -1293,12 +1381,23 @@ function render() {
     if (m.role === 'tool') results.set(m.tool_call_id, m.content);
   }
 
+  let pendingFiles = [];
+  const flushFiles = () => {
+    if (!pendingFiles.length) return;
+    chatEl.appendChild(fileGroupNode(pendingFiles));
+    pendingFiles = [];
+  };
+  let hasAssistant = false;
   for (const m of messages) {
     if (m.role === 'file') {
-      chatEl.appendChild(fileCardNode(m.file));
-    } else if (m.role === 'user') {
+      pendingFiles.push(m.file);
+      continue;
+    }
+    flushFiles();
+    if (m.role === 'user') {
       chatEl.appendChild(userNode(m));
     } else if (m.role === 'assistant') {
+      hasAssistant = true;
       for (const tc of m.tool_calls || []) {
         chatEl.appendChild(toolNode(tc, results.get(tc.id)));
       }
@@ -1310,6 +1409,8 @@ function render() {
     }
   }
 
+  flushFiles();
+  if (hasAssistant && !running) chatEl.appendChild(feedbackNode());
   chatEl.scrollTop = chatEl.scrollHeight;
   if (inpFindEl.value.trim()) runFind(inpFindEl.value);
 }
