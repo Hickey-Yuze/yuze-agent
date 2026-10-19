@@ -623,9 +623,14 @@ async function toolSaveJs({ filename, code }) {
   const safe = raw.replace(/[\\/:*?"<>|]/g, '_');
   const name = /\.js$/i.test(safe) ? safe : safe + '.js';
   const text = String(code || '');
-  const url = 'data:text/javascript;charset=utf-8,' + encodeURIComponent(text);
-  await chrome.downloads.download({ url, filename: name });
-  return '已生成并下载 ' + name + '（' + text.length + ' 字符）';
+  // 转 base64（中文安全），走统一的文件卡片与下载链路
+  const b64 = btoa(unescape(encodeURIComponent(text)));
+  try {
+    await addFileCard({ name, mime: 'text/javascript', size: text.length, b64 });
+    return '已生成并下载 ' + name + '（' + text.length + ' 字符）';
+  } catch (e) {
+    return '已生成 ' + name + '（' + text.length + ' 字符），但下载被浏览器拦截：' + (e?.message || e) + '。可在「生成的文件」卡片里点下载重试。';
+  }
 }
 
 async function runTool(name, args) {
@@ -1186,9 +1191,21 @@ async function addFileCard(f) {
   });
   fileCache.set(downloadId, url);
 
+  // 检查是否被 Chrome 拦截（多文件自动下载保护会返回 id 但 state=interrupted）
+  let failed = false;
+  let failReason = '';
+  try {
+    await new Promise((r) => setTimeout(r, 700));
+    const [d] = await chrome.downloads.search({ id: downloadId });
+    if (!d || d.state === 'interrupted') {
+      failed = true;
+      failReason = (d && d.error) || '被浏览器拦截';
+    }
+  } catch (_) {}
+
   messages.push({
     role: 'file',
-    file: { name: f.name, mime: f.mime, size: f.size, downloadId }
+    file: { name: f.name, mime: f.mime, size: f.size, downloadId, failed, failReason }
   });
   render();
   persist();
@@ -1244,14 +1261,29 @@ function fgItem(file) {
   nm.title = file.name;
   const sub = document.createElement('div');
   sub.className = 'fg-sub';
-  sub.textContent = fileGlyph(file.name) + ' · ' + humanSize(file.size);
+  sub.textContent = file.failed ? '下载失败，点击右侧重试' : fileGlyph(file.name) + ' · ' + humanSize(file.size);
+  if (file.failed) sub.style.color = '#d92b1f';
   meta.append(nm, sub);
   const dl = document.createElement('button');
   dl.type = 'button';
   dl.className = 'fg-dl';
   dl.title = '打开下载文件';
   dl.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/></svg>';
-  dl.onclick = (e) => { e.stopPropagation(); openFileFile(file, 'open'); };
+  dl.onclick = (e) => {
+    e.stopPropagation();
+    if (file.failed) {
+      const u = fileCache.get(file.downloadId);
+      if (u) {
+        chrome.downloads.download({ url: u, filename: file.name, saveAs: false, conflictAction: 'uniquify' })
+          .then(() => { setStatus('已重新下载：' + file.name); setTimeout(() => setStatus(''), 2500); })
+          .catch((err) => { setStatus('下载失败：' + ((err && err.message) || err)); setTimeout(() => setStatus(''), 3500); });
+      } else {
+        setStatus('这不是本次运行生成的文件，请让 agent 重新生成');
+      }
+      return;
+    }
+    openFileFile(file, 'open');
+  };
   el.append(ic, meta, dl);
   return el;
 }
