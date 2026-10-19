@@ -748,10 +748,15 @@ setInterval(async () => {
   const stNow = (statusEl.textContent || '');
   if (prepareAt && Date.now() - prepareAt > 1000 && /准备/.test(stNow)) {
     const secs = Math.round((Date.now() - prepareAt) / 1000);
-    const bg = !run ? '无记录' : !sameSess ? '别的会话' : run.running ? (run.status || '运行中') : '已停止';
+    const age = run && run.at ? Math.round((Date.now() - run.at) / 1000) : -1;
+    const bg = !run ? '无记录' : !sameSess ? '别的会话'
+      : run.running ? (run.status || '运行中')
+      : '已停止' + (age >= 0 ? `(${age}s前)` : '');
     setStatus(`准备中… v${APP_VER} ${secs}s · 后台 ${bg}`);
   }
   if (alive) { staleRunTicks = 0; return; }
+  // 同会话且后台明确已停：这是僵尸态，立刻复位，不用等 6 秒
+  if (sameSess && run && !run.running) staleRunTicks = 3;
   if (!sameSess && !backgroundMode) { staleRunTicks = 0; return; }
   staleRunTicks += 1;
   if (staleRunTicks < 3) return;   // 连续 3 次（约 6 秒）都对不上才复位
