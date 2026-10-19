@@ -742,16 +742,15 @@ setInterval(async () => {
   // 只认 running 会让 UI 永远停在「准备中」，所以还要看 at 的新鲜度。
   const fresh = !!(run && Date.now() - (run.at || 0) < 30000);
   const alive = sameSess && run.running && fresh;
-  if (alive) {
-    staleRunTicks = 0;
-    // 准备阶段第 3 秒起就把后台真实状态和秒数露出来，用户随时能判断是不是卡住
-    const st = (statusEl.textContent || '');
-    if (prepareAt && Date.now() - prepareAt > 3000 && /准备/.test(st)) {
-      const secs = Math.round((Date.now() - prepareAt) / 1000);
-      setStatus(`准备中… ${secs}s · 后台 ${run.status || '无状态'}`);
-    }
-    return;
+  // 诊断：只要还在「准备」阶段，第 3 秒起就把后台真实状态和秒数露出来。
+  // 不放在 alive 分支里——正是「后台根本没起来」时最需要看到它。
+  const stNow = (statusEl.textContent || '');
+  if (prepareAt && Date.now() - prepareAt > 3000 && /准备/.test(stNow)) {
+    const secs = Math.round((Date.now() - prepareAt) / 1000);
+    const bg = !run ? '无记录' : !sameSess ? '别的会话' : run.running ? (run.status || '运行中') : '已停止';
+    setStatus(`准备中… ${secs}s · 后台 ${bg}`);
   }
+  if (alive) { staleRunTicks = 0; return; }
   if (!sameSess && !backgroundMode) { staleRunTicks = 0; return; }
   staleRunTicks += 1;
   if (staleRunTicks < 3) return;   // 连续 3 次（约 6 秒）都对不上才复位
