@@ -691,6 +691,13 @@ let resumeStep = 0;
 let backgroundMode = false;
 let stickBottom = true;
 let lastMsgCount = 0;
+let lastPersist = 0;
+function persistThrottled() {
+  const now = Date.now();
+  if (now - lastPersist < 600) return;
+  lastPersist = now;
+  persist();
+}
 chatEl.addEventListener('scroll', () => {
   stickBottom = chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight < 110;
 });
@@ -887,6 +894,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
     // 消息条数变了（工具结果/文件卡片/新的一轮）必须重建，否则工具卡片不显示
     if (messages.length !== lastMsgCount) {
       render();
+      persistThrottled();
     } else {
       const live = messages[messages.length - 1];
       if (live && (live._live || live.reasoning || live.content)) updateLive(live);
@@ -3474,26 +3482,29 @@ loadSettings().then(() => loadMcp());
       }
     }
     const { agentRun } = await chrome.storage.local.get('agentRun');
-    if (agentRun && agentRun.sessionId === sessionId && Array.isArray(agentRun.messages)) {
+    const runMatches = !!(agentRun && agentRun.sessionId === sessionId && Array.isArray(agentRun.messages));
+    if (runMatches) {
+      // 后台记录最完整（含工具结果/思考过程），优先用它，不再回落到旧的 taskSnap
       messages = agentRun.messages;
       running = !!agentRun.running;
-      backgroundMode = !!agentRun.running;
+      backgroundMode = true;
       setStatus(agentRun.status || '');
       setSendMode(agentRun.running ? 'stop' : 'send');
       setDot(agentRun.running ? 'busy' : 'ok');
-    }
-    const { taskSnap } = await chrome.storage.local.get('taskSnap');
-    if (taskSnap && taskSnap.sessionId === sessionId && Array.isArray(taskSnap.messages)
-        && (taskSnap.running || taskSnap.interrupted)) {
-      messages = taskSnap.messages;
-      resumeStep = taskSnap.step || 1;
+    } else {
+      const { taskSnap } = await chrome.storage.local.get('taskSnap');
+      if (taskSnap && taskSnap.sessionId === sessionId && Array.isArray(taskSnap.messages)
+          && (taskSnap.running || taskSnap.interrupted)) {
+        messages = taskSnap.messages;
+        resumeStep = taskSnap.step || 1;
+      }
     }
   } catch (_) {}
   render();
 })();
 
 $('btnHide')?.addEventListener('click', () => {
-  if (running) saveSnap(0, false, true);
+  if (running && !backgroundMode) saveSnap(0, false, true);
   try { window.close(); } catch (_) {}
 });
 
