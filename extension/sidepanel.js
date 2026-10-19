@@ -731,6 +731,25 @@ let resumeStep = 0;
 let backgroundMode = false;
 let stickBottom = true;
 let lastMsgCount = 0;
+let staleRunTicks = 0;
+setInterval(async () => {
+  if (!running) { staleRunTicks = 0; return; }
+  let run = null;
+  try { run = (await chrome.storage.local.get('agentRun')).agentRun; } catch (_) { return; }
+  const sameSess = !!(run && run.sessionId === sessionId);
+  const alive = sameSess && run.running;
+  if (alive) { staleRunTicks = 0; return; }
+  if (!sameSess && !backgroundMode) { staleRunTicks = 0; return; }
+  staleRunTicks += 1;
+  if (staleRunTicks < 3) return;   // 连续 3 次（约 6 秒）都对不上才复位
+  staleRunTicks = 0;
+  running = false;
+  backgroundMode = false;
+  setSendMode('send');
+  setDot('idle');
+  setStatus('');
+  render();
+}, 2000);
 let lastPersist = 0;
 function persistThrottled() {
   const now = Date.now();
@@ -2113,8 +2132,11 @@ function sessRow(s) {
 
   const t = document.createElement('span');
   t.className = 'sess-t';
-  t.textContent = s.title || '新对话';
-  t.title = s.title || '';
+  const shown = (Array.isArray(s.messages) && s.messages.length && /^【引用/.test(String(s.title || '')))
+    ? sessionTitle(s.messages)
+    : (s.title || '新对话');
+  t.textContent = shown;
+  t.title = shown;
 
   const d = document.createElement('span');
   d.className = 'sess-d';
