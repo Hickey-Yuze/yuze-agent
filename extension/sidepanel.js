@@ -763,15 +763,13 @@ function stopRun() {
   // 兜底：后台 6 秒内还没停（例如卡在 MCP 准备阶段），直接复位界面状态
   setTimeout(() => {
     if (!running) return;
-    chrome.storage.local.get('agentRun').then(({ agentRun }) => {
-      if (agentRun && agentRun.sessionId === sessionId && agentRun.running) return;
-      running = false;
-      backgroundMode = false;
-      setSendMode('send');
-      setDot('idle');
-      setStatus('已停止');
-      render();
-    }).catch(() => {});
+    // 单进程执行：6 秒兜底直接复位，不再参考跨进程快照（旧快照会误判成还在跑）
+    running = false;
+    backgroundMode = false;
+    setSendMode('send');
+    setDot('idle');
+    setStatus('已停止');
+    render();
   }, 6000);
 }
 
@@ -2231,7 +2229,8 @@ function send() {
   clearQuotes();
   inpMsg.value = '';
   inpMsg.style.height = 'auto';
-  startInBackground(((prefix ? prefix + '\n\n' : '') + text).trim(), img, { display: text, quotes });
+  // 单进程执行：任务跑在侧边栏自身，不再经 offscreen 跨进程同步——消息/状态不会再错位
+  runAgent(((prefix ? prefix + '\n\n' : '') + text).trim(), img, { display: text, quotes });
 }
 
 btnSend.addEventListener('click', send);
