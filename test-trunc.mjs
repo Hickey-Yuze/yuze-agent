@@ -90,7 +90,7 @@ try {
     state = await ev(`(() => {
       const all = messages.map((m) => ({ role: m.role, c: String(m.content || '').slice(0, 40), r: String(m.reasoning || '').slice(0, 20) }));
       const joined = all.map((m) => m.c).join('|');
-      return { n: messages.length, running: !!running, cont: /继续接着写/.test(joined), answer: all.some((m) => m.role === 'assistant' && /续写后的完整回答/.test(m.c)), st: (document.getElementById('statusLine')||{}).textContent||'' };
+      return { n: messages.length, running: !!running, cont: /继续接着写|用 save_js append/.test(joined), answer: all.some((m) => m.role === 'assistant' && /续写后的完整回答/.test(m.c)), st: (document.getElementById('statusLine')||{}).textContent||'' };
     })()`, sessionId);
     if (!state.running && state.answer) break;
   }

@@ -494,6 +494,7 @@ const SYSTEM_PROMPT = [
   'If a needed tool is missing or fails, say so explicitly and stop instead of retrying the same step.',
   'Never end a turn with thinking only: if you plan to produce a file, call save_js (or the matching tool) in the same turn.',
   'If the file is very long, write it in parts: several save_js({filename, code, append:true}) calls, then save_js({filename, code:"", finish:true}) to merge and download. Never skip the file because it is long.',
+  'You may think in stages: spending one turn on thinking + part 1 is fine, then continue with part 2 in the next turn. Do not attempt to finish everything in a single turn if it would exceed the output limit.',
   'Keep replies in the user\'s language (usually Simplified Chinese).'
 ].join(' ');
 
@@ -898,7 +899,7 @@ async function agentLoop() {
         // 直接收工会让用户看到半句话就结束，这里自动续写最多两轮。
         // content 只有空白同样算没正文（模型偶尔只回一个换行）
         const truncated = msg._finish === 'length' || (!String(msg.content || '').trim() && !!String(msg.reasoning || '').trim());
-        if (truncated && autoCont < 2) {
+        if (truncated && autoCont < 6) {
           autoCont += 1;
           if (!live.content) {
             // 思考层吐 base64 时不要转成正文，只提示模型用正常文字重写
@@ -909,7 +910,7 @@ async function agentLoop() {
               live.reasoning = '';
             }
           }
-          messages.push({ role: 'user', content: '（上一条输出被截断）继续接着写，直接给出最终结果，不要再解释。' });
+          messages.push({ role: 'user', content: '（上一条输出被截断）继续：如果还没写完，用 save_js append 接着写下一段，写完后用 finish 合并下载。不要重新开始，不要解释。' });
           render();
           continue;
         }

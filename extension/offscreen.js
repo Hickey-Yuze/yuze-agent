@@ -175,7 +175,7 @@ async function loop() {
         // 直接收工会让用户看到半句话就结束。自动续写，最多两轮。
         // content 可能只回一个 '\n'，这种也算没正文，否则会被当成功直接收工
         const truncated = msg._finish === 'length' || (!String(msg.content || '').trim() && !!String(msg.reasoning || '').trim());
-        if (truncated && autoCont < 2) {
+        if (truncated && autoCont < 6) {
           autoCont += 1;
           if (!live.content) {
             // 思考层吐的是 base64/编码内容时不要当正文（会把一坨乱码顶到回答区）
@@ -186,7 +186,7 @@ async function loop() {
               live.reasoning = '';
             }
           }
-          messages.push({ role: 'user', content: '（上一条输出被截断）继续接着写，直接给出最终结果，不要再解释。' });
+          messages.push({ role: 'user', content: '（上一条输出被截断）继续：如果还没写完，用 save_js append 接着写下一段，写完后用 finish 合并下载。不要重新开始，不要解释。' });
           snapshot({ running: true, status: '续写中' });
           continue;
         }

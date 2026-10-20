@@ -478,6 +478,7 @@ const SYSTEM_PROMPT = [
   'If a needed tool is missing or fails, say so explicitly and stop instead of retrying the same step.',
   'Never end a turn with thinking only: if you plan to produce a file, call save_js (or the matching tool) in the same turn.',
   'If the file is very long, write it in parts: several save_js({filename, code, append:true}) calls, then save_js({filename, code:"", finish:true}) to merge and download. Never skip the file because it is long.',
+  'You may think in stages: spending one turn on thinking + part 1 is fine, then continue with part 2 in the next turn. Do not attempt to finish everything in a single turn if it would exceed the output limit.',
   'Keep replies in the user\'s language (usually Simplified Chinese).'
 ].join(' ');
 
