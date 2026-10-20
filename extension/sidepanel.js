@@ -509,6 +509,8 @@ const SYSTEM_PROMPT = [
   'Do NOT substitute navigation, screenshots or pasted text for file generation.',
   'If a needed tool is missing or fails, say so explicitly and stop instead of retrying the same step.',
   'Never end a turn with thinking only: if you plan to produce a file, call save_js (or the matching tool) in the same turn.',
+  'When the user asks to generate/draw an image (生成图片/画一张/画图/头像/海报等), you MUST call generate_image in that same turn with a complete prompt. Never reply with only text claiming the image exists — an image only exists after the tool call returns it.',
+  'If the user message includes a screenshot or quoted page content, treat it as CONTEXT ONLY. Do what the user message text literally asks. Do not start analyzing or fixing whatever is shown in the screenshot unless the user text explicitly asks for that. E.g. text "生成柴犬图片" means: call generate_image for a shiba dog — not to inspect the screenshot.',
   'If the file is very long, write it in parts: several save_js({filename, code, append:true}) calls, then save_js({filename, code:"", finish:true}) to merge and download. Never skip the file because it is long.',
   'You may think in stages: spending one turn on thinking + part 1 is fine, then continue with part 2 in the next turn. Do not attempt to finish everything in a single turn if it would exceed the output limit.',
   'Keep replies in the user\'s language (usually Simplified Chinese).'
@@ -916,7 +918,7 @@ async function agentLoop() {
         const hasToolSinceUser = messages.slice(lastUserIdx + 1).some((m) => m.role === 'tool');
         if (autoFix < 3 && claimsDone2 && !hasToolSinceUser) {
           autoFix += 1;
-          messages.push({ role: 'user', content: '（你只回复了文字，没有实际调用工具；正文里那些链接是历史结果）请本轮真正调用 generate_image 或对应工具重新执行，不要贴旧链接、不要只用文字说明。' });
+          messages.push({ role: 'user', content: '（你只回复了文字，没有实际调用任何工具。正文里那些链接是历史结果，不是本次输出）请在本轮直接调用 generate_image 工具（参数 prompt 填完整画面描述）真正生成图片，或调用对应工具完成任务。禁止只写文字说明。' });
           render();
           continue;
         }
