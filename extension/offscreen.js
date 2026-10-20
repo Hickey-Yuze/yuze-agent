@@ -100,6 +100,7 @@ async function prepareTools() {
 async function loop() {
   let lastSig = '';
   let noProgress = 0;
+  let autoCont = 0;   // 截断续写次数（与侧边栏主循环保持一致）
   const MAX = E.MAX_STEPS;
 
   try {
@@ -161,6 +162,16 @@ async function loop() {
 
       const calls = msg.tool_calls || [];
       if (!calls.length) {
+        // 模型在思考里写到一半就停（finish_reason=length），或只有思考没有正文：
+        // 直接收工会让用户看到半句话就结束。把思考转成正文并自动续写，最多两轮。
+        const truncated = msg._finish === 'length' || (!msg.content && !!msg.reasoning);
+        if (truncated && autoCont < 2) {
+          autoCont += 1;
+          if (!live.content) { live.content = live.reasoning || ''; live.reasoning = ''; }
+          messages.push({ role: 'user', content: '（上一条输出被截断）继续接着写，直接给出最终结果，不要再解释。' });
+          snapshot({ running: true, status: '续写中' });
+          continue;
+        }
         taskStatus = 'succeeded';
         snapshot({ running: false, status: '' });
         return;
