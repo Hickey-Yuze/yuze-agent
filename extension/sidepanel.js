@@ -913,9 +913,10 @@ async function agentLoop() {
       const calls = msg.tool_calls || [];
       if (!calls.length) {
         // 只回文字说「已生成」但没调工具（模型幻觉）：追一轮，最多一次
-        if (autoFix < 1 && /(已生成|已经生成|生成好了|已经完成)/.test(String(msg.content || ''))) {
+        const claimsDone2 = /(已生成|已经生成|生成好了|已经完成)/.test(String(msg.content || ''));
+        if (autoFix < 2 && claimsDone2) {
           autoFix += 1;
-          messages.push({ role: 'user', content: '（你只回复了文字，没有实际调用工具）请真正调用对应工具完成任务，不要只用文字说明。' });
+          messages.push({ role: 'user', content: '（你只回复了文字，没有实际调用工具；正文里那些链接是历史结果）请本轮真正调用 generate_image 或对应工具重新执行，不要贴旧链接、不要只用文字说明。' });
           render();
           continue;
         }
@@ -1622,6 +1623,33 @@ function toolNode(tc, rawResult) {
       im.src = shotUrl;
       im.alt = '生成结果';
       d.appendChild(im);
+      // 图片卡片自带下载按钮：点了才落盘
+      const bar = document.createElement('div');
+      bar.className = 'tool-img-bar';
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'img-dl';
+      btn.textContent = '下载图片';
+      btn.onclick = async (e) => {
+        if (e) e.stopPropagation();
+        try {
+          let u = shotUrl, tmp = '';
+          if (/^data:/.test(shotUrl)) {
+            const blob = await (await fetch(shotUrl)).blob();
+            u = tmp = URL.createObjectURL(blob);
+          }
+          const name = 'yz-image-' + Date.now() + '.png';
+          await chrome.downloads.download({ url: u, filename: name, saveAs: false, conflictAction: 'uniquify' });
+          if (tmp) setTimeout(() => URL.revokeObjectURL(tmp), 8000);
+          setStatus('图片已开始下载：' + name);
+          setTimeout(() => setStatus(''), 2500);
+        } catch (err) {
+          setStatus('下载失败：' + ((err && err.message) || err));
+          setTimeout(() => setStatus(''), 3500);
+        }
+      };
+      bar.appendChild(btn);
+      d.appendChild(bar);
     }
     const pre = document.createElement('pre');
     pre.className = 'out';

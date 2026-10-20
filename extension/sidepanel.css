@@ -1001,6 +1001,9 @@ body {
 .qc-img { width: 26px; height: 26px; border-radius: 5px; object-fit: cover; border: 1px solid var(--line); }
 
 .tool-img { width: 100%; border-radius: 8px; margin-top: 6px; border: 1px solid var(--line); display: block; }
+.tool-img-bar { display: flex; gap: 8px; margin-top: 8px; }
+.img-dl { display: inline-flex; align-items: center; padding: 5px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--text); font-size: 12px; cursor: pointer; }
+.img-dl:hover { background: var(--surface-3); }
 
 /* ── 文件产物卡片 ─────────────────────────────────────── */
 .filecard {

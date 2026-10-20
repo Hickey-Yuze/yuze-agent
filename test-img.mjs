@@ -101,6 +101,7 @@ try {
       const tools = messages.filter((m) => m.role === 'assistant' && m.tool_calls).length;
       return {
         img: !!im,
+        dlBtn: !!document.querySelector('.img-dl'),
         srcType: im ? String(im.getAttribute('src') || '').slice(0, 22) : '',
         running: !!running,
         files,
@@ -114,7 +115,8 @@ try {
   out.srcType = info.srcType;
   out.tools = info.tools;
   out.done = !info.running;
-  out.ok = info.img && /^data:image\//.test(info.srcType);
+  out.dlBtn = info.dlBtn;
+  out.ok = info.img && /^data:image\//.test(info.srcType) && !!info.dlBtn;
   ws.close();
 } catch (e) {
   out.error = String(e).slice(0, 200);

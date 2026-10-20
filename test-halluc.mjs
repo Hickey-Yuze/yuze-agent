@@ -31,7 +31,7 @@ const server = http.createServer((req, res) => {
     const push = (o) => res.write('data: ' + JSON.stringify(o) + '\n\n');
     if (round === 1) {
       // 只吹了一句，没调工具
-      push({ choices: [{ delta: { content: '柴犬的图片已经生成好了 🐕' } }] });
+      push({ choices: [{ delta: { content: '柴犬的图片已经生成好了 🐕 图片地址：https://example.com/old.png' } }] });
       push({ choices: [{ delta: {}, finish_reason: 'stop' }] });
     } else if (round === 2) {
       // 被纠正后真正调用

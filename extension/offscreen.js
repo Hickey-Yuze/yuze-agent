@@ -173,9 +173,10 @@ async function loop() {
       const calls = msg.tool_calls || [];
       if (!calls.length) {
         // 模型只回了句「已生成/生成好了」却一个工具都没调（幻觉）：再追一轮，最多一次
-        if (autoFix < 1 && /(已生成|已经生成|生成好了|已经完成)/.test(String(msg.content || ''))) {
+        const claimsDone = /(已生成|已经生成|生成好了|已经完成)/.test(String(msg.content || ''));
+        if (autoFix < 2 && claimsDone) {
           autoFix += 1;
-          messages.push({ role: 'user', content: '（你只回复了文字，没有实际调用工具）请真正调用对应工具完成任务，不要只用文字说明。' });
+          messages.push({ role: 'user', content: '（你只回复了文字，没有实际调用工具；正文里那些链接是历史结果）请本轮真正调用 generate_image 或对应工具重新执行，不要贴旧链接、不要只用文字说明。' });
           snapshot({ running: true, status: '重新执行中' });
           continue;
         }
