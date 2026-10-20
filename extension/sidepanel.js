@@ -2245,12 +2245,29 @@ const SESS_LIMIT = 100;
 
 let recentSessions = [];
 async function loadSessions() {
-  const o = await chrome.storage.local.get('sessions');
-  recentSessions = Array.isArray(o.sessions) ? o.sessions : [];
-  return recentSessions;
+  // IndexedDB 优先：chrome.storage 单条 10MB 上限，长思考/图片一多就写失败丢消息
+  try {
+    let rows = await window.YZDB.list();
+    if (!rows.length) {
+      const o = await chrome.storage.local.get('sessions');
+      const old = Array.isArray(o.sessions) ? o.sessions : [];
+      if (old.length) {
+        await window.YZDB.putMany(old);
+        try { await chrome.storage.local.remove('sessions'); } catch (_) {}
+        rows = old.slice().sort((a, b) => (b.at || 0) - (a.at || 0));
+      }
+    }
+    recentSessions = rows;
+    return rows;
+  } catch (e) {
+    const o = await chrome.storage.local.get('sessions');
+    recentSessions = Array.isArray(o.sessions) ? o.sessions : [];
+    return recentSessions;
+  }
 }
 async function saveSessions(list) {
-  await chrome.storage.local.set({ sessions: list });
+  try { await window.YZDB.putMany(list); }
+  catch (e) { await chrome.storage.local.set({ sessions: list }); }
 }
 function sessionTitle(msgs) {
   const u = msgs.find((m) => m.role === 'user');
@@ -2267,11 +2284,13 @@ function persist() {
   clearTimeout(persistTimer);
   persistTimer = setTimeout(async () => {
     if (!messages.length) return;
-    const list = await loadSessions();
     const rec = { id: sessionId, title: sessionTitle(messages), at: Date.now(), messages, host: await pageHost() };
-    const i = list.findIndex((s) => s.id === sessionId);
-    if (i >= 0) list[i] = rec; else list.unshift(rec);
-    await saveSessions(list.slice(0, SESS_LIMIT));
+    // 只写当前会话，不再整表覆盖
+    try { await window.YZDB.put(rec); }
+    catch (e) {
+      const list = await loadSessions();
+      await saveSessions([rec, ...list.filter((s) => s.id !== sessionId)].slice(0, SESS_LIMIT));
+    }
     try { await chrome.storage.local.set({ lastSessionId: sessionId }); } catch (_) {}
   }, 300);
 }
@@ -2433,8 +2452,7 @@ function openSessMenu(anchor, rec) {
 }
 
 async function deleteSession(id) {
-  const list = await loadSessions();
-  await saveSessions(list.filter((s) => s.id !== id));
+  try { await window.YZDB.del(id); } catch (_) {}
   if (id === sessionId) {
     sessionId = Date.now().toString(36);
     messages = [];
