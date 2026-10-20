@@ -215,9 +215,10 @@ body {
 /* 思考过程 —— Yuze 式折叠块 */
 .think { margin: 0 0 10px; }
 .think-head {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 6px;
+  width: 100%;
   margin: 0;
   padding: 0;
   border: 0;
@@ -229,6 +230,26 @@ body {
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+}
+.think-head .t-label { flex: 0 0 auto; font-weight: 500; letter-spacing: .2px; }
+/* 摘要吸走剩余宽度，秒数右固定，避免记数时整行抖动 */
+.think-head .t-brief {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-faint);
+  opacity: .72;
+}
+.think-head .t-elapse {
+  flex: 0 0 auto;
+  min-width: 34px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  color: var(--accent, #007aff);
+  opacity: .85;
 }
 .think-head:hover { color: var(--text-dim); }
 .think-head .t-chev { transition: transform .18s ease; }

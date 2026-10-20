@@ -1467,19 +1467,75 @@ function mdToHtml(src) {
   return html;
 }
 
+/* 摘一行人类可读的思考摘要：跳过纯符号噪音行，取第一句有意义的中文/英文 */
+function thinkSummary(text) {
+  const raw = String(text || '').replace(/\s+/g, ' ').trim();
+  if (!raw) return '';
+  const parts = raw.split(/(?<=[。！？；.!?;])/).map((x) => x.trim()).filter(Boolean);
+  for (const seg of parts) {
+    const t = seg.replace(/^[-*>#\d.、)）\s]+/, '').trim();
+    const cjk = (t.match(/[\u4e00-\u9fa5]/g) || []).length;
+    // 至少 4 个汉字，或者足够长的英文单词序列；排除纯 base64/代码
+    if (cjk >= 4 || /[A-Za-z]{3,}(\s+[A-Za-z]{2,}){2,}/.test(t)) {
+      return t.length > 34 ? t.slice(0, 34) + '…' : t;
+    }
+  }
+  const flat = raw.slice(0, 34);
+  return flat.length >= 34 ? flat + '…' : flat;
+}
+
 function thinkNode(text, collapsed) {
   const d = document.createElement('div');
   d.className = 'think' + (collapsed ? ' collapsed' : '');
   const head = document.createElement('button');
   head.type = 'button';
   head.className = 'think-head';
-  head.innerHTML = '<span>思考过程</span><svg class="t-chev" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>';
+  head.innerHTML = '<span class="t-label">思考过程</span><span class="t-brief"></span><span class="t-elapse" data-elapse></span>'
+    + '<svg class="t-chev" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>';
   const body = document.createElement('div');
   body.className = 'think-body';
   body.textContent = text;
   head.addEventListener('click', () => d.classList.toggle('collapsed'));
   d.append(head, body);
   return d;
+}
+
+/* 思考区跟跑：标题栏摘要 + 实时秒数（每 500ms 更新一次，避免和大段渲染抢帧） */
+const thinkTickers = new Map();
+function tickThink(node, getText, startedAt) {
+  if (!node || !getText) return;
+  const brief = node.querySelector('.t-brief');
+  const elapse = node.querySelector('[data-elapse]');
+  const briefText = () => {
+    const t = getText();
+    if (!t) return '';
+    // 只从第一份起算以稳定显示，避免逐字跳动
+    return thinkSummary(t);
+  };
+  const tick = () => {
+    const secs = Math.max(0, Math.round((Date.now() - startedAt) / 1000));
+    if (elapse) {
+      const txt = secs < 1 ? '0s' : (secs < 60 ? secs + 's' : Math.floor(secs / 60) + 'm' + (secs % 60) + 's');
+      if (elapse.textContent !== txt) elapse.textContent = txt;
+    }
+    if (brief) {
+      const b = briefText();
+      if (brief.textContent !== b) brief.textContent = b;
+    }
+  };
+  tick();
+  const id = setInterval(tick, 500);
+  thinkTickers.set(node, id);
+}
+function stopTickThink(node) {
+  if (!node) return;
+  const id = thinkTickers.get(node);
+  if (id) { clearInterval(id); thinkTickers.delete(node); }
+  const elapse = node.querySelector('[data-elapse]');
+  if (elapse) {
+    const done = elapse.dataset.done;
+    if (done) elapse.textContent = done;
+  }
 }
 
 let midSeq = 0;
@@ -2038,16 +2094,32 @@ function updateLive(msg) {
   };
 
   if (msg.reasoning) {
-    let body = node.querySelector('.think-body');
-    if (!body) {
-      const think = thinkNode('', false);
+    let think = node.querySelector('.think');
+    let body = null;
+    if (!think) {
+      think = thinkNode('', false);
       node.insertBefore(think, node.firstChild);
       body = think.querySelector('.think-body');
+      // 从第一条思考出现开始计时
+      think._thinkStart = Date.now();
+      tickThink(think, () => msg.reasoning, think._thinkStart);
     }
+    body = think.querySelector('.think-body');
     streamAppend(body, msg.reasoning);
   }
 
   if (msg.content) {
+    // 一旦开始出正文，这一轮思考就结束了：自动折叠思考块（省地方，用户想看可点开）
+    {
+      const tk = node.querySelector('.think');
+      if (tk) {
+        const secs = Math.max(0, Math.round((Date.now() - (tk._thinkStart || Date.now())) / 1000));
+        const el = tk.querySelector('[data-elapse]');
+        if (el) el.dataset.done = secs < 1 ? '0s' : (secs < 60 ? secs + 's' : Math.floor(secs/60)+'m'+(secs%60)+'s');
+        stopTickThink(tk);
+        if (!tk.classList.contains('collapsed')) tk.classList.add('collapsed');
+      }
+    }
     let md = node.querySelector('.bot-md');
     if (!md) {
       md = document.createElement('div');
