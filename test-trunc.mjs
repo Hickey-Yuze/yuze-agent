@@ -26,7 +26,8 @@ const server = http.createServer((req, res) => {
     // 第 1 次：只有思考，且 finish_reason=length（模拟输出上限截断）
     if (hits === 1) {
       push({ choices: [{ delta: { reasoning_content: '我先想一下这个问题大概要怎么回答才完整。' } }] });
-      push({ choices: [{ delta: {}, finish_reason: 'length' }] });
+      push({ choices: [{ delta: { content: '\n' } }] });   // 只回空白正文
+      push({ choices: [{ delta: {}, finish_reason: 'stop' }] });
     } else {
       // 第 2 次：正常给出结论
       push({ choices: [{ delta: { content: '这是续写后的完整回答。' } }] });

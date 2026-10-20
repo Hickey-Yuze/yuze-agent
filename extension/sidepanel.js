@@ -789,7 +789,13 @@ setInterval(async () => {
   // 否则「准备工具」会被反复改回「准备中…」，看上去永远卡在准备阶段。
   const bStatus = run && run.status ? String(run.status).trim() : '';
   if (bStatus && /^(准备工具|思考中|执行 |已停止|已中断)/.test(bStatus)) {
-    setStatus(bStatus);
+    // 思考中带已跑秒数：用户能看出它还在动，而不是卡死
+    if (/思考中/.test(bStatus)) {
+      const secs = Math.max(0, Math.round((Date.now() - statusSince) / 1000));
+      setStatus(bStatus + ' · ' + secs + 's');
+    } else {
+      setStatus(bStatus);
+    }
   } else if (prepareAt && Date.now() - prepareAt > 1000 && /准备/.test(stNow)) {
     const secs = Math.round((Date.now() - prepareAt) / 1000);
     const age = run && run.at ? Math.round((Date.now() - run.at) / 1000) : -1;
@@ -812,7 +818,7 @@ setInterval(async () => {
   setDot('ok');
   setStatus('');
   render();
-}, 2000);
+}, 1000);
 let lastPersist = 0;
 function persistThrottled() {
   const now = Date.now();
@@ -890,7 +896,8 @@ async function agentLoop() {
       if (!calls.length) {
         // 模型在思考里写到一半就停了（finish_reason=length），或只有思考没有正文：
         // 直接收工会让用户看到半句话就结束，这里自动续写最多两轮。
-        const truncated = msg._finish === 'length' || (!msg.content && !!msg.reasoning);
+        // content 只有空白同样算没正文（模型偶尔只回一个换行）
+        const truncated = msg._finish === 'length' || (!String(msg.content || '').trim() && !!String(msg.reasoning || '').trim());
         if (truncated && autoCont < 2) {
           autoCont += 1;
           if (!live.content) {
@@ -1139,6 +1146,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
   } else if (!running && /准备中|执行 /.test(st)) {
     st = '';
   }
+  if (st !== lastStatusText) { lastStatusText = st; statusSince = Date.now(); }
   setStatus(st);
   setDot(running ? 'busy' : 'ok');
   if (running) {
@@ -1459,7 +1467,8 @@ function botNode(msg) {
   const d = document.createElement('div');
   d.className = 'msg-bot';
   d.dataset.mid = midOf(msg);
-  if (msg.reasoning) d.appendChild(thinkNode(msg.reasoning, !msg._live && !!msg.content));
+  // 一轮结束（不再是 _live）就默认折叠；思考中保持展开
+  if (msg.reasoning) d.appendChild(thinkNode(msg.reasoning, !msg._live));
   if (msg.content) {
     const body = document.createElement('div');
     body.className = 'bot-md';
@@ -1620,30 +1629,11 @@ async function addFileCard(f) {
   const arr = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
   const url = URL.createObjectURL(new Blob([arr], { type: f.mime }));
-
-  const downloadId = await chrome.downloads.download({
-    url,
-    filename: f.name,
-    saveAs: false,
-    conflictAction: 'uniquify'
-  });
-  fileCache.set(downloadId, url);
-
-  // 检查是否被 Chrome 拦截（多文件自动下载保护会返回 id 但 state=interrupted）
-  let failed = false;
-  let failReason = '';
-  try {
-    await new Promise((r) => setTimeout(r, 700));
-    const [d] = await chrome.downloads.search({ id: downloadId });
-    if (!d || d.state === 'interrupted') {
-      failed = true;
-      failReason = (d && d.error) || '被浏览器拦截';
-    }
-  } catch (_) {}
-
+  // 只生成卡片，不自动下载：是否落盘由用户在卡片上决定
+  fileCache.set('name:' + f.name, url);
   messages.push({
     role: 'file',
-    file: { name: f.name, mime: f.mime, size: f.size, downloadId, failed, failReason }
+    file: { name: f.name, mime: f.mime, size: f.size, downloadId: '', pending: true }
   });
   render();
   persist();
@@ -1678,7 +1668,7 @@ function fileGroupNode(files) {
   }
   const tip = document.createElement('div');
   tip.className = 'fg-tip';
-  tip.textContent = '已保存至文件，点击查看';
+  tip.textContent = '文件已生成，点卡片右侧按钮下载';
   tip.onclick = () => { try { chrome.downloads.showDefaultFolder(); } catch (_) {} };
   wrap.appendChild(tip);
   return wrap;
@@ -1699,16 +1689,40 @@ function fgItem(file) {
   nm.title = file.name;
   const sub = document.createElement('div');
   sub.className = 'fg-sub';
-  sub.textContent = file.failed ? '下载失败，点击右侧重试' : fileGlyph(file.name) + ' · ' + humanSize(file.size);
+  sub.textContent = file.pending ? '待下载 · ' + humanSize(file.size)
+    : file.failed ? '下载失败，点击右侧重试'
+    : fileGlyph(file.name) + ' · ' + humanSize(file.size);
   if (file.failed) sub.style.color = '#d92b1f';
   meta.append(nm, sub);
   const dl = document.createElement('button');
   dl.type = 'button';
   dl.className = 'fg-dl';
-  dl.title = '打开下载文件';
+  dl.title = file.pending ? '下载' : '打开下载文件';
   dl.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/></svg>';
-  dl.onclick = (e) => {
+  dl.onclick = async (e) => {
     e.stopPropagation();
+    // 待下载：用户在卡片上点了才真正落盘
+    if (file.pending) {
+      const u = fileCache.get('name:' + file.name);
+      if (!u) {
+        setStatus('这个文件需要重新生成一次才能下载');
+        setTimeout(() => setStatus(''), 3000);
+        return;
+      }
+      try {
+        const id = await chrome.downloads.download({ url: u, filename: file.name, saveAs: false, conflictAction: 'uniquify' });
+        file.downloadId = id;
+        file.pending = false;
+        setStatus('已下载：' + file.name);
+        setTimeout(() => setStatus(''), 2500);
+        render();
+        persist();
+      } catch (err) {
+        setStatus('下载失败：' + ((err && err.message) || err));
+        setTimeout(() => setStatus(''), 3500);
+      }
+      return;
+    }
     if (file.failed) {
       const u = fileCache.get(file.downloadId);
       if (u) {
@@ -1860,6 +1874,8 @@ function openFileMenu(anchor, file) {
   placePop(pop, anchor, true);
 }
 
+let statusSince = Date.now();
+let lastStatusText = '';
 function render(forceToBottom) {
   lastMsgCount = messages.length;
   // 记住“距底距离”：用户主动上翻看历史时，重建后不要把他拽回底部

@@ -173,7 +173,8 @@ async function loop() {
       if (!calls.length) {
         // 模型在思考里写到一半就停（finish_reason=length），或只有思考没有正文：
         // 直接收工会让用户看到半句话就结束。自动续写，最多两轮。
-        const truncated = msg._finish === 'length' || (!msg.content && !!msg.reasoning);
+        // content 可能只回一个 '\n'，这种也算没正文，否则会被当成功直接收工
+        const truncated = msg._finish === 'length' || (!String(msg.content || '').trim() && !!String(msg.reasoning || '').trim());
         if (truncated && autoCont < 2) {
           autoCont += 1;
           if (!live.content) {
