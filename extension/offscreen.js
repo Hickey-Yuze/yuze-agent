@@ -232,7 +232,7 @@ async function loop() {
     } else {
       taskStatus = 'failed';
       messages.push({ role: 'assistant', content: '⚠️ ' + msg, _err: true });
-      snapshot({ running: false, status: '' });
+      snapshot({ running: false, status: '⚠️ ' + msg.slice(0, 90) });
     }
   } finally {
     running = false;

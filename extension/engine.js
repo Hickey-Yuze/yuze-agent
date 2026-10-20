@@ -486,11 +486,13 @@ async function callLLM(onDelta) {
   let idleTimer = null;
   let idleHit = false;
   let hardHit = false;
-  const bumpIdle = () => {
+  // 首字节给 45 秒（多数模型的首 token 在这之内），之后按 120 秒续命；
+  // 只有真实 token 续命，心跳不算——否则会一直「思考中」永不超时。
+  const bumpIdle = (ms = 120000) => {
     clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => { idleHit = true; try { ctrl.abort(); } catch (_) {} }, 120000);
+    idleTimer = setTimeout(() => { idleHit = true; try { ctrl.abort(); } catch (_) {} }, ms);
   };
-  bumpIdle();
+  bumpIdle(45000);
   const hardTimer = setTimeout(() => { hardHit = true; try { ctrl.abort(); } catch (_) {} }, 600000);
   const allTools = agentMode === 'ask' ? [] : TOOLS.concat(mcpTools);
 
@@ -515,7 +517,7 @@ async function callLLM(onDelta) {
   } catch (e) {
     if (e.name === 'AbortError') {
       if (stopRequested) throw new Error('已停止');
-      throw new Error(idleHit ? '模型 120 秒没有新输出，已中断（可重试）' : hardHit ? '单轮请求超过 10 分钟，已中断' : '请求被中断');
+      throw new Error(idleHit ? '模型长时间没有输出，已中断（可重试）' : hardHit ? '单轮请求超过 10 分钟，已中断' : '请求被中断');
     }
     throw new Error('连不上模型网关：' + (e.message || e));
   }
@@ -554,7 +556,12 @@ async function callLLM(onDelta) {
         if (tc.function && tc.function.arguments) calls[i].function.arguments += tc.function.arguments;
       }
     }
-    if (touched && onDelta) onDelta(out);
+    // 只有真正收到 token 才续命：心跳或空 delta 也续命的话，
+    // 「思考中」会永不超时（用户看到的就是一直卡着）。
+    if (touched) {
+      bumpIdle();
+      if (onDelta) onDelta(out);
+    }
   };
 
   try {
@@ -564,7 +571,8 @@ async function callLLM(onDelta) {
     for (;;) {
       const { value, done } = await reader.read();
       if (done) break;
-      bumpIdle();
+      // 这里不能续命：心跳和空 delta 也会走到，会让「思考中」永不超时；
+      // 续命统一由 handleLine 在收到真实 token 时做。
       buf += dec.decode(value, { stream: true });
       let at;
       while ((at = buf.indexOf('\n')) >= 0) {
@@ -576,7 +584,7 @@ async function callLLM(onDelta) {
   } catch (e) {
     if (e.name === 'AbortError') {
       if (stopRequested) throw new Error('已停止');
-      const hint = idleHit ? '模型 120 秒没有新输出，已中断（可重试）' : hardHit ? '单轮请求超过 10 分钟，已中断' : '流式读取中断（可重试）';
+      const hint = idleHit ? '模型长时间没有输出，已中断（可重试）' : hardHit ? '单轮请求超过 10 分钟，已中断' : '流式读取中断（可重试）';
       if (out.content || out.reasoning) {
         out._interrupted = true;
         out.content = (out.content || '') + '\n\n> ⚠️ ' + hint + '。上面已生成的内容已保留，可直接再发一条消息继续。';

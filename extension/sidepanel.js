@@ -502,11 +502,13 @@ async function callLLM(onDelta) {
   let idleTimer = null;
   let idleHit = false;
   let hardHit = false;
-  const bumpIdle = () => {
+  // 首字节给 45 秒（多数模型的首 token 在这之内），之后按 120 秒续命；
+  // 只有真实 token 续命，心跳不算——否则会一直「思考中」永不超时。
+  const bumpIdle = (ms = 120000) => {
     clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => { idleHit = true; try { ctrl.abort(); } catch (_) {} }, 120000);
+    idleTimer = setTimeout(() => { idleHit = true; try { ctrl.abort(); } catch (_) {} }, ms);
   };
-  bumpIdle();
+  bumpIdle(45000);
   const hardTimer = setTimeout(() => { hardHit = true; try { ctrl.abort(); } catch (_) {} }, 600000);
   const allTools = agentMode === 'ask' ? [] : TOOLS.concat(mcpTools);
 
@@ -531,7 +533,7 @@ async function callLLM(onDelta) {
   } catch (e) {
     if (e.name === 'AbortError') {
       if (stopRequested) throw new Error('已停止');
-      throw new Error(idleHit ? '模型 120 秒没有新输出，已中断（可重试）' : hardHit ? '单轮请求超过 10 分钟，已中断' : '请求被中断');
+      throw new Error(idleHit ? '模型长时间没有输出，已中断（可重试）' : hardHit ? '单轮请求超过 10 分钟，已中断' : '请求被中断');
     }
     throw new Error('连不上模型网关：' + (e.message || e));
   }
@@ -570,7 +572,12 @@ async function callLLM(onDelta) {
         if (tc.function && tc.function.arguments) calls[i].function.arguments += tc.function.arguments;
       }
     }
-    if (touched && onDelta) onDelta(out);
+    // 只有真正收到 token 才续命：心跳或空 delta 也续命的话，
+    // 「思考中」会永不超时（用户看到的就是一直卡着）。
+    if (touched) {
+      bumpIdle();
+      if (onDelta) onDelta(out);
+    }
   };
 
   try {
@@ -580,7 +587,8 @@ async function callLLM(onDelta) {
     for (;;) {
       const { value, done } = await reader.read();
       if (done) break;
-      bumpIdle();
+      // 这里不能续命：心跳和空 delta 也会走到，会让「思考中」永不超时；
+      // 续命统一由 handleLine 在收到真实 token 时做。
       buf += dec.decode(value, { stream: true });
       let at;
       while ((at = buf.indexOf('\n')) >= 0) {
@@ -592,7 +600,7 @@ async function callLLM(onDelta) {
   } catch (e) {
     if (e.name === 'AbortError') {
       if (stopRequested) throw new Error('已停止');
-      const hint = idleHit ? '模型 120 秒没有新输出，已中断（可重试）' : hardHit ? '单轮请求超过 10 分钟，已中断' : '流式读取中断（可重试）';
+      const hint = idleHit ? '模型长时间没有输出，已中断（可重试）' : hardHit ? '单轮请求超过 10 分钟，已中断' : '流式读取中断（可重试）';
       if (out.content || out.reasoning) {
         out._interrupted = true;
         out.content = (out.content || '') + '\n\n> ⚠️ ' + hint + '。上面已生成的内容已保留，可直接再发一条消息继续。';
@@ -743,9 +751,15 @@ setInterval(async () => {
   let run = null;
   try { run = (await chrome.storage.local.get('agentRun')).agentRun; } catch (_) { return; }
   const sameSess = !!(run && run.sessionId === sessionId);
-  // 关键：running=true 但快照 30 秒没更新 = 僵尸任务（异常退出没走到 finally）。
-  // 只认 running 会让 UI 永远停在「准备中」，所以还要看 at 的新鲜度。
-  const fresh = !!(run && Date.now() - (run.at || 0) < 30000);
+  // 判活要同时看 agentRun 和流式增量包的 at：长思考期间只写增量小包，
+  // agentRun 可能几十秒不刷新，只看 run.at 会把正在思考的任务当成僵尸杀掉。
+  let beatAt = run ? (run.at || 0) : 0;
+  try {
+    const s = (await chrome.storage.local.get('agentStream')).agentStream;
+    if (s && s.sessionId === sessionId && s.at > beatAt) beatAt = s.at;
+  } catch (_) {}
+  // 阈值 90 秒：首字节超时是 45 秒，必须留出余量，否则「慢但没死」会被误杀
+  const fresh = !!(run && Date.now() - beatAt < 90000);
   const alive = sameSess && run.running && fresh;
   // 诊断：只要还在「准备」阶段，第 3 秒起就把后台真实状态和秒数露出来。
   // 不放在 alive 分支里——正是「后台根本没起来」时最需要看到它。
@@ -1098,7 +1112,12 @@ chrome.storage.onChanged.addListener((changes, area) => {
   let st = run.status || '';
   // 任务已收尾：状态条一律清空。用户看助手回复就知道结束了，
   // 不需要「后台任务已结束」这种吓人的残留提示。
-  if (done || (!running && /准备中|执行 /.test(st))) st = '';
+  // 正常收尾才清状态；错误/中断的原因要留在状态条上，否则用户只看到状态突然变空
+  if (done) {
+    if (!/⚠️|失败|已中断|已停止/.test(st)) st = '';
+  } else if (!running && /准备中|执行 /.test(st)) {
+    st = '';
+  }
   setStatus(st);
   setDot(running ? 'busy' : 'ok');
   if (running) {
