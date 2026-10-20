@@ -110,6 +110,7 @@ async function loop() {
   let lastSig = '';
   let noProgress = 0;
   let autoCont = 0;   // 截断续写次数（与侧边栏主循环保持一致）
+  let autoFix = 0;    // 「声称完成却没调工具」的纠正次数
   const MAX = E.MAX_STEPS;
 
   try {
@@ -171,6 +172,13 @@ async function loop() {
 
       const calls = msg.tool_calls || [];
       if (!calls.length) {
+        // 模型只回了句「已生成/生成好了」却一个工具都没调（幻觉）：再追一轮，最多一次
+        if (autoFix < 1 && /(已生成|已经生成|生成好了|已经完成)/.test(String(msg.content || ''))) {
+          autoFix += 1;
+          messages.push({ role: 'user', content: '（你只回复了文字，没有实际调用工具）请真正调用对应工具完成任务，不要只用文字说明。' });
+          snapshot({ running: true, status: '重新执行中' });
+          continue;
+        }
         // 模型在思考里写到一半就停（finish_reason=length），或只有思考没有正文：
         // 直接收工会让用户看到半句话就结束。自动续写，最多两轮。
         // content 可能只回一个 '\n'，这种也算没正文，否则会被当成功直接收工

@@ -861,6 +861,7 @@ async function agentLoop() {
   let lastSig = '';
   let noProgress = 0;
   let autoCont = 0;
+  let autoFix = 0;    // 「声称完成却没调工具」的纠正次数
 
   try {
     for (let step = 1; step <= MAX_STEPS; step++) {
@@ -911,6 +912,13 @@ async function agentLoop() {
 
       const calls = msg.tool_calls || [];
       if (!calls.length) {
+        // 只回文字说「已生成」但没调工具（模型幻觉）：追一轮，最多一次
+        if (autoFix < 1 && /(已生成|已经生成|生成好了|已经完成)/.test(String(msg.content || ''))) {
+          autoFix += 1;
+          messages.push({ role: 'user', content: '（你只回复了文字，没有实际调用工具）请真正调用对应工具完成任务，不要只用文字说明。' });
+          render();
+          continue;
+        }
         // 模型在思考里写到一半就停了（finish_reason=length），或只有思考没有正文：
         // 直接收工会让用户看到半句话就结束，这里自动续写最多两轮。
         // content 只有空白同样算没正文（模型偶尔只回一个换行）
