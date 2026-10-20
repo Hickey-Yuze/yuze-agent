@@ -335,9 +335,25 @@ async function toolGenerateImage(args) {
     if (!item) throw new Error('网关没有返回图片');
     const url = item.url || (item.b64_json ? 'data:image/png;base64,' + item.b64_json : '');
     if (!url) throw new Error('图片地址为空');
+    // 立刻转 dataURL：网关给的多是临时链接，过期后历史会话里就只剩裂图
+    let image = url;
+    if (!/^data:image\//.test(url)) {
+      try {
+        const r2 = await fetch(url);
+        const b = await r2.blob();
+        if (b && b.size <= 3 * 1024 * 1024) {
+          image = await new Promise((res, rej) => {
+            const fr = new FileReader();
+            fr.onload = () => res(String(fr.result));
+            fr.onerror = rej;
+            fr.readAsDataURL(b);
+          });
+        }
+      } catch (_) { /* 取不到就退回原链接 */ }
+    }
     return {
       ok: true,
-      image: url,
+      image,
       revised_prompt: item.revised_prompt || '',
       note: '图片已生成，显示在对话下方；也可用 image 字段引用'
     };
