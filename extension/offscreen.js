@@ -97,6 +97,15 @@ async function prepareTools() {
   E.setTools(tools);
 }
 
+// 模型有时会把图片/二进制塞进思考层，表现为一长串 base64。
+// 这种内容不能当正文顶到回答区，只能留在思考块里。
+function looksEncoded(s) {
+  const t = String(s || '');
+  if (t.length < 200) return false;
+  const b64 = (t.match(/[A-Za-z0-9+/=]/g) || []).length;
+  return b64 / t.length > 0.92;
+}
+
 async function loop() {
   let lastSig = '';
   let noProgress = 0;
@@ -163,14 +172,28 @@ async function loop() {
       const calls = msg.tool_calls || [];
       if (!calls.length) {
         // 模型在思考里写到一半就停（finish_reason=length），或只有思考没有正文：
-        // 直接收工会让用户看到半句话就结束。把思考转成正文并自动续写，最多两轮。
+        // 直接收工会让用户看到半句话就结束。自动续写，最多两轮。
         const truncated = msg._finish === 'length' || (!msg.content && !!msg.reasoning);
         if (truncated && autoCont < 2) {
           autoCont += 1;
-          if (!live.content) { live.content = live.reasoning || ''; live.reasoning = ''; }
+          if (!live.content) {
+            // 思考层吐的是 base64/编码内容时不要当正文（会把一坨乱码顶到回答区）
+            if (looksEncoded(live.reasoning)) {
+              messages.push({ role: 'user', content: '（你上一条回复只有编码内容，没有正文）请直接用正常文字回答，不要输出 base64 或大段代码。' });
+            } else {
+              live.content = live.reasoning || '';
+              live.reasoning = '';
+            }
+          }
           messages.push({ role: 'user', content: '（上一条输出被截断）继续接着写，直接给出最终结果，不要再解释。' });
           snapshot({ running: true, status: '续写中' });
           continue;
+        }
+        // 续写两轮仍没有正文：明确告诉用户是模型只产出了思考，而不是任务「成功」
+        if (!msg.content && msg.reasoning) {
+          taskStatus = 'interrupted';
+          snapshot({ running: false, status: '模型只输出了思考没有正文，建议换个模型' });
+          return;
         }
         taskStatus = 'succeeded';
         snapshot({ running: false, status: '' });

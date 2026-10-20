@@ -115,7 +115,12 @@ try {
   }
   out.secondOk = secondOk;
   out.mockHits = round;
-  out.ok = out.firstDone && out.grewIncremental && out.firstLen > 1000 && secondOk;
+  const kept = await ev(`(() => {
+    const a = messages.filter((m) => m.role === 'assistant');
+    return { n: a.length, first: (a[0] && a[0].reasoning || '').length, last: (a[a.length-1] && a[a.length-1].reasoning || '').length };
+  })()`, sessionId);
+  out.reasonings = kept;
+  out.ok = out.firstDone && out.grewIncremental && out.firstLen > 1000 && secondOk && kept.first > 0;
   ws.close();
 } catch (e) {
   out.error = String(e).slice(0, 200);

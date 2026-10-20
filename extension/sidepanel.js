@@ -858,10 +858,23 @@ async function agentLoop() {
         const truncated = msg._finish === 'length' || (!msg.content && !!msg.reasoning);
         if (truncated && autoCont < 2) {
           autoCont += 1;
-          if (!live.content) { live.content = live.reasoning || ''; live.reasoning = ''; }
+          if (!live.content) {
+            // 思考层吐 base64 时不要转成正文，只提示模型用正常文字重写
+            if (looksEncoded(live.reasoning)) {
+              messages.push({ role: 'user', content: '（你上一条回复只有编码内容，没有正文）请直接用正常文字回答，不要输出 base64 或大段代码。' });
+            } else {
+              live.content = live.reasoning || '';
+              live.reasoning = '';
+            }
+          }
           messages.push({ role: 'user', content: '（上一条输出被截断）继续接着写，直接给出最终结果，不要再解释。' });
           render();
           continue;
+        }
+        if (!msg.content && msg.reasoning) {
+          setStatus('模型只输出了思考没有正文，建议换个模型');
+          setDot('ok');
+          return;
         }
         setStatus('');
         setDot('ok');
@@ -1067,7 +1080,15 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (!run || (run.sessionId && run.sessionId !== sessionId)) return;
   // 后台快照可能是「刚启动、还没消息」的空数组，直接覆盖会把用户刚发的消息吞掉
   const incoming = Array.isArray(run.messages) ? run.messages : null;
-  if (incoming && (incoming.length || !messages.length)) messages = incoming;
+  if (incoming && (incoming.length || !messages.length)) {
+    // 后台快照来自「发给模型的副本」，reasoning 被 cleanMsg 剥掉；
+    // 直接覆盖会把上一轮的思考块清空（用户重发后「思考不见了」）。按位置把本地思考补回去。
+    incoming.forEach((m, i) => {
+      const old = messages[i];
+      if (old && old.role === m.role && old.reasoning && !m.reasoning) m.reasoning = old.reasoning;
+    });
+    messages = incoming;
+  }
   // Tabbit 语义：客户端只认终态。receipt 带 completedAt + taskStatus 就是结束，
   // 立刻复位，不再依赖 running 字段（否则后台已结束、侧边栏还挂着「准备中」）。
   const TERMINAL = ['succeeded', 'failed', 'interrupted'];
