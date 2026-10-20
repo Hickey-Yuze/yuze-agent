@@ -90,9 +90,10 @@ try {
       const o = await chrome.storage.local.get('agentStream');
       const a = o.agentStream || {};
       const m = messages[messages.length - 1] || {};
-      return { len: (m.reasoning || '').length, running: !!running, role: m.role || '', seq: a.seq || 0, sid: (a.sessionId||'').slice(0,10), cur: (sessionId||'').slice(0,10), dlen: (a.dReasoning||'').length };
+      return { len: (m.reasoning || '').length, clen: (m.content || '').length, running: !!running, role: m.role || '', seq: a.seq || 0, sid: (a.sessionId||'').slice(0,10), cur: (sessionId||'').slice(0,10), dlen: (a.dReasoning||'').length };
     })()`, sessionId);
     lens.push(s.len);
+    if (s.clen > 0 && !out.contentAt) out.contentAt = Date.now() - t0;
     if (lens.length <= 3) { out.dbg = out.dbg || []; out.dbg.push(s); }
     if (!s.running && s.len > 0) { ended = s; break; }
   }

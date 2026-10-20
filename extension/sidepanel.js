@@ -418,10 +418,12 @@ const TOOLS = [
   }},
   { type: 'function', function: {
     name: 'save_js',
-    description: '把生成的 JavaScript 代码保存为 .js 文件并下载。用户要求生成脚本或代码文件时必须使用它。',
+    description: '把生成的 JavaScript 代码保存为 .js 文件并下载。用户要求生成脚本或代码文件时必须使用它。文件很长时用 append/finish 分多段写，否则单次输出上限会把代码截断。',
     parameters: { type: 'object', properties: {
       filename: { type: 'string', description: '文件名，默认 script.js' },
-      code: { type: 'string', description: '完整的 JavaScript 代码' }
+      code: { type: 'string', description: '本段 JavaScript 代码（append 模式只传新增部分）' },
+      append: { type: 'boolean', description: '为 true 时把 code 追加进同名草稿（不立即下载），用于分段写长文件' },
+      finish: { type: 'boolean', description: '为 true 时合并之前追加的草稿并下载（最后一段用）' }
     }, required: ['code'] }
   }}
 ];
@@ -491,7 +493,7 @@ const SYSTEM_PROMPT = [
   'Do NOT substitute navigation, screenshots or pasted text for file generation.',
   'If a needed tool is missing or fails, say so explicitly and stop instead of retrying the same step.',
   'Never end a turn with thinking only: if you plan to produce a file, call save_js (or the matching tool) in the same turn.',
-  'If the file is very long, write it in parts (save_js part1, then part2 ...) and tell the user how to merge; never skip the file because it is long.',
+  'If the file is very long, write it in parts: several save_js({filename, code, append:true}) calls, then save_js({filename, code:"", finish:true}) to merge and download. Never skip the file because it is long.',
   'Keep replies in the user\'s language (usually Simplified Chinese).'
 ].join(' ');
 
@@ -660,16 +662,30 @@ function pushError(text) {
   messages.push({ role: 'assistant', content: clean, _err: clean, _repeat: 1 });
 }
 
-async function toolSaveJs({ filename, code }) {
+async function toolSaveJs({ filename, code, append, finish }) {
   const raw = String(filename || '').trim() || 'script.js';
   const safe = raw.replace(/[\\/:*?"<>|]/g, '_');
   const name = /\.js$/i.test(safe) ? safe : safe + '.js';
   const text = String(code || '');
+  const draftKey = '__draft:' + name;
+  // 分段写：长文件一次输出必然被模型上限截断，先 append 攒草稿，最后一次 finish 合并下载
+  if (append) {
+    const prev = (await chrome.storage.local.get(draftKey))[draftKey] || '';
+    const next = prev + text;
+    await chrome.storage.local.set({ [draftKey]: next });
+    return '已追加到草稿 ' + name + '：本段 ' + text.length + ' 字符，累计 ' + next.length + ' 字符。继续 append，写完后用 finish:true 合并下载。';
+  }
+  let full = text;
+  if (finish) {
+    const prev = (await chrome.storage.local.get(draftKey))[draftKey] || '';
+    full = prev + text;
+    await chrome.storage.local.remove(draftKey);
+  }
   // 转 base64（中文安全），走统一的文件卡片与下载链路
-  const b64 = btoa(unescape(encodeURIComponent(text)));
+  const b64 = btoa(unescape(encodeURIComponent(full)));
   try {
-    await addFileCard({ name, mime: 'text/javascript', size: text.length, b64 });
-    return '已生成并下载 ' + name + '（' + text.length + ' 字符）';
+    await addFileCard({ name, mime: 'text/javascript', size: full.length, b64 });
+    return '已生成并下载 ' + name + '（' + full.length + ' 字符）';
   } catch (e) {
     return '已生成 ' + name + '（' + text.length + ' 字符），但下载被浏览器拦截：' + (e?.message || e) + '。可在「生成的文件」卡片里点下载重试。';
   }
@@ -1910,10 +1926,14 @@ function updateLive(msg) {
   const id = msg._id || midOf(msg);
   let node = chatEl.querySelector('[data-mid="' + id + '"]');
   if (!node || !node.classList.contains('msg-bot')) {
-    // 节点被重建/被插入的其他消息顶掉：先尝试全量渲染，再按 id 取回
-    render();
-    node = chatEl.querySelector('[data-mid="' + id + '"]');
-    if (!node) return;
+    // 不再为一条消息重建整个对话：长历史下 render() 要重算几万字，
+    // 正文就会卡住好几秒才出现。这里只补一个空节点，下面按增量填充。
+    node = document.createElement('div');
+    node.className = 'msg-bot';
+    node.dataset.mid = id;
+    const fb = chatEl.querySelector('.feedback');
+    if (fb) chatEl.insertBefore(node, fb);
+    else chatEl.appendChild(node);
   }
 
   // 只把新增的尾巴 append 进节点，避免每帧整段替换导致文字闪
@@ -1921,7 +1941,11 @@ function updateLive(msg) {
     if (!el) return;
     const prev = Number(el.dataset.streamLen || 0);
     if (text.length > prev) {
-      el.appendChild(document.createTextNode(text.slice(prev)));
+      const add = text.slice(prev);
+      const last = el.lastChild;
+      // 合并进最后一个文本节点：长期流式时避免堆积成百上千个 TextNode
+      if (last && last.nodeType === 3) last.appendData(add);
+      else el.appendChild(document.createTextNode(add));
     } else if (text.length < prev) {
       el.textContent = text;
     }

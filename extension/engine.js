@@ -402,10 +402,12 @@ const TOOLS = [
   }},
   { type: 'function', function: {
     name: 'save_js',
-    description: '把生成的 JavaScript 代码保存为 .js 文件并下载。用户要求生成脚本或代码文件时必须使用它。',
+    description: '把生成的 JavaScript 代码保存为 .js 文件并下载。用户要求生成脚本或代码文件时必须使用它。文件很长时用 append/finish 分多段写，否则单次输出上限会把代码截断。',
     parameters: { type: 'object', properties: {
       filename: { type: 'string', description: '文件名，默认 script.js' },
-      code: { type: 'string', description: '完整的 JavaScript 代码' }
+      code: { type: 'string', description: '本段 JavaScript 代码（append 模式只传新增部分）' },
+      append: { type: 'boolean', description: '为 true 时把 code 追加进同名草稿（不立即下载），用于分段写长文件' },
+      finish: { type: 'boolean', description: '为 true 时合并之前追加的草稿并下载（最后一段用）' }
     }, required: ['code'] }
   }}
 ];
@@ -475,7 +477,7 @@ const SYSTEM_PROMPT = [
   'Do NOT substitute navigation, screenshots or pasted text for file generation.',
   'If a needed tool is missing or fails, say so explicitly and stop instead of retrying the same step.',
   'Never end a turn with thinking only: if you plan to produce a file, call save_js (or the matching tool) in the same turn.',
-  'If the file is very long, write it in parts (save_js part1, then part2 ...) and tell the user how to merge; never skip the file because it is long.',
+  'If the file is very long, write it in parts: several save_js({filename, code, append:true}) calls, then save_js({filename, code:"", finish:true}) to merge and download. Never skip the file because it is long.',
   'Keep replies in the user\'s language (usually Simplified Chinese).'
 ].join(' ');
 
@@ -639,16 +641,30 @@ function pushError(text) {
   if (errorSink) { try { errorSink(clean); } catch (_) {} }
 }
 
-async function toolSaveJs({ filename, code }) {
+async function toolSaveJs({ filename, code, append, finish }) {
   const raw = String(filename || '').trim() || 'script.js';
   const safe = raw.replace(/[\\/:*?"<>|]/g, '_');
   const name = /\.js$/i.test(safe) ? safe : safe + '.js';
   const text = String(code || '');
+  const draftKey = '__draft:' + name;
+  // 分段写：长文件一次输出必然被模型上限截断，先 append 攒草稿，最后一次 finish 合并下载
+  if (append) {
+    const prev = (await APIC.storage.local.get(draftKey))[draftKey] || '';
+    const next = prev + text;
+    await APIC.storage.local.set({ [draftKey]: next });
+    return '已追加到草稿 ' + name + '：本段 ' + text.length + ' 字符，累计 ' + next.length + ' 字符。继续 append，写完后用 finish:true 合并下载。';
+  }
+  let full = text;
+  if (finish) {
+    const prev = (await APIC.storage.local.get(draftKey))[draftKey] || '';
+    full = prev + text;
+    await APIC.storage.local.remove(draftKey);
+  }
   // 转 base64（中文安全），走统一的文件卡片与下载链路
-  const b64 = btoa(unescape(encodeURIComponent(text)));
+  const b64 = btoa(unescape(encodeURIComponent(full)));
   try {
-    await addFileCard({ name, mime: 'text/javascript', size: text.length, b64 });
-    return '已生成并下载 ' + name + '（' + text.length + ' 字符）';
+    await addFileCard({ name, mime: 'text/javascript', size: full.length, b64 });
+    return '已生成并下载 ' + name + '（' + full.length + ' 字符）';
   } catch (e) {
     return '已生成 ' + name + '（' + text.length + ' 字符），但下载被浏览器拦截：' + (e?.message || e) + '。可在「生成的文件」卡片里点下载重试。';
   }
