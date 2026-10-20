@@ -912,8 +912,9 @@ async function agentLoop() {
       if (!calls.length) {
         // 只回文字说「已生成」但没调工具（模型幻觉）：追一轮，最多一次
         const claimsDone2 = /(已生成|已经生成|生成好了|已经完成)/.test(String(msg.content || ''));
-        const hasToolHistory2 = messages.some((m) => m.role === 'tool');
-        if (autoFix < 2 && claimsDone2 && !hasToolHistory2) {
+        const lastUserIdx = messages.map((m) => m.role).lastIndexOf('user');
+        const hasToolSinceUser = messages.slice(lastUserIdx + 1).some((m) => m.role === 'tool');
+        if (autoFix < 3 && claimsDone2 && !hasToolSinceUser) {
           autoFix += 1;
           messages.push({ role: 'user', content: '（你只回复了文字，没有实际调用工具；正文里那些链接是历史结果）请本轮真正调用 generate_image 或对应工具重新执行，不要贴旧链接、不要只用文字说明。' });
           render();
@@ -925,13 +926,12 @@ async function agentLoop() {
         const truncated = msg._finish === 'length' || (!String(msg.content || '').trim() && !!String(msg.reasoning || '').trim());
         if (truncated && autoCont < 6) {
           autoCont += 1;
-          if (!live.content) {
-            // 思考层吐 base64 时不要转成正文，只提示模型用正常文字重写
+          // 思考保留在思考区（完整模式），不搬进正文；模型缺什么就提示它补什么
+          if (!String(live.content || '').trim()) {
             if (looksEncoded(live.reasoning)) {
               messages.push({ role: 'user', content: '（你上一条回复只有编码内容，没有正文）请直接用正常文字回答，不要输出 base64 或大段代码。' });
             } else {
-              live.content = live.reasoning || '';
-              live.reasoning = '';
+              messages.push({ role: 'user', content: '（你上一条只有思考没有正文）请基于上面的思考直接给出正文回答。' });
             }
           }
           messages.push({ role: 'user', content: '（上一条输出被截断）继续：如果还没写完，用 save_js append 接着写下一段，写完后用 finish 合并下载。不要重新开始，不要解释。' });
@@ -1507,9 +1507,10 @@ function tickThink(node, getText, startedAt) {
   const brief = node.querySelector('.t-brief');
   const elapse = node.querySelector('[data-elapse]');
   const briefText = () => {
+    // 展开时正文就是完整思考流，头部不重复摘要（用户要完整模式，不要截取）
+    if (!node.classList.contains('collapsed')) return '';
     const t = getText();
     if (!t) return '';
-    // 只从第一份起算以稳定显示，避免逐字跳动
     return thinkSummary(t);
   };
   const tick = () => {
@@ -2108,8 +2109,9 @@ function updateLive(msg) {
     streamAppend(body, msg.reasoning);
   }
 
-  if (msg.content) {
+  if (msg.content && String(msg.content).trim()) {
     // 一旦开始出正文，这一轮思考就结束了：自动折叠思考块（省地方，用户想看可点开）
+    // 注意：工具轮次正文为空不会走到这里，思考保持展开
     {
       const tk = node.querySelector('.think');
       if (tk) {

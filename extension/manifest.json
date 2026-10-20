@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Yuze-agent",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "浏览器内 AI agent：本机模型 + 页面操控 + 技能 + MCP + 文件生成",
   "minimum_chrome_version": "116",
   "permissions": [

@@ -102,10 +102,11 @@ try {
 
   // ---------- F. IndexedDB 会话持久化 ----------
   R.F_db = await ev(`(async () => {
-    if (typeof dbPut !== 'function' && typeof openDB !== 'function') {
-      return { err: 'db 函数不可用', keys: Object.keys(window).filter(k=>/db/i.test(k)).slice(0,20) };
-    }
-    return { ok: true, hasDbJs: !!document.querySelector('script[src*="db.js"]') };
+    if (!window.YZDB || !window.YZDB.put) return { err: 'YZDB 不可用' };
+    await window.YZDB.put({ id: 'test-self', at: Date.now(), messages: [] });
+    const got = await window.YZDB.get('test-self');
+    await window.YZDB.del('test-self');
+    return { ok: !!got, hasDbJs: !!document.querySelector('script[src*="db.js"]') };
   })()`, sId);
 
   // ---------- G. 引用联动 & 引用文件卡片 ----------
