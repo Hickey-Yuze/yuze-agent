@@ -490,6 +490,8 @@ const SYSTEM_PROMPT = [
   '(mcp_gen_pdf / mcp_gen_pptx / mcp_gen_xlsx / mcp_gen_docx) and produce the file.',
   'Do NOT substitute navigation, screenshots or pasted text for file generation.',
   'If a needed tool is missing or fails, say so explicitly and stop instead of retrying the same step.',
+  'Never end a turn with thinking only: if you plan to produce a file, call save_js (or the matching tool) in the same turn.',
+  'If the file is very long, write it in parts (save_js part1, then part2 ...) and tell the user how to merge; never skip the file because it is long.',
   'Keep replies in the user\'s language (usually Simplified Chinese).'
 ].join(' ');
 
@@ -526,6 +528,9 @@ async function callLLM(onDelta) {
           return wm;
         })(),
         temperature: 0.2,
+        // 不设 max_tokens 时网关默认很小，长思考会把额度吃光、正文直接被截断，
+        // 表现就是「思考完没正文就结束」。这里显式要一个够大的额度。
+        max_tokens: 16000,
         stream: true
       }, allTools.length ? { tools: allTools, tool_choice: 'auto' } : {})),
       signal: ctrl.signal
