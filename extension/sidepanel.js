@@ -1488,12 +1488,29 @@ function midOf(msg) {
   return msg._id;
 }
 
+// 模型思考层吐 base64 时不要原样展示（deepseek-v4.1-flash 常见）
+function looksEncoded(s) {
+  const t = String(s || '');
+  if (t.length < 200) return false;
+  const b64 = (t.match(/[A-Za-z0-9+/=]/g) || []).length;
+  return b64 / t.length > 0.92;
+}
+
 function botNode(msg) {
   const d = document.createElement('div');
   d.className = 'msg-bot';
   d.dataset.mid = midOf(msg);
   // 一轮结束（不再是 _live）就默认折叠；思考中保持展开
-  if (msg.reasoning) d.appendChild(thinkNode(msg.reasoning, !msg._live));
+  if (msg.reasoning) {
+    if (looksEncoded(msg.reasoning)) {
+      const warn = document.createElement('div');
+      warn.className = 'think-warn';
+      warn.textContent = '模型思考内容异常（疑似 base64），建议换用 glm-5.3-flash 后重试';
+      d.appendChild(warn);
+    } else {
+      d.appendChild(thinkNode(msg.reasoning, !msg._live));
+    }
+  }
   if (msg.content) {
     const body = document.createElement('div');
     body.className = 'bot-md';
