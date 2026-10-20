@@ -920,6 +920,9 @@ async function agentLoop() {
           render();
           continue;
         }
+        // 纠正次数用尽仍光说不做：给这条消息打标，UI 明示「没真调工具」，
+        // 不让用户对着「已生成」三个字猜为什么没图
+        if (claimsDone2 && !hasToolSinceUser) live._claimNoTool = true;
         // 模型在思考里写到一半就停了（finish_reason=length），或只有思考没有正文：
         // 直接收工会让用户看到半句话就结束，这里自动续写最多两轮。
         // content 只有空白同样算没正文（模型偶尔只回一个换行）
@@ -1555,6 +1558,12 @@ function looksEncoded(s) {
 
 function botNode(msg) {
   const d = document.createElement('div');
+  if (msg._claimNoTool) {
+    const warn = document.createElement('div');
+    warn.className = 'think-warn';
+    warn.textContent = '⚠ 模型声称已生成，但没有实际调用工具（可能是模型本轮偷懒）；请回复「重新生成」让它真正调用工具。';
+    d.appendChild(warn);
+  }
   d.className = 'msg-bot';
   d.dataset.mid = midOf(msg);
   // 一轮结束（不再是 _live）就默认折叠；思考中保持展开
@@ -1660,7 +1669,7 @@ function toolNode(tc, rawResult) {
   const d = document.createElement('details');
   d.className = 'tool';
   d.dataset.state = !hasResult ? 'run' : failed ? 'err' : 'ok';
-  if (name === 'generate_image' && hasResult && !failed) d.open = true;
+  if (hasResult && (failed || name === 'generate_image')) d.open = true;
 
   const meta = toolMeta(name, args, rawResult);
   const sm = document.createElement('summary');
@@ -1695,6 +1704,12 @@ function toolNode(tc, rawResult) {
       im.className = 'tool-img';
       im.src = shotUrl;
       im.alt = '生成结果';
+      im.onerror = () => {
+        const miss = document.createElement('div');
+        miss.className = 'think-warn';
+        miss.textContent = '⚠ 图片地址已失效（临时链接过期），回复「重新生成」即可再出一张。';
+        im.replaceWith(miss);
+      };
       d.appendChild(im);
       // 图片卡片自带下载按钮：点了才落盘
       const bar = document.createElement('div');
