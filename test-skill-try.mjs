@@ -147,8 +147,10 @@ try {
 
   const c = [];
   const push = (n, ok, d) => c.push({ n, ok: !!ok, d });
-  const cmp = (a, b) => String(a || '') >= String(b || '');
-  push('ready', out.A_ready && cmp(out.A_ready.ver, '0.7.9'), out.A_ready);
+  // 版本断言用数值比较，避免字符串比较在 0.7.10 > 0.7.9 上出错
+  const ge = (v, need) => { const p0 = String(v || '0').split('.').map(Number), p1 = String(need).split('.').map(Number);
+    for (let i = 0; i < 3; i++) { if ((p0[i] || 0) > (p1[i] || 0)) return true; if ((p0[i] || 0) < (p1[i] || 0)) return false; } return true; };
+  push('ready', out.A_ready && ge(out.A_ready.ver, '0.7.10'), out.A_ready);
   push('存在非脚本技炉样本', out.B_pick && out.B_pick.nonScript, out.B_pick && out.B_pick.nonScript);
   push('非脚本:去试试显示/运行脚本隐藏', out.C_nonScript && out.C_nonScript.tryShown === true && out.C_nonScript.runShown === false, out.C_nonScript);
   push('去试试文案含去试试', out.C_nonScript && /去试试/.test(out.C_nonScript.tryText), out.C_nonScript && out.C_nonScript.tryText);
