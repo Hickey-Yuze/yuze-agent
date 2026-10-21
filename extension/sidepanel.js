@@ -68,11 +68,29 @@ function trimMessages(list) {
     keep.unshift(list[i]);
     cur += sz;
   }
-  // 开头补一条说明，告诉模型前面被截断了
-  if (keep.length && keep[0].role === 'user') {
-    keep.unshift({ role: 'system', content: '（更早的对话已因长度限制被截断，下面是最近的部分，请基于这些继续。）' });
+  // 这一步是否真的丢掉了头部消息（下面的结构修剪另算）
+  const droppedBySize = keep.length < list.length;
+  // 截断点可能落在一组工具调用中间：开头若是孤儿 tool（前面没有对应的 assistant.tool_calls），
+  // 或 assistant 带着 tool_calls 而它的结果已被截掉，网关会直接 400。往后丢到结构完整为止。
+  while (keep.length) {
+    const h = keep[0];
+    if (h.role === 'tool') { keep.shift(); continue; }
+    if (h.role === 'assistant' && Array.isArray(h.tool_calls) && h.tool_calls.length) {
+      const ids = h.tool_calls.map((t) => t && t.id).filter(Boolean);
+      const got = new Set(keep.slice(1).filter((m) => m.role === 'tool').map((m) => m.tool_call_id));
+      if (ids.some((id) => !got.has(id))) { keep.shift(); continue; }
+    }
+    break;
   }
-  return keep;
+  // 首条用户任务描述必须留住：长任务里工具结果（截图 base64 等）会把体量顶爆，
+  // 只留尾部的话模型看不到任务，就会回「你的消息是空的」然后自己去逛页面。
+  const head = [];
+  if (droppedBySize || keep.length < list.length) {
+    head.push({ role: 'system', content: '（更早的对话已因长度限制被截断。用户的原始任务见下一条消息，请基于它继续，不要说没收到任务。）' });
+  }
+  const firstUser = list.find((m) => m && m.role === 'user');
+  if (firstUser && !keep.includes(firstUser)) head.push(firstUser);
+  return head.length ? head.concat(keep) : keep;
 }
 
 
