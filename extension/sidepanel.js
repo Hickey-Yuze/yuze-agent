@@ -4756,6 +4756,13 @@ function openSkillDetail(s) {
   fixSkillMdList();
   const runBtn = $('btnSkillRun');
   if (runBtn) runBtn.style.display = s.codeFile ? '' : 'none';
+  // 非脚本类技炉（提示词/任务型）没有脚本可跑，改为「去试试」——点击把技炉提示词作为引用卡片加入输入框
+  const tryBtn = $('btnSkillTry');
+  if (tryBtn) {
+    const canTry = !s.codeFile && !!(s.prompt || s.desc);
+    tryBtn.style.display = canTry ? '' : 'none';
+    tryBtn.title = canTry ? '把「' + (s.name || '技炉') + '」的提示词作为引用加入输入框' : '';
+  }
   const pauseBtn = $('btnSkillPause');
   if (pauseBtn) {
     pauseBtn.style.display = 'none';
@@ -4872,6 +4879,16 @@ function setRunBtn(state, text, ms) {
     b.textContent = b._orig || '▶ 运行脚本';
   }, ms || 2400);
 }
+
+// 非脚本类技炉：点击把提示词作为引用卡片带入输入框（与「试试这样问」示例按钮同一链路）
+$('btnSkillTry')?.addEventListener('click', () => {
+  if (!mzCurrent) return;
+  const b = $('btnSkillTry');
+  const orig = '✦ 去试试';
+  b.textContent = '✦ 已加入引用';
+  setTimeout(() => { b.textContent = orig; }, 1600);
+  runSkillNow(mzCurrent);
+});
 
 $('btnSkillRun')?.addEventListener('click', async () => {
   if (!mzCurrent || !mzCurrent.codeFile) return;
