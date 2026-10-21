@@ -1284,6 +1284,143 @@ function welcomeNode() {
   return d;
 }
 
+/* ── 悬停操作栏共享状态：⋯ 菜单开关 + 收藏（fav 记录与会话同库但独立列出）── */
+let msgMenuCloser = null;
+function closeMsgMenu() {
+  if (msgMenuCloser) { document.removeEventListener('click', msgMenuCloser); msgMenuCloser = null; }
+  const m = document.querySelector('.msg-more');
+  if (m) m.remove();
+}
+function favKey(sid, role, text) {
+  const s = sid + '|' + role + '|' + String(text || '').slice(0, 120);
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0;
+  return 'fav_' + h.toString(36);
+}
+function favTitle(m, text) {
+  if (m.role === 'user') {
+    const t = sessionTitle([m]);
+    if (t && t !== '新对话') return t;
+  }
+  return String(text || '').replace(/\s+/g, ' ').trim().slice(0, 46) || '收藏';
+}
+let favRows = [];
+let favIds = new Set();
+function splitFavs(all) {
+  favRows = all.filter((r) => r.fav).sort((a, b) => (b.at || 0) - (a.at || 0));
+  favIds = new Set(favRows.map((f) => f.id));
+  return all.filter((r) => !r.fav);
+}
+async function refreshFavs() {
+  try { splitFavs(await window.YZDB.list()); } catch (_) {}
+  return favRows;
+}
+
+/* 消息悬停操作栏：复制 / 收藏 / 分享 / ⋯（分支、删除）。idx = messages 下标 */
+function msgActions(idx) {
+  const m = messages[idx];
+  const bar = document.createElement('div');
+  bar.className = 'msg-actions';
+  const mk = (svg, title) => {
+    const b = document.createElement('button');
+    b.className = 'ma-btn'; b.type = 'button'; b.title = title; b.innerHTML = svg;
+    return b;
+  };
+  const textOf = (x) => {
+    if (!x) return '';
+    if (typeof x === 'string') return x;
+    if (Array.isArray(x)) return x.filter((p) => p.type === 'text').map((p) => p.text).join('\n');
+    return x.display || '';
+  };
+  const copyText = m.role === 'user' ? (m.display || textOf(m.content)) : (textOf(m.content) || (m.reasoning ? '[思考]\n' + m.reasoning : ''));
+
+  // 复制
+  const bCopy = mk('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>', '复制');
+  bCopy.onclick = async (e) => { e.stopPropagation(); try { await navigator.clipboard.writeText(copyText); bCopy.title = '已复制'; setTimeout(() => bCopy.title = '复制', 1200); } catch (_) {} };
+  // 收藏：再点一次取消；记录带 fav:true，只在历史抽屉的「⭐ 收藏」分组出现，不算对话
+  const STAR_OFF = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.7 5.9 6.3.7-4.7 4.3 1.3 6.1L12 17l-5.6 3 1.3-6.1L3 9.6l6.3-.7z"/></svg>';
+  const STAR_ON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l2.7 5.9 6.3.7-4.7 4.3 1.3 6.1L12 17l-5.6 3 1.3-6.1L3 9.6l6.3-.7z"/></svg>';
+  const fId = favKey(sessionId, m.role, copyText);
+  const bStar = mk(favIds.has(fId) ? STAR_ON : STAR_OFF, favIds.has(fId) ? '取消收藏' : '收藏');
+  bStar.onclick = async (e) => {
+    e.stopPropagation();
+    if (!window.YZDB) { setStatus('收藏不可用：本地库未就绪'); return; }
+    try {
+      if (favIds.has(fId)) {
+        await window.YZDB.del(fId);
+        favIds.delete(fId);
+        favRows = favRows.filter((f) => f.id !== fId);
+        bStar.innerHTML = STAR_OFF; bStar.title = '收藏';
+        setStatus('已取消收藏');
+      } else {
+        const rec = { id: fId, at: Date.now(), fav: true, sessionId, msgIdx: idx, title: favTitle(m, copyText), text: copyText.slice(0, 2000), messages: [] };
+        await window.YZDB.put(rec);
+        favIds.add(fId);
+        favRows = [rec, ...favRows];
+        bStar.innerHTML = STAR_ON; bStar.title = '取消收藏';
+        setStatus('已收藏 · 历史抽屉「⭐ 收藏」可查看');
+      }
+    } catch (err) { setStatus('收藏失败：本地库写入异常'); }
+  };
+  // 分享（导出为文本，走系统分享/剪贴板）
+  const bShare = mk('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v13"/></svg>', '分享');
+  bShare.onclick = async (e) => {
+    e.stopPropagation();
+    const blob = new Blob([copyText], { type: 'text/plain;charset=utf-8' });
+    const file = new File([blob], 'yuze-' + (m.role === 'user' ? 'msg' : 'reply') + '.txt', { type: 'text/plain' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file] }); return; } catch (_) {} }
+    try { await navigator.clipboard.writeText(copyText); bShare.title = '已复制'; setTimeout(() => bShare.title = '分享', 1200); } catch (_) {}
+  };
+  // ⋯ 菜单：分支 / 删除
+  const bMore = mk('<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>', '更多');
+  bMore.onclick = (e) => {
+    e.stopPropagation();
+    const open = document.querySelector('.msg-more');
+    if (open) { const wasMine = open._owner === bMore; closeMsgMenu(); if (wasMine) return; }
+    const menu = document.createElement('div');
+    menu.className = 'msg-more';
+    menu._owner = bMore;
+    const fork = document.createElement('button'); fork.textContent = '⎇ 分支';
+    fork.onclick = async (ev) => {
+      ev.stopPropagation(); closeMsgMenu();
+      if (running && !window.confirm('任务还在运行，分支会中断它。确定吗？')) return;
+      stopRun();
+      const keep = messages.slice(0, idx + 1);
+      const rec = { id: Date.now().toString(36), title: (sessionTitle([m]) || '分支会话'), at: Date.now(), messages: keep.map(cleanMsg), host: await pageHost() };
+      try { await window.YZDB.put(rec); } catch (_) {}
+      sessionId = rec.id; lastStreamSeq = 0; messages = keep; lastShot = null;
+      closeDrawer(); render(); persist();
+      setStatus('已从这条消息分支出新对话');
+      setTimeout(() => { if (/分支出新对话/.test(statusEl.textContent)) setStatus(''); }, 2500);
+    };
+    const del = document.createElement('button'); del.textContent = '🗑 删除'; del.classList.add('danger');
+    del.onclick = async (ev) => {
+      ev.stopPropagation(); closeMsgMenu();
+      const n = messages.length - idx;
+      if (!window.confirm(n === 1 ? '删除这条消息？' : '删除这条消息及其后的 ' + (n - 1) + ' 条？')) return;
+      messages.splice(idx);
+      if (!messages.length) {
+        // 删空：库里这条会话必须一起删，否则 persist() 见空消息早退，重开还能看到已删内容
+        const dead = sessionId;
+        sessionId = Date.now().toString(36); lastStreamSeq = 0; messages = []; lastShot = null;
+        try { await window.YZDB.del(dead); } catch (_) {}
+        try { await chrome.storage.local.set({ lastSessionId: sessionId }); } catch (_) {}
+        setDot('idle'); setStatus('已删除这条消息'); render();
+        return;
+      }
+      render(); persist();
+    };
+    menu.append(fork, del);
+    document.body.appendChild(menu);
+    const r = bMore.getBoundingClientRect();
+    menu.style.left = Math.min(r.left, window.innerWidth - 130) + 'px';
+    menu.style.top = (r.bottom + 4) + 'px';
+    setTimeout(() => { msgMenuCloser = (ev) => { if (!menu.contains(ev.target)) closeMsgMenu(); }; document.addEventListener('click', msgMenuCloser); }, 0);
+  };
+  bar.append(bCopy, bStar, bShare, bMore);
+  return bar;
+}
+
 function userNode(m) {
   const d = document.createElement('div');
   d.className = 'msg-user';
@@ -2020,6 +2157,7 @@ function openFileMenu(anchor, file) {
 let statusSince = Date.now();
 let lastStatusText = '';
 function render(forceToBottom) {
+  closeMsgMenu();   // 重建 DOM 前先摘掉浮层菜单，否则它 fixed 在 body 上会漏到抽屉/新会话之上
   lastMsgCount = messages.length;
   // 记住“距底距离”：用户主动上翻看历史时，重建后不要把他拽回底部
   const fromBottom = chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight;
@@ -2042,14 +2180,17 @@ function render(forceToBottom) {
     pendingFiles = [];
   };
   let hasAssistant = false;
-  for (const m of messages) {
+  for (let mi = 0; mi < messages.length; mi++) {
+    const m = messages[mi];
     if (m.role === 'file') {
       pendingFiles.push(m.file);
       continue;
     }
     flushFiles();
     if (m.role === 'user') {
-      chatEl.appendChild(userNode(m));
+      const un = userNode(m);
+      if (!m._live) un.appendChild(msgActions(mi));
+      chatEl.appendChild(un);
     } else if (m.role === 'assistant') {
       hasAssistant = true;
       for (const tc of m.tool_calls || []) {
@@ -2058,7 +2199,9 @@ function render(forceToBottom) {
       if (m._err) {
         chatEl.appendChild(errorNode(m.content, m._repeat));
       } else if (m._live || m.reasoning || m.content) {
-        chatEl.appendChild(botNode(m));
+        const bn = botNode(m);
+        if (!m._live) bn.appendChild(msgActions(mi));
+        chatEl.appendChild(bn);
       }
     }
   }
@@ -2383,14 +2526,15 @@ let recentSessions = [];
 async function loadSessions() {
   // IndexedDB 优先：chrome.storage 单条 10MB 上限，长思考/图片一多就写失败丢消息
   try {
-    let rows = await window.YZDB.list();
+    // 收藏记录（fav:true）不是对话：拆出去，绝不进历史列表 / 搜索 / 批量删除
+    let rows = splitFavs(await window.YZDB.list());
     if (!rows.length) {
       const o = await chrome.storage.local.get('sessions');
       const old = Array.isArray(o.sessions) ? o.sessions : [];
       if (old.length) {
         await window.YZDB.putMany(old);
         try { await chrome.storage.local.remove('sessions'); } catch (_) {}
-        rows = old.slice().sort((a, b) => (b.at || 0) - (a.at || 0));
+        rows = old.filter((r) => !r.fav).sort((a, b) => (b.at || 0) - (a.at || 0));
       }
     }
     recentSessions = rows;
@@ -2531,7 +2675,7 @@ function sessRow(s) {
   return row;
 }
 
-function sessGroup(title, rows) {
+function sessGroup(title, rows, rowFn = sessRow) {
   const box = document.createElement('div');
   box.className = 'sess-group';
 
@@ -2542,7 +2686,7 @@ function sessGroup(title, rows) {
 
   const list = document.createElement('div');
   list.className = 'sess-group-list';
-  for (const s of rows) list.appendChild(sessRow(s));
+  for (const s of rows) list.appendChild(rowFn(s));
 
   box.append(head, list);
   return box;
@@ -2551,6 +2695,72 @@ function sessGroup(title, rows) {
 function closeSessMenu() {
   const m = document.getElementById('sessMenu');
   if (m) m.remove();
+}
+
+/* ── 收藏行：历史抽屉「⭐ 收藏」分组用（不是会话，点击＝复制内容）── */
+function favRow(f) {
+  const row = document.createElement('div');
+  row.className = 'sess';
+
+  const t = document.createElement('span');
+  t.className = 'sess-t';
+  const title = String(f.title || f.text || '收藏').replace(/\s+/g, ' ').trim() || '收藏';
+  t.textContent = title;
+  t.title = String(f.text || title).slice(0, 300);
+
+  const d = document.createElement('span');
+  d.className = 'sess-d';
+  d.textContent = sessTime(f.at);
+
+  const more = document.createElement('button');
+  more.className = 'sess-more';
+  more.type = 'button';
+  more.setAttribute('aria-label', '更多操作');
+  more.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>';
+  more.addEventListener('click', (e) => { e.stopPropagation(); openFavMenu(more, f); });
+
+  row.append(t, d, more);
+  row.addEventListener('click', async (e) => {
+    if (e.target.closest('.sess-more')) return;
+    try {
+      await navigator.clipboard.writeText(String(f.text || ''));
+      setStatus('已复制收藏内容');
+      setTimeout(() => { if (/已复制收藏内容/.test(statusEl.textContent)) setStatus(''); }, 1600);
+    } catch (_) { setStatus('复制失败'); }
+  });
+  return row;
+}
+
+function openFavMenu(anchor, f) {
+  closeSessMenu();
+  const m = document.createElement('div');
+  m.className = 'sess-menu';
+  m.id = 'sessMenu';
+
+  const del = document.createElement('button');
+  del.className = 'sess-menu-item danger';
+  del.textContent = '删除收藏';
+  del.addEventListener('click', async () => {
+    closeSessMenu();
+    try { await window.YZDB.del(f.id); } catch (_) {}
+    favIds.delete(f.id);
+    favRows = favRows.filter((r) => r.id !== f.id);
+    renderDrawer(document.getElementById('inpSearch').value);
+  });
+
+  m.appendChild(del);
+  document.body.appendChild(m);
+
+  const r = anchor.getBoundingClientRect();
+  const w = m.offsetWidth || 132;
+  m.style.left = Math.max(8, Math.min(r.right - w, innerWidth - w - 8)) + 'px';
+  m.style.top = Math.round(r.bottom + 4) + 'px';
+
+  const node = m;
+  const off = (ev) => {
+    if (node && !node.contains(ev.target)) { closeSessMenu(); document.removeEventListener('mousedown', off, true); }
+  };
+  setTimeout(() => document.addEventListener('mousedown', off, true), 0);
 }
 
 function openSessMenu(anchor, rec) {
@@ -2608,8 +2818,14 @@ async function renderDrawer(q = '') {
         JSON.stringify(s.messages || []).toLowerCase().includes(kw))
     : list;
 
+  // 收藏单独一组：不进「全部对话」/批量管理，也不会被会话搜索当成空白对话
+  const favs = kw
+    ? favRows.filter((f) => String(f.text || '').toLowerCase().includes(kw) ||
+        String(f.title || '').toLowerCase().includes(kw))
+    : favRows;
+
   sessionListEl.innerHTML = '';
-  if (!shown.length) {
+  if (!shown.length && !favs.length) {
     const e = document.createElement('div');
     e.className = 'sess-empty';
     e.textContent = kw ? '没有匹配的对话' : '还没有历史对话';
@@ -2619,23 +2835,25 @@ async function renderDrawer(q = '') {
 
   const db = document.getElementById('drawerBatch');
   if (db) {
-    db.classList.toggle('hidden', !drawerBatchMode);
+    db.classList.toggle('hidden', !drawerBatchMode || !shown.length);
     const cnt = document.getElementById('dbCount');
     if (cnt) cnt.textContent = '已选 ' + drawerSel.size;
     const all = document.getElementById('cbDrawerAll');
     if (all) all.checked = shown.length > 0 && shown.every((s) => drawerSel.has(s.id));
   }
   const mg = document.getElementById('btnDrawerManage');
-  if (mg) mg.classList.toggle('hidden', drawerBatchMode);
+  if (mg) mg.classList.toggle('hidden', drawerBatchMode || !shown.length);
 
   const host = await pageHost();
   const related = host ? shown.filter((s) => s.host === host) : [];
 
   if (related.length) sessionListEl.appendChild(sessGroup('与当前页面相关对话', related));
-  sessionListEl.appendChild(sessGroup('全部对话', shown));
+  if (favs.length) sessionListEl.appendChild(sessGroup('⭐ 收藏', favs, favRow));
+  if (shown.length) sessionListEl.appendChild(sessGroup('全部对话', shown));
 }
 
 function closePops() {
+  closeMsgMenu();
   modelMenu.classList.add('hidden');
   skillMenu.classList.add('hidden');
   quoteMenu.classList.add('hidden');
@@ -2690,6 +2908,7 @@ document.getElementById('btnDrawerDelete')?.addEventListener('click', () => {
 });
 
 async function openDrawer() {
+  closeMsgMenu();   // 抽屉是全屏浮层，消息菜单（fixed z-index 9999）不能留在它上面
   modelMenu.classList.add('hidden');
   skillMenu.classList.add('hidden');
   quoteMenu.classList.add('hidden');
@@ -3971,6 +4190,7 @@ document.addEventListener('keydown', (e) => {
 loadSettings().then(() => loadMcp());
 (async function restoreAndRender() {
   try {
+    await refreshFavs();   // 首屏就要知道哪些消息已收藏，星标才是实心
     const { lastSessionId, sessions } = await chrome.storage.local.get(['lastSessionId', 'sessions']);
     if (lastSessionId && Array.isArray(sessions)) {
       const rec = sessions.find((s) => s && s.id === lastSessionId);

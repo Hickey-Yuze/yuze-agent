@@ -1818,3 +1818,23 @@ textarea.sd-code:focus { border-color: rgba(0,122,255,.5); background: #fff; }
 .resume-bar button:hover{background:#000}
 
 .think-warn { margin: 6px 0 10px; padding: 8px 11px; border-left: 2px solid #e6a23c; background: #fdf6ec; color: #b88230; font-size: 12.5px; border-radius: 0 6px 6px 0; }
+
+/* ── 消息悬停操作栏（复制/收藏/分享/更多） ── */
+.msg-user, .msg-bot { position: relative; }
+.msg-actions {
+  position: absolute; right: 0; top: 100%; z-index: 3;
+  display: flex; gap: 2px; margin-top: 3px; padding: 2px;
+  border-radius: 9px; background: rgba(255,255,255,.94);
+  border: 1px solid var(--line-soft); box-shadow: var(--shadow-sm);
+  opacity: 0; pointer-events: none; transition: opacity .15s;
+}
+/* 最后一条：翻到消息上方，否则操作栏会掉出滚动可视区看不见 */
+.chat > :last-child > .msg-actions { top: auto; bottom: 100%; margin-top: 0; margin-bottom: 3px; }
+.msg-user:hover .msg-actions, .msg-bot:hover .msg-actions, .msg-actions:focus-within { opacity: 1; pointer-events: auto; }
+.ma-btn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border: 0; border-radius: 7px; background: transparent; color: var(--text-faint); cursor: pointer; padding: 0; }
+.ma-btn:hover { background: var(--surface-3); color: var(--text); }
+.msg-more { position: fixed; z-index: 9999; min-width: 110px; background: #fff; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.12); padding: 4px; }
+.msg-more button { display: flex; align-items: center; gap: 6px; width: 100%; border: 0; background: transparent; font: inherit; font-size: 12.5px; color: var(--text); padding: 7px 10px; border-radius: 7px; cursor: pointer; text-align: left; }
+.msg-more button:hover { background: var(--surface-3); }
+.msg-more button.danger { color: #d92b2b; }
+.msg-more button.danger:hover { background: #fdecec; }
