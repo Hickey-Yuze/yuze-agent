@@ -452,12 +452,12 @@ const TOOLS = [
   }},
   { type: 'function', function: {
     name: 'save_js',
-    description: '把生成的 JavaScript 代码保存为 .js 文件并下载。用户要求生成脚本或代码文件时必须使用它。文件很长时用 append/finish 分多段写，否则单次输出上限会把代码截断。',
+    description: '把生成的 JavaScript 代码保存为 .js 文件，并在对话里插入可下载的文件卡片（不会自动下载，由用户点卡片保存）。用户要求生成脚本或代码文件时必须使用它。文件很长时用 append/finish 分多段写，否则单次输出上限会把代码截断。',
     parameters: { type: 'object', properties: {
       filename: { type: 'string', description: '文件名，默认 script.js' },
       code: { type: 'string', description: '本段 JavaScript 代码（append 模式只传新增部分）' },
-      append: { type: 'boolean', description: '为 true 时把 code 追加进同名草稿（不立即下载），用于分段写长文件' },
-      finish: { type: 'boolean', description: '为 true 时合并之前追加的草稿并下载（最后一段用）' }
+      append: { type: 'boolean', description: '为 true 时把 code 追加进同名草稿（不立即出卡片），用于分段写长文件' },
+      finish: { type: 'boolean', description: '为 true 时合并之前追加的草稿并生成文件卡片（最后一段用）' }
     }, required: ['code'] }
   }}
 ];
@@ -529,7 +529,7 @@ const SYSTEM_PROMPT = [
   'Never end a turn with thinking only: if you plan to produce a file, call save_js (or the matching tool) in the same turn.',
   'When the user asks to generate/draw an image (生成图片/画一张/画图/头像/海报等), you MUST call generate_image in that same turn with a complete prompt. Never reply with only text claiming the image exists — an image only exists after the tool call returns it.',
   'If the user message includes a screenshot or quoted page content, treat it as CONTEXT ONLY. Do what the user message text literally asks. Do not start analyzing or fixing whatever is shown in the screenshot unless the user text explicitly asks for that. E.g. text "生成柴犬图片" means: call generate_image for a shiba dog — not to inspect the screenshot.',
-  'If the file is very long, write it in parts: several save_js({filename, code, append:true}) calls, then save_js({filename, code:"", finish:true}) to merge and download. Never skip the file because it is long.',
+  'If the file is very long, write it in parts: several save_js({filename, code, append:true}) calls, then save_js({filename, code:"", finish:true}) to merge and produce the file card. Never skip the file because it is long.',
   'You may think in stages: spending one turn on thinking + part 1 is fine, then continue with part 2 in the next turn. Do not attempt to finish everything in a single turn if it would exceed the output limit.',
   'Keep replies in the user\'s language (usually Simplified Chinese).'
 ].join(' ');
@@ -710,7 +710,7 @@ async function toolSaveJs({ filename, code, append, finish }) {
     const prev = (await chrome.storage.local.get(draftKey))[draftKey] || '';
     const next = prev + text;
     await chrome.storage.local.set({ [draftKey]: next });
-    return '已追加到草稿 ' + name + '：本段 ' + text.length + ' 字符，累计 ' + next.length + ' 字符。继续 append，写完后用 finish:true 合并下载。';
+    return '已追加到草稿 ' + name + '：本段 ' + text.length + ' 字符，累计 ' + next.length + ' 字符。继续 append，写完后用 finish:true 合并出文件卡片。';
   }
   let full = text;
   if (finish) {
@@ -718,11 +718,11 @@ async function toolSaveJs({ filename, code, append, finish }) {
     full = prev + text;
     await chrome.storage.local.remove(draftKey);
   }
-  // 转 base64（中文安全），走统一的文件卡片与下载链路
+  // 转 base64（中文安全），走统一的文件卡片链路（不自动下载）
   const b64 = btoa(unescape(encodeURIComponent(full)));
   try {
     await addFileCard({ name, mime: 'text/javascript', size: full.length, b64 });
-    return '已生成并下载 ' + name + '（' + full.length + ' 字符）';
+    return '已生成文件卡片 ' + name + '（' + full.length + ' 字符）。文件不会自动下载，用户点卡片右侧按钮才会保存。';
   } catch (e) {
     return '已生成 ' + name + '（' + text.length + ' 字符），但下载被浏览器拦截：' + (e?.message || e) + '。可在「生成的文件」卡片里点下载重试。';
   }
@@ -744,7 +744,7 @@ async function runTool(name, args) {
         try {
           await addFileCard(f);
         } catch (e) {
-          return { error: '文件已生成，但下载失败：' + (e?.message || e) };
+          return { error: '文件已生成，但文件卡片创建失败：' + (e?.message || e) };
         }
         return human;
       }
@@ -957,7 +957,7 @@ async function agentLoop() {
               messages.push({ role: 'user', content: '（你上一条只有思考没有正文）请基于上面的思考直接给出正文回答。' });
             }
           }
-          messages.push({ role: 'user', content: '（上一条输出被截断）继续：如果还没写完，用 save_js append 接着写下一段，写完后用 finish 合并下载。不要重新开始，不要解释。' });
+          messages.push({ role: 'user', content: '（上一条输出被截断）继续：如果还没写完，用 save_js append 接着写下一段，写完后用 finish 合并出文件卡片。不要重新开始，不要解释。' });
           render();
           continue;
         }
@@ -3970,12 +3970,113 @@ async function doQuote() {
   inpMsg.style.height = Math.min(inpMsg.scrollHeight, 132) + 'px';
 }
 
-async function doShot() {
-  setStatus('截图中…');
+function openShotMenu() {
+  const m = $('shotModal');
+  if (!m) { doShot('view'); return; }
+  m.classList.remove('hidden');
+}
+function closeShotMenu() {
+  $('shotModal')?.classList.add('hidden');
+}
+
+/* 在页面上拉一个覆盖层让用户拖框，返回文档坐标选区；取消/太小返回 null */
+async function pickAreaOnPage() {
+  const rect = await evalInPage(`new Promise((resolve) => {
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:2147483647;cursor:crosshair;background:rgba(0,0,0,.04)';
+    const box = document.createElement('div');
+    box.style.cssText = 'position:fixed;display:none;pointer-events:none;border:2px solid #007aff;background:rgba(0,122,255,.12);border-radius:2px';
+    const tip = document.createElement('div');
+    tip.style.cssText = 'position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:2147483647;background:#111;color:#fff;font:12px/1.4 system-ui;padding:6px 12px;border-radius:8px;pointer-events:none;opacity:.92';
+    tip.textContent = '拖动鼠标框选要截的区域，Esc 取消';
+    document.body.append(ov, box, tip);
+    let x0 = 0, y0 = 0, dragging = false;
+    const done = (r) => { cleanup(); resolve(r); };
+    const cleanup = () => {
+      ov.remove(); box.remove(); tip.remove();
+      window.removeEventListener('mousedown', onDown, true);
+      window.removeEventListener('mousemove', onMove, true);
+      window.removeEventListener('mouseup', onUp, true);
+      window.removeEventListener('keydown', onKey, true);
+    };
+    const onKey = (e) => { if (e.key === 'Escape') done(null); };
+    const onDown = (e) => {
+      dragging = true; x0 = e.clientX; y0 = e.clientY;
+      box.style.display = 'block';
+      box.style.left = x0 + 'px'; box.style.top = y0 + 'px';
+      box.style.width = '0'; box.style.height = '0';
+    };
+    const onMove = (e) => {
+      if (!dragging) return;
+      box.style.left = Math.min(x0, e.clientX) + 'px';
+      box.style.top = Math.min(y0, e.clientY) + 'px';
+      box.style.width = Math.abs(e.clientX - x0) + 'px';
+      box.style.height = Math.abs(e.clientY - y0) + 'px';
+    };
+    const onUp = (e) => {
+      if (!dragging) return;
+      dragging = false;
+      const w = Math.abs(e.clientX - x0), h = Math.abs(e.clientY - y0);
+      if (w < 8 || h < 8) { done(null); return; }
+      done({
+        x: Math.round(Math.min(x0, e.clientX) + window.scrollX),
+        y: Math.round(Math.min(y0, e.clientY) + window.scrollY),
+        width: Math.round(w), height: Math.round(h)
+      });
+    };
+    window.addEventListener('mousedown', onDown, true);
+    window.addEventListener('mousemove', onMove, true);
+    window.addEventListener('mouseup', onUp, true);
+    window.addEventListener('keydown', onKey, true);
+  })`);
+  return rect;
+}
+
+async function shotView() {
+  const r = await cdp('Page.captureScreenshot', { format: 'jpeg', quality: 55 });
+  return 'data:image/jpeg;base64,' + r.data;
+}
+
+async function shotFull() {
+  const m = await cdp('Page.getLayoutMetrics');
+  const w = Math.min(Math.ceil(m.contentSize.width), 8000);
+  let h = Math.ceil(m.contentSize.height);
+  if (h > 30000) h = 30000;
+  // 先把视口撑到整页高度再截，避免 captureBeyondViewport 在不同版本上的差异
+  await cdp('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: false });
   try {
-    const shot = await toolScreenshot({});
-    const url = shot?.image;
+    const r = await cdp('Page.captureScreenshot', { format: 'jpeg', quality: 50, captureBeyondViewport: true });
+    return 'data:image/jpeg;base64,' + r.data;
+  } finally {
+    await cdp('Emulation.clearDeviceMetricsOverride').catch(() => {});
+  }
+}
+
+async function shotArea(rect) {
+  const r = await cdp('Page.captureScreenshot', {
+    format: 'jpeg', quality: 70,
+    clip: { x: rect.x, y: rect.y, width: rect.width, height: rect.height, scale: 1 },
+    captureBeyondViewport: true
+  });
+  return 'data:image/jpeg;base64,' + r.data;
+}
+
+async function doShot(mode = 'view') {
+  setStatus(mode === 'area' ? '在页面上拖框选择区域…' : '截图中…');
+  try {
+    let url;
+    if (mode === 'full') {
+      url = await shotFull();
+    } else if (mode === 'area') {
+      const rect = await pickAreaOnPage();
+      if (!rect) { setStatus('已取消截图'); setTimeout(() => setStatus(''), 1800); return; }
+      setStatus('截图中…');
+      url = await shotArea(rect);
+    } else {
+      url = await shotView();
+    }
     if (!url) throw new Error('没有拿到图片');
+    lastShot = url;
     pendingShot = url;
     renderQuoteBar();
     setStatus('截图已引用，点 × 可移除');
@@ -4199,7 +4300,7 @@ $('btnQuoteAuto')?.addEventListener('click', async () => {
 });
 
 btnQuote.addEventListener('click', openQuoteMenu);
-btnShot.addEventListener('click', doShot);
+btnShot.addEventListener('click', openShotMenu);
 btnMcp.addEventListener('click', openMcpPanel);
 
 document.addEventListener('keydown', (e) => {
@@ -4655,14 +4756,8 @@ function updateSrcCounts() {
   });
 }
 
-$('btnSkillDiscover').addEventListener('click', () => {
-  skillView = skillView === 'discover' ? 'library' : 'discover';
-  $('btnSkillDiscover').classList.toggle('on', skillView === 'discover');
-  renderSkillGrid();
-});
 $('btnSkillNew').addEventListener('click', openSkillTypePicker);
 $('btnSkillNewTop').addEventListener('click', () => $('btnSkillNew').click());
-$('btnSkillDiscoverTop').addEventListener('click', () => $('btnSkillDiscover').click());
 
 loadCustomSkills();
 
@@ -5178,6 +5273,18 @@ document.querySelectorAll('#skillTypeModal .sm-type').forEach((b) => {
   b.addEventListener('click', () => openSkillEditor(b.dataset.type));
 });
 $('btnSkillTypeClose')?.addEventListener('click', closeSkillTypePicker);
+
+document.querySelectorAll('#shotModal .sm-type').forEach((b) => {
+  b.addEventListener('click', async () => {
+    const mode = b.dataset.shot || 'view';
+    closeShotMenu();
+    // 让弹窗先淡出，再进入页面拖框，避免遮罩挡住选区
+    if (mode === 'area') await sleep(180);
+    doShot(mode);
+  });
+});
+$('btnShotClose')?.addEventListener('click', closeShotMenu);
+$('shotModal')?.addEventListener('click', (e) => { if (e.target === $('shotModal')) closeShotMenu(); });
 $('btnSkillEditBack')?.addEventListener('click', backToCustomSkills);
 $('btnSkillEditCancel')?.addEventListener('click', backToCustomSkills);
 $('btnSkillEditSave')?.addEventListener('click', saveCustomSkill);

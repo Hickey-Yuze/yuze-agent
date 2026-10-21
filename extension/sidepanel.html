@@ -244,7 +244,6 @@
           <button class="sk-src" data-src="custom">自定义技炉<em id="nCustom">0</em></button>
         </nav>
         <button id="btnSkillNew" class="sk-create">+ 创建技炉</button>
-        <button id="btnSkillDiscover" class="sk-discover">发现技炉 ↗</button>
       </aside>
       <main class="sk-main">
         <div class="sk-main-head">
@@ -254,7 +253,6 @@
         <div class="sk-toolbar">
           <div class="sk-search"><input id="skillSearch" type="search" placeholder="搜索技炉…" spellcheck="false"></div>
           <button id="btnSkillNewTop" class="ghost-btn">+ 创建技炉</button>
-          <button id="btnSkillDiscoverTop" class="primary-btn">发现技炉</button>
         </div>
         <div class="sk-tabs">
           <button class="sk-tab active" data-cat="all">全部</button>
@@ -307,6 +305,43 @@
       <textarea id="sdCode" class="sd-code" rows="14" spellcheck="false" wrap="off"></textarea>
     </div>
   </section>
+
+  <!-- 截图：方式选择 -->
+  <div id="shotModal" class="modal-mask hidden">
+    <div class="modal sm-modal" role="dialog" aria-label="截图">
+      <div class="modal-head">
+        <span>截图</span>
+        <button id="btnShotClose" class="icon-btn" aria-label="关闭">×</button>
+      </div>
+      <p class="sm-sub">选一种方式，截完直接作为引用挂在输入框上方。</p>
+      <div class="sm-types">
+        <button class="sm-type" type="button" data-shot="view">
+          <span class="sm-ico">🖼</span>
+          <span class="sm-body">
+            <b>可见区域</b>
+            <em>截取当前窗口能看到的部分</em>
+          </span>
+          <span class="sm-go">›</span>
+        </button>
+        <button class="sm-type" type="button" data-shot="full">
+          <span class="sm-ico">📜</span>
+          <span class="sm-body">
+            <b>整页长图</b>
+            <em>把整个页面从头到尾拼成一张图</em>
+          </span>
+          <span class="sm-go">›</span>
+        </button>
+        <button class="sm-type" type="button" data-shot="area">
+          <span class="sm-ico">✂️</span>
+          <span class="sm-body">
+            <b>框选区域</b>
+            <em>在页面上拖一个框，只截框内的部分</em>
+          </span>
+          <span class="sm-go">›</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- 创建技炉：类型选择 -->
   <div id="skillTypeModal" class="modal-mask hidden">
