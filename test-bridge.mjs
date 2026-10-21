@@ -132,7 +132,8 @@ try {
     const style = document.createElement('style');
     // 同时禁掉 .msg-actions:hover —— 模拟 v0.7.8 之前（那时只有消息 hover 能点亮栏），
     // 否则停在栏 padding 内会被新规则点亮，反证就失真了
-    style.textContent = '.msg-actions::before { display: none !important; } .msg-actions:hover { opacity: 0 !important; pointer-events: none !important; }';
+    style.textContent = '.msg-actions::before { display: none !important; } .msg-actions:hover { opacity: 0 !important; pointer-events: none !important; } .msg-actions:focus-within { opacity: 0 !important; pointer-events: none !important; }';
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
     document.head.appendChild(style);
     const msg = bar.closest('.msg-bot');
     const btn = bar.querySelector('.ma-btn');
@@ -163,7 +164,12 @@ try {
   const c = [];
   const push = (n, ok, d) => c.push({ n, ok: !!ok, d });
   const cc = out.C_cross || {};
-  push('ready', out.A_ready && out.A_ready.ver === '0.7.8', out.A_ready);
+  // 版本号只要求 >= 0.7.9（本修复引入），避免每次升版都要改测试
+  push('ready', out.A_ready && (() => {
+    const parts = String(out.A_ready.ver || '0').split('.').map(Number); // 0.7.9 → [0,7,9]
+    const [p0, p1, p2] = parts;
+    return p0 > 0 || p1 > 7 || (p1 === 7 && p2 >= 9);
+  })(), out.A_ready);
   push('消息与操作栏都渲染', out.B_setup && out.B_setup.bars >= 2, out.B_setup);
   push('空隙确实存在(约3px)', cc.gapPx !== undefined && cc.gapPx > 0 && cc.gapPx <= 6, cc.gapPx);
   push('接桥::before存在', cc.midGap && cc.midGap.hasBefore === true, cc.midGap);
