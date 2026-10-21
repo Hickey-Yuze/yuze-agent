@@ -2505,7 +2505,9 @@ function send() {
 btnSend.addEventListener('click', send);
 
 inpMsg.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey) {
+  // 中文输入法按 Enter 是「选词上屏」，不是发送：组合期间 isComposing 为 true / keyCode 为 229。
+  // 不加这道守卫的话，打字打到一半按 Enter 选词会把半成品直接发出去。
+  if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && e.keyCode !== 229) {
     e.preventDefault();
     send();
   }
@@ -2883,7 +2885,14 @@ async function drawerBatchDelete() {
   if (!drawerSel.size) return;
   const list = await loadSessions();
   const del = new Set(drawerSel);
-  await saveSessions(list.filter((s) => !del.has(s.id)));
+  // 不能走 saveSessions(list.filter(...))：它底层是 putMany，只写不删，
+  // 被过滤掉的会话仍原封不动留在库里，批量删除会静默失效（界面刷新后又全回来）。
+  try {
+    await Promise.all([...del].map((id) => window.YZDB.del(id)));
+  } catch (e) {
+    // IndexedDB 不可用时退回全量覆盖写回
+    try { await chrome.storage.local.set({ sessions: list.filter((s) => !del.has(s.id)) }); } catch (_) {}
+  }
   drawerSel.clear();
   if (del.has(sessionId)) {
     sessionId = Date.now().toString(36);
