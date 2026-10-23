@@ -43,6 +43,23 @@
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
         添加提供商
       </button>
+      <div class="set-label">生成与思考</div>
+      <div class="set-form">
+        <label for="selEffort">思考强度</label>
+        <div class="model-row">
+          <select id="selEffort">
+            <option value="">跟随模型默认</option>
+          </select>
+        </div>
+        <div class="set-hint" id="effortHint">当前模型支持的档位在读取模型列表后自动填充。</div>
+
+        <label for="inpImageModel">生图模型</label>
+        <div class="model-row">
+          <input id="inpImageModel" type="text" list="imageModelPresets" placeholder="hunyuan-image-v3.0">
+          <datalist id="imageModelPresets"></datalist>
+        </div>
+        <div class="set-hint">网关目前仅支持 hunyuan-image-v3.0，其他模型会明确报错并提示更换。</div>
+      </div>
       <div class="set-group">
         <button id="btnSkillsManage" class="set-row" type="button">
           <span class="set-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.4 5.4 1.8-5.4 1.8L12 17.4l-1.8-5.4L4.8 10.2l5.4-1.8z"/></svg></span>
@@ -455,7 +472,7 @@
   <div id="skillMenu" class="pop hidden"></div>
 
   <script src="db.js?v=1"></script>
-  <script src="skills-extra.js?v=11"></script>
-  <script src="sidepanel.js?v=11"></script>
+  <script src="skills-extra.js?v=12"></script>
+  <script src="sidepanel.js?v=12"></script>
 </body>
 </html>

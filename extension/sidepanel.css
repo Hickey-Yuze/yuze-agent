@@ -232,16 +232,26 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 .think-head .t-label { flex: 0 0 auto; font-weight: 500; letter-spacing: .2px; }
-/* 摘要吸走剩余宽度，秒数右固定，避免记数时整行抖动 */
+/* 摘要吸走剩余宽度，秒数右固定，避免记数时整行抖动。
+   折叠态要能看出思考脉络，故改为多行并限 4 行（原来单行 34 字，几千字思考看着像很短）。 */
 .think-head .t-brief {
   flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  white-space: normal;
   color: var(--text-faint);
   opacity: .72;
 }
+/* 摘要多行后，秒数与标签要跟首行对齐，不能垂直居中（否则右侧会漂到中间） */
+.think-head:has(.t-brief:not(:empty)) { align-items: flex-start; }
+.think-head:has(.t-brief:not(:empty)) .t-elapse,
+.think-head:has(.t-brief:not(:empty)) .t-chev { margin-top: 1px; }
+/* 没有摘要时（实时思考中）保持单行，不撑高 */
+.think-head .t-brief:empty { display: none; }
 .think-head .t-elapse {
   flex: 0 0 auto;
   min-width: 34px;
@@ -1620,6 +1630,18 @@ textarea.sd-code:focus { border-color: rgba(0,122,255,.5); background: #fff; }
 .set-x { width: 30px; height: 30px; border: 0; background: transparent; color: var(--text-faint); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .set-x:hover { background: var(--surface-3); color: var(--text); }
 .set-label { font-size: 12.5px; color: var(--text-dim); }
+/* 生成与思考：沿用 .prov-body 的控件观感，不新增配色 */
+.set-form { display: flex; flex-direction: column; gap: 5px; }
+.set-form > label { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+.set-form > label:first-child { margin-top: 0; }
+.set-form input, .set-form select {
+  font: inherit; font-size: 12.5px; color: var(--text);
+  background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: 8px; padding: 7px 9px; outline: none;
+}
+.set-form input:focus, .set-form select:focus { border-color: var(--accent); background: var(--surface); }
+.set-form select { width: 100%; cursor: pointer; }
+.set-hint { font-size: 11px; color: var(--text-faint); line-height: 1.45; }
 .set-add {
   display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%;
   padding: 12px; background: #fff; border: 1px solid var(--line); border-radius: 12px;

@@ -6,7 +6,21 @@
  */
 
 const DEFAULT_BASE = 'http://127.0.0.1:7863/v1';
+// 实测（双题目 × 4 次采样）：hy4-preview-f 不传档位时思考约 3400 字，
+// 明显长于 deepseek-v4-flash 的约 600 字，故默认仍留在 hy4-preview-f。
 const DEFAULT_MODEL = 'cn:hy4-preview-f';
+const DEFAULT_IMAGE_MODEL = 'hunyuan-image-v3.0';
+// 生图模型预设；网关目前实测只认 hunyuan-image-v3.0，其余保留以便网关后续放开时直接可填
+const IMAGE_MODEL_PRESETS = [
+  'hunyuan-image-v3.0',
+  'hunyuan-image-v2.0',
+  'gpt-image-1',
+  'dall-e-3',
+  'flux-kontext-pro',
+  'seedream-4.0',
+  'qwen-image'
+];
+const EFFORT_LABEL = { low: '低 · 快', medium: '中', high: '高 · 深', xhigh: '超高 · 最深', max: '最大' };
 const MAX_STEPS = 300;
 
 const $ = (id) => document.getElementById(id);
@@ -47,6 +61,7 @@ let mcpTools = [];             // 从 MCP 服务器拉来的工具
 let agentMode = 'task';        // 'ask' 问答（不调工具） | 'task' 任务（可操作网页）
 let mcpServers = [];           // [{name,url,headers}] MCP 服务器列表
 let modelIds = [];             // 网关返回的模型 id 列表
+let modelMeta = {};            // 模型 id -> {efforts:[], canDisable:bool} 由 /v1/models 元数据填充
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -351,18 +366,20 @@ async function toolGenerateImage(args) {
   if (!prompt) throw new Error('缺少 prompt');
   const size = String(args.size || '1024x1024');
   const n = Math.min(Math.max(Number(args.n) || 1, 1), 4);
-  const { apiKey, baseUrl } = await readConf();
+  const { apiKey, baseUrl, imageModel } = await readConf();
   if (!apiKey) throw new Error('还没填 API Key，点 ⚙ 配置提供商');
-  setStatus('生成图片中…（约 15 秒）');
+  setStatus('生成图片中…（' + imageModel + '，约 15 秒）');
   try {
     const res = await fetch(String(baseUrl).replace(/\/+$/, '') + '/images/generations', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + apiKey },
-      body: JSON.stringify({ model: 'hunyuan-image-v3.0', prompt, size, n })
+      body: JSON.stringify({ model: imageModel, prompt, size, n })
     });
     if (!res.ok) {
       const t = await res.text().catch(() => '');
-      throw new Error('网关 ' + res.status + '：' + t.slice(0, 240));
+      // 网关对不认识的生图模型回 400 + 上游文案，这里补一句可操作提示
+      throw new Error('生图失败（' + imageModel + '）网关 ' + res.status + '：' + t.slice(0, 240)
+        + (res.status === 400 ? '\n该模型可能不被网关支持，可在设置里换一个生图模型。' : ''));
     }
     const j = await res.json();
     const item = (j.data || [])[0];
@@ -500,11 +517,14 @@ async function loadProviders() {
 async function readConf() {
   const { list, active } = await loadProviders();
   const p = list.find((x) => x.id === active) || list[0];
-  const s = await chrome.storage.local.get('model');
+  const s = await chrome.storage.local.get(['model', 'reasoningEffort', 'imageModel']);
   return {
     apiKey: p.apiKey,
     model: p.model || DEFAULT_MODEL,
     baseUrl: (p.baseUrl || DEFAULT_BASE).replace(/\/+$/, ''),
+    // 空串表示「跟随模型默认」，此时不向网关传该字段
+    reasoningEffort: String(s.reasoningEffort || ''),
+    imageModel: String(s.imageModel || DEFAULT_IMAGE_MODEL),
     provider: p
   };
 }
@@ -535,8 +555,19 @@ const SYSTEM_PROMPT = [
 ].join(' ');
 
 async function callLLM(onDelta) {
-  const { apiKey, model, baseUrl } = await readConf();
+  const { apiKey, model, baseUrl, reasoningEffort } = await readConf();
   if (!apiKey) throw new Error('还没填 API Key，点右上角 ⚙');
+  // 思考强度：只在网关元数据确认该模型支持这一档时才下发。
+  // 传了不支持的档位网关不会报错，而是静默降级成很短的思考——比不传更糟。
+  let effort = '';
+  if (reasoningEffort) {
+    const meta = modelMeta[model];
+    if (!meta || !meta.efforts.length) {
+      if (!modelIds.length) await fetchModels();
+    }
+    const m2 = modelMeta[model];
+    if (m2 && m2.efforts.includes(reasoningEffort)) effort = reasoningEffort;
+  }
 
   const ctrl = new AbortController();
   abortCtrl = ctrl;
@@ -571,7 +602,7 @@ async function callLLM(onDelta) {
         // 表现就是「思考完没正文就结束」。这里显式要一个够大的额度。
         max_tokens: 16000,
         stream: true
-      }, allTools.length ? { tools: allTools, tool_choice: 'auto' } : {})),
+      }, effort ? { reasoning_effort: effort } : {}, allTools.length ? { tools: allTools, tool_choice: 'auto' } : {})),
       signal: ctrl.signal
     });
   } catch (e) {
@@ -1628,20 +1659,33 @@ function mdToHtml(src) {
 }
 
 /* 摘一行人类可读的思考摘要：跳过纯符号噪音行，取第一句有意义的中文/英文 */
+// 折叠态摘要：原来只截 34 字，几千字的思考折叠后只剩一行，看着就像「思考很短」。
+// 放宽到多句、约 240 字（再由 CSS 按行数截断），折叠时也能看到思考脉络。
+const THINK_BRIEF_MAX = 240;
 function thinkSummary(text) {
   const raw = String(text || '').replace(/\s+/g, ' ').trim();
   if (!raw) return '';
   const parts = raw.split(/(?<=[。！？；.!?;])/).map((x) => x.trim()).filter(Boolean);
-  for (const seg of parts) {
+  const pick = (seg) => {
     const t = seg.replace(/^[-*>#\d.、)）\s]+/, '').trim();
     const cjk = (t.match(/[\u4e00-\u9fa5]/g) || []).length;
     // 至少 4 个汉字，或者足够长的英文单词序列；排除纯 base64/代码
-    if (cjk >= 4 || /[A-Za-z]{3,}(\s+[A-Za-z]{2,}){2,}/.test(t)) {
-      return t.length > 34 ? t.slice(0, 34) + '…' : t;
-    }
+    if (cjk >= 4 || /[A-Za-z]{3,}(\s+[A-Za-z]{2,}){2,}/.test(t)) return t;
+    return '';
+  };
+  // 逐句累加，尽量多带几句，凑不满再退回第一句硬截
+  let buf = '';
+  for (const seg of parts) {
+    const t = pick(seg);
+    if (!t) continue;
+    if (!buf) buf = t;
+    else if ((buf + t).length <= THINK_BRIEF_MAX) buf += t;
+    else break;
+    if (buf.length >= THINK_BRIEF_MAX) break;
   }
-  const flat = raw.slice(0, 34);
-  return flat.length >= 34 ? flat + '…' : flat;
+  if (buf) return buf.length > THINK_BRIEF_MAX ? buf.slice(0, THINK_BRIEF_MAX) + '…' : buf;
+  const flat = raw.slice(0, THINK_BRIEF_MAX);
+  return flat.length >= THINK_BRIEF_MAX ? flat + '…' : flat;
 }
 
 function thinkNode(text, collapsed) {
@@ -2325,13 +2369,51 @@ let provState = { list: [], active: '' };
 async function loadSettings() {
   const { list, active } = await loadProviders();
   provState = { list, active };
-  const s = await chrome.storage.local.get('mcp');
+  const s = await chrome.storage.local.get(['mcp', 'reasoningEffort', 'imageModel']);
   mcpServers = (Array.isArray(s.mcp) ? s.mcp : []).map(normalizeMcp).filter(Boolean);
   renderProvList();
   const cur = list.find((x) => x.id === active) || list[0];
-  const showModel = cur.model || DEFAULT_MODEL;
-  modelTag.textContent = showModel.replace(/^cn:/, '');
-  modelTag.title = showModel;
+  const curModel = cur.model || DEFAULT_MODEL;
+  modelTag.textContent = curModel.replace(/^cn:/, '');
+  modelTag.title = curModel;
+  await loadGenSettings(curModel);
+}
+
+/* 生成与思考：档位下拉按当前模型真实支持的档位填充，避免选了不支持的档被静默降级 */
+async function loadGenSettings(curModel) {
+  // 生图模型预设（网关目前只有 hunyuan-image-v3.0 可用，其余保留供以后直接填）
+  const dl = $('imageModelPresets');
+  if (dl) {
+    dl.innerHTML = '';
+    IMAGE_MODEL_PRESETS.forEach((m) => {
+      const o = document.createElement('option');
+      o.value = m;
+      dl.appendChild(o);
+    });
+  }
+  const st = await chrome.storage.local.get(['reasoningEffort', 'imageModel']);
+  $('inpImageModel').value = String(st.imageModel || DEFAULT_IMAGE_MODEL);
+
+  const sel = $('selEffort');
+  const saved = String(st.reasoningEffort || '');
+  // 先保证模型元数据可用：打开设置时顺手拉一次，失败也不阻塞
+  if (!modelMeta[curModel]) await fetchModels();
+  const efforts = (modelMeta[curModel] || {}).efforts || [];
+  sel.innerHTML = '<option value="">跟随模型默认</option>';
+  efforts.forEach((e) => {
+    const o = document.createElement('option');
+    o.value = e;
+    o.textContent = EFFORT_LABEL[e] || e;
+    sel.appendChild(o);
+  });
+  // 当前模型不支持已存档位时不强行选中，交由请求侧跳过
+  sel.value = efforts.includes(saved) ? saved : '';
+  const hint = $('effortHint');
+  if (hint) {
+    hint.textContent = efforts.length
+      ? '当前模型 ' + curModel.replace(/^cn:/, '') + ' 支持：' + efforts.join(' / ') + '。档位越高思考越长、也越慢。'
+      : '尚未读到 ' + curModel.replace(/^cn:/, '') + ' 的档位信息（填好 API Key 并保存后会自动读取）。';
+  }
 }
 
 function renderProvList() {
@@ -2448,7 +2530,13 @@ $('btnSave').addEventListener('click', async () => {
     protocol: c.querySelector('[data-f=protocol]').value,
     model: c.querySelector('[data-f=model]').value.trim()
   }));
-  await chrome.storage.local.set({ providers: list, activeProvider: provState.active, mcp: mcpServers });
+  await chrome.storage.local.set({
+    providers: list,
+    activeProvider: provState.active,
+    mcp: mcpServers,
+    reasoningEffort: $('selEffort').value,
+    imageModel: $('inpImageModel').value.trim() || DEFAULT_IMAGE_MODEL
+  });
   provState.list = list;
   modelIds = [];
   const p = list.find((x) => x.id === provState.active) || list[0];
@@ -2961,6 +3049,14 @@ async function fetchModels() {
     const r = await fetch(baseUrl + '/models', { headers: { Authorization: 'Bearer ' + apiKey } });
     if (!r.ok) return [];
     const j = await r.json();
+    // 顺手把每个模型支持的思考档位记下来，供设置面板与请求体使用
+    (j.data || []).forEach((x) => {
+      if (!x || !x.id) return;
+      modelMeta[x.id] = {
+        efforts: Array.isArray(x.reasoning_supported_efforts) ? x.reasoning_supported_efforts.slice() : [],
+        canDisable: !!x.can_disable_thinking
+      };
+    });
     return (j.data || []).map((x) => x.id).filter(Boolean);
   } catch (_) {
     return [];
@@ -3040,6 +3136,8 @@ async function openModelMenu() {
         modelMenu.classList.add('hidden');
         setStatus('模型已切换：' + id);
         setTimeout(() => setStatus(''), 2200);
+        // 换模型后支持的思考档位会变，设置面板正开着就同步一下
+        if (settingsEl && !settingsEl.classList.contains('hidden')) loadGenSettings(id);
       });
       body.appendChild(b);
     }
