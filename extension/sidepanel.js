@@ -1688,6 +1688,13 @@ function thinkSummary(text) {
   return flat.length >= THINK_BRIEF_MAX ? flat + '…' : flat;
 }
 
+/* 折叠的瞬间就要有摘要（ticker 已停，之后没人再填）。空才填，不覆盖已有内容 */
+function fillBriefIfEmpty(thinkEl) {
+  const br = thinkEl.querySelector('.t-brief');
+  const body = thinkEl.querySelector('.think-body');
+  if (br && !br.textContent && body && body.textContent) br.textContent = thinkSummary(body.textContent);
+}
+
 function thinkNode(text, collapsed) {
   const d = document.createElement('div');
   d.className = 'think' + (collapsed ? ' collapsed' : '');
@@ -1699,8 +1706,18 @@ function thinkNode(text, collapsed) {
   const body = document.createElement('div');
   body.className = 'think-body';
   body.textContent = text;
-  head.addEventListener('click', () => d.classList.toggle('collapsed'));
+  head.addEventListener('click', () => {
+    d.classList.toggle('collapsed');
+    // 用户手动折叠时同步补一次摘要（实时态的 ticker 只管展开/流式期间）
+    const br = d.querySelector('.t-brief');
+    if (d.classList.contains('collapsed') && br && !br.textContent) {
+      br.textContent = thinkSummary(body.textContent);
+    }
+  });
   d.append(head, body);
+  // 渲染时就是折叠态（历史消息、本轮已结束的消息）必须立刻有摘要，
+  // 不能等 tickThink 的 500ms 定时器——那些路径根本不启动 ticker，摘要会永远空白
+  if (collapsed && text) d.querySelector('.t-brief').textContent = thinkSummary(text);
   return d;
 }
 
@@ -2342,6 +2359,7 @@ function updateLive(msg) {
         if (el) el.dataset.done = secs < 1 ? '0s' : (secs < 60 ? secs + 's' : Math.floor(secs/60)+'m'+(secs%60)+'s');
         stopTickThink(tk);
         if (!tk.classList.contains('collapsed')) tk.classList.add('collapsed');
+        fillBriefIfEmpty(tk);
       }
     }
     let md = node.querySelector('.bot-md');

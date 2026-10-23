@@ -226,6 +226,35 @@ try {
     };
   })()`, sessionId);
 
+  /* ── M. 折叠摘要必须即刻可见（m01414 反馈：历史折叠块摘要空白）── */
+  out.M_briefFill = await ev(`(async () => {
+    const long = '先把条件列清楚：甲管效率1/6，乙管1/4，丙管是排空所以记作负的1/12。'
+      + '三管齐开的净效率就是1/6加1/4减1/12，通分为4/12即1/3。'
+      + '所以注满需要3小时。再核对一遍：3小时里甲注入1/2，乙注入3/4，丙排出1/4，合计正好1，成立。';
+    // 路径①：历史消息渲染时就是折叠态（此前这条路径摘要永远空白）
+    const n1 = thinkNode(long, true);
+    document.getElementById('chat').appendChild(n1);
+    const b1 = n1.querySelector('.t-brief').textContent;
+    // 路径②：真实自动折叠路径（出正文时 render 分支调用 fillBriefIfEmpty）
+    const n2 = thinkNode(long, false);
+    document.getElementById('chat').appendChild(n2);
+    fillBriefIfEmpty(n2);
+    const b2 = n2.querySelector('.t-brief').textContent;
+    // 路径③：用户手动点标题折叠，click 处理器补摘要
+    const n3 = thinkNode(long, false);
+    document.getElementById('chat').appendChild(n3);
+    n3.querySelector('.think-head').click();
+    const b3 = n3.querySelector('.t-brief').textContent;
+    // 展开态不受影响：摘要应为空（不与完整流重复）
+    const n4 = thinkNode(long, false);
+    document.getElementById('chat').appendChild(n4);
+    const b4 = n4.querySelector('.t-brief').textContent;
+    return {
+      hist: b1.length, auto: b2.length, manual: b3.length, open: b4.length,
+      histOk: b1.length > 50, autoOk: b2.length > 50, manualOk: b3.length > 50, openEmpty: b4.length === 0
+    };
+  })()`, sessionId);
+
   /* ── K. 版本 ── */
   out.K_other = await ev(`(async () => ({
     defaultModel: DEFAULT_MODEL,
@@ -296,6 +325,11 @@ t('L4 CSS 限 4 行', out.L_brief && String(out.L_brief.clamp).trim() === '4');
 t('L5 折叠态正文仍隐藏', out.L_brief && out.L_brief.bodyHidden);
 t('L6 短思考不画蛇添足', out.L_brief && out.L_brief.shortKeep === '好的。');
 t('L7 秒数元素仍在', out.L_brief && out.L_brief.elapse);
+
+t('M1 历史折叠块渲染即刻有摘要（>50 字）', out.M_briefFill && out.M_briefFill.histOk);
+t('M2 自动折叠路径即刻有摘要', out.M_briefFill && out.M_briefFill.autoOk);
+t('M3 手动点折叠即刻有摘要', out.M_briefFill && out.M_briefFill.manualOk);
+t('M4 展开态不填摘要（不与完整流重复）', out.M_briefFill && out.M_briefFill.openEmpty);
 
 const pass = A.filter((x) => x.pass).length;
 console.log('\n' + A.map((x) => (x.pass ? '  ✅' : '  ❌') + ' ' + x.name).join('\n'));
