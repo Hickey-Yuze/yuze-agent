@@ -255,6 +255,20 @@ try {
     };
   })()`, sessionId);
 
+  /* ── N. 空白思考不渲染空壳（m01456 反馈：红框空思考块）── */
+  out.N_emptyShell = await ev(`(() => {
+    const mk = (reasoning) => {
+      const el = botNode({ role: 'assistant', content: 'ok', reasoning, _live: false });
+      document.getElementById('chat').appendChild(el);
+      return el.querySelectorAll('.think').length;
+    };
+    return {
+      empty: mk(''),            // 空串 → 0
+      whitespace: mk('  \\n  '), // 纯空白 → 0
+      real: mk('先分析需求再画图。') // 有内容 → 1
+    };
+  })()`, sessionId);
+
   /* ── K. 版本 ── */
   out.K_other = await ev(`(async () => ({
     defaultModel: DEFAULT_MODEL,
@@ -330,6 +344,10 @@ t('M1 历史折叠块渲染即刻有摘要（>50 字）', out.M_briefFill && out
 t('M2 自动折叠路径即刻有摘要', out.M_briefFill && out.M_briefFill.autoOk);
 t('M3 手动点折叠即刻有摘要', out.M_briefFill && out.M_briefFill.manualOk);
 t('M4 展开态不填摘要（不与完整流重复）', out.M_briefFill && out.M_briefFill.openEmpty);
+
+t('N1 空串思考不渲染壳', out.N_emptyShell && out.N_emptyShell.empty === 0);
+t('N2 纯空白思考不渲染壳', out.N_emptyShell && out.N_emptyShell.whitespace === 0);
+t('N3 有内容的思考照常渲染', out.N_emptyShell && out.N_emptyShell.real === 1);
 
 const pass = A.filter((x) => x.pass).length;
 console.log('\n' + A.map((x) => (x.pass ? '  ✅' : '  ❌') + ' ' + x.name).join('\n'));

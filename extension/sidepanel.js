@@ -1785,7 +1785,8 @@ function botNode(msg) {
   d.className = 'msg-bot';
   d.dataset.mid = midOf(msg);
   // 一轮结束（不再是 _live）就默认折叠；思考中保持展开
-  if (msg.reasoning) {
+  // reasoning 是空白串时直接不渲染思考块（生图等无思考轮次会出现空壳）
+  if (msg.reasoning && String(msg.reasoning).trim()) {
     if (looksEncoded(msg.reasoning)) {
       const warn = document.createElement('div');
       warn.className = 'think-warn';
@@ -2333,7 +2334,8 @@ function updateLive(msg) {
     el.dataset.streamLen = text.length;
   };
 
-  if (msg.reasoning) {
+  // 空白思考不建壳不追加（否则出现只有标题没有内容的空思考块）
+  if (msg.reasoning && String(msg.reasoning).trim()) {
     let think = node.querySelector('.think');
     let body = null;
     if (!think) {
