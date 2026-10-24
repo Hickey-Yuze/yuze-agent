@@ -54,6 +54,7 @@ let messages = [];
 let running = false;
 let attachedTabId = null;
 let lastShot = null;
+const ctxComp = { pending: '' }; // 上下文压缩摘要缓存（本轮请求用）
 let abortCtrl = null;          // 当前请求的 AbortController
 let stopRequested = false;     // 用户主动停止
 let sessionId = Date.now().toString(36);
@@ -66,7 +67,7 @@ let modelMeta = {};            // 模型 id -> {efforts:[], canDisable:bool} 由
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /* 上下文保护：消息过长时保留首条任务描述 + 最近内容，避免 400 把任务打挂 */
-function trimMessages(list) {
+function trimMessages(list, compSummary) {
   const sizeOf = (m) => {
     const c = m && m.content;
     if (typeof c === 'string') return c.length;
@@ -85,27 +86,69 @@ function trimMessages(list) {
   }
   // 这一步是否真的丢掉了头部消息（下面的结构修剪另算）
   const droppedBySize = keep.length < list.length;
-  // 截断点可能落在一组工具调用中间：开头若是孤儿 tool（前面没有对应的 assistant.tool_calls），
-  // 或 assistant 带着 tool_calls 而它的结果已被截掉，网关会直接 400。往后丢到结构完整为止。
-  while (keep.length) {
-    const h = keep[0];
-    if (h.role === 'tool') { keep.shift(); continue; }
-    if (h.role === 'assistant' && Array.isArray(h.tool_calls) && h.tool_calls.length) {
-      const ids = h.tool_calls.map((t) => t && t.id).filter(Boolean);
-      const got = new Set(keep.slice(1).filter((m) => m.role === 'tool').map((m) => m.tool_call_id));
-      if (ids.some((id) => !got.has(id))) { keep.shift(); continue; }
-    }
-    break;
-  }
-  // 首条用户任务描述必须留住：长任务里工具结果（截图 base64 等）会把体量顶爆，
-  // 只留尾部的话模型看不到任务，就会回「你的消息是空的」然后自己去逛页面。
+  // 上下文自动压缩：被截掉的旧轮次若已有摘要，用摘要替代「已截断」提示，
+  // 模型仍能看得到早期脉络（摘要由后台压缩任务生成，一次生成反复使用）
   const head = [];
   if (droppedBySize || keep.length < list.length) {
-    head.push({ role: 'system', content: '（更早的对话已因长度限制被截断。用户的原始任务见下一条消息，请基于它继续，不要说没收到任务。）' });
+    head.push({ role: 'system', content: compSummary
+      ? '（更早的对话已压缩为以下摘要：\n' + compSummary + '\n——摘要之后的对话见后续消息。）'
+      : '（更早的对话已因长度限制被截断。用户的原始任务见下一条消息，请基于它继续，不要说没收到任务。）' });
   }
   const firstUser = list.find((m) => m && m.role === 'user');
   if (firstUser && !keep.includes(firstUser)) head.push(firstUser);
   return head.length ? head.concat(keep) : keep;
+}
+
+// ── 上下文自动压缩：总字数超阈值时把尾部保留窗口之外的旧消息摘要化 ──
+let compCache = { fingerprint: '', summary: '' };
+async function compressContextIfNeeded(wire) {
+  const sizeOf = (m) => {
+    const c = m && m.content;
+    if (typeof c === 'string') return c.length;
+    try { return JSON.stringify(c || '').length; } catch (_) { return 0; }
+  };
+  let total = 0;
+  for (const m of wire) total += sizeOf(m);
+  if (total < 360000) return '';
+  // 指纹：消息条数+总长，没变就复用上次的摘要（同一轮任务反复调用不重复算）
+  const fp = wire.length + ':' + total;
+  if (compCache.fingerprint === fp && compCache.summary) return compCache.summary;
+  // 取尾部保留窗口之外的部分做摘要源（与 trimMessages 同一分割逻辑）
+  const keep = [];
+  let cur = 0;
+  for (let i = wire.length - 1; i >= 0; i--) {
+    const sz = sizeOf(wire[i]);
+    if (cur + sz > 280000 && keep.length > 8) break;
+    keep.unshift(wire[i]);
+    cur += sz;
+  }
+  const dropped = wire.slice(0, wire.length - keep.length);
+  if (!dropped.length) return '';
+  const text = dropped.map((m) => (m.role === 'assistant' && Array.isArray(m.tool_calls)
+    ? '[assistant 调用工具: ' + m.tool_calls.map((t) => t.function?.name).join(', ') + ']'
+    : '[' + m.role + '] ' + String(m.content == null ? '' : m.content).replace(/\s+/g, ' '))).join('\n').slice(0, 60000);
+  try {
+    const { apiKey, baseUrl, model } = await readConf();
+    if (!apiKey) return '';
+    const res = await fetch(String(baseUrl).replace(/\/+$/, '') + '/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + apiKey },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: '把下面的对话历史压缩成简明摘要（800字以内），保留：用户的任务目标、已完成的步骤与结果、关键决定、尚未完成的部分。直接输出摘要正文，不要客套。' },
+          { role: 'user', content: text }
+        ],
+        max_tokens: 2000
+      })
+    });
+    if (!res.ok) return '';
+    const j = await res.json();
+    const s = String(j.choices?.[0]?.message?.content || '').trim();
+    if (!s) return '';
+    compCache = { fingerprint: fp, summary: s };
+    return s;
+  } catch (_) { return ''; }
 }
 
 
@@ -557,6 +600,10 @@ const SYSTEM_PROMPT = [
 async function callLLM(onDelta) {
   const { apiKey, model, baseUrl, reasoningEffort } = await readConf();
   if (!apiKey) throw new Error('还没填 API Key，点右上角 ⚙');
+  // 上下文自动压缩：本轮开始前若历史超阈值，后台生成旧轮次摘要并缓存
+  try { ctxComp.pending = await compressContextIfNeeded(wireMessages()); } catch (_) { ctxComp.pending = ''; }
+  // 记忆模块：把长期记忆注入系统提示（ask/task 都注入）
+  const memText = await getMemoryPrompt().catch(() => '');
   // 思考强度：只在网关元数据确认该模型支持这一档时才下发。
   // 传了不支持的档位网关不会报错，而是静默降级成很短的思考——比不传更糟。
   let effort = '';
@@ -586,6 +633,9 @@ async function callLLM(onDelta) {
 
   let res;
   try {
+    const sysParts = [SYSTEM_PROMPT];
+    if (agentMode !== 'ask') sysParts.push('You are in TASK mode: tools are available. In ask mode no tools are offered.');
+    if (memText) sysParts.push('【长期记忆】以下是你在过往对话中记住的用户事实与偏好，相关时自然运用，无关时忽略：\n' + memText);
     res = await fetch(baseUrl + '/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + apiKey },
@@ -593,8 +643,8 @@ async function callLLM(onDelta) {
         model,
         messages: (() => {
           let wm = wireMessages();
-          wm = trimMessages(wm);
-          if (agentMode !== 'ask') wm.unshift({ role: 'system', content: SYSTEM_PROMPT });
+          wm = trimMessages(wm, ctxComp.pending);
+          wm.unshift({ role: 'system', content: sysParts.join('\n\n') });
           return wm;
         })(),
         temperature: 0.2,
@@ -1044,6 +1094,8 @@ async function agentLoop() {
     setSendMode('send');
     saveSnap(0, false);
     persist();
+    // 对话一轮结束：异步提炼长期记忆（不阻塞 UI，失败静默）
+    memExtractAfterTurn();
   }
 }
 
@@ -2320,7 +2372,7 @@ function pruneGhostBlocks(root) {
   for (const n of [...root.children]) {
     if (n.id === 'chat-empty' || n.classList.contains('welcome')) continue;
     const r = n.getBoundingClientRect();
-    if (r.height > 8) continue;
+    if (r.height > 24) continue;
     if ((n.textContent || '').trim()) continue;
     n.remove();
   }
@@ -5474,3 +5526,147 @@ function fixSkillMdList() {
     el.style.color = '#1d1d1f';
   });
 }
+
+/* ── 截图/图片 hover 预览：事件委托，鼠标悬停在 q-img / tool-img 上浮出大图 ── */
+(function installHoverPeek() {
+  let peek = null, hideTimer = null;
+  function ensure() {
+    if (!peek) {
+      peek = document.createElement('img');
+      peek.className = 'hover-peek';
+      document.body.appendChild(peek);
+    }
+    return peek;
+  }
+  function show(src, x, y) {
+    const p = ensure();
+    if (p.src !== src) p.src = src;
+    p.classList.add('show');
+    // 定位：优先显示在鼠标右侧，放不下换左侧；上下夹在视口内
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const w = Math.min(560, vw * 0.92), h = vh * 0.78;
+    let left = x + 16;
+    if (left + w > vw - 8) left = Math.max(8, x - w - 16);
+    let top = Math.min(Math.max(8, y - 40), vh - h - 8);
+    p.style.left = left + 'px';
+    p.style.top = top + 'px';
+  }
+  function hide() { if (peek) { peek.classList.remove('show'); } }
+  document.addEventListener('mouseover', (e) => {
+    const t = e.target;
+    if (!(t instanceof HTMLImageElement) || !(t.classList.contains('q-img') || t.classList.contains('tool-img'))) return;
+    clearTimeout(hideTimer);
+    show(t.src, e.clientX, e.clientY);
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!peek || !peek.classList.contains('show')) return;
+    const t = e.target;
+    if (t instanceof HTMLImageElement && (t.classList.contains('q-img') || t.classList.contains('tool-img'))) {
+      show(t.src, e.clientX, e.clientY);
+    } else {
+      // 移出图片稍作延迟再收起，避免快速滑动闪断
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(hide, 180);
+    }
+  });
+  document.addEventListener('mouseleave', hide);
+})();
+
+/* ══ 记忆模块 ═══════════════════════════════════════════════ */
+// 存储：YZDB.memList/memPut/memDel/memClear（IndexedDB memories store）
+// 注入：callLLM 里 getMemoryPrompt() 拼进系统提示
+// 写入：①对话结束（run 收尾）后用 LLM 判断本轮是否有值得记住的新事实；②设置面板手动增删
+const MEM_LIMIT = 200;      // 记忆条数上限
+const MEM_PROMPT_MAX = 1500; // 注入提示词的字符上限
+
+async function getMemoryPrompt() {
+  if (!window.YZDB) return '';
+  const rows = await window.YZDB.memList();
+  if (!rows.length) return '';
+  return rows.slice(0, 60).map((r) => '- ' + r.text).join('\n').slice(0, MEM_PROMPT_MAX);
+}
+
+async function memAddText(text) {
+  text = String(text || '').trim();
+  if (!text) return false;
+  const rows = (await window.YZDB.memList()) || [];
+  // 去重：完全相同文本不重复记
+  if (rows.some((r) => r.text === text)) return false;
+  await window.YZDB.memPut({ id: 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), text, at: Date.now(), hits: 0 });
+  // 超上限删最旧
+  if (rows.length + 1 > MEM_LIMIT) {
+    for (const old of rows.slice(MEM_LIMIT - 1)) { try { await window.YZDB.memDel(old.id); } catch (_) {} }
+  }
+  return true;
+}
+
+// 每轮对话收尾后异步提炼：把「用户」最新两条消息交给 LLM 判断是否要记住
+let memExtractBusy = false;
+async function memExtractAfterTurn() {
+  if (memExtractBusy || !window.YZDB) return;
+  const users = messages.filter((m) => m.role === 'user').slice(-2);
+  const lastUser = users[users.length - 1];
+  const text = lastUser && (typeof lastUser.content === 'string'
+    ? lastUser.content
+    : (Array.isArray(lastUser.content) ? lastUser.content.filter((p) => p && p.type === 'text').map((p) => p.text).join(' ') : ''));
+  if (!text || text.length < 6) return;
+  memExtractBusy = true;
+  try {
+    const { apiKey, baseUrl, model } = await readConf();
+    if (!apiKey) return;
+    const res = await fetch(String(baseUrl).replace(/\/+$/, '') + '/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + apiKey },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: '从用户消息中提取值得跨对话长期记住的事实（用户身份/偏好/项目背景/常用路径等）。如果没有值得记住的，只输出 NONE。若有，每行一条简短陈述，不要编号。最多3条。' },
+          { role: 'user', content: String(text).slice(0, 3000) }
+        ],
+        max_tokens: 300
+      })
+    });
+    if (!res.ok) return;
+    const j = await res.json();
+    const out = String(j.choices?.[0]?.message?.content || '').trim();
+    if (!out || /NONE/i.test(out.slice(0, 12))) return;
+    for (const line of out.split('\n').map((s) => s.replace(/^[-*\d.\s]+/, '').trim()).filter(Boolean).slice(0, 3)) {
+      await memAddText(line);
+    }
+  } catch (_) {} finally { memExtractBusy = false; }
+}
+
+/* ── 设置面板：记忆管理 ── */
+function renderMemPanel() {
+  const listEl = $('memList');
+  if (!listEl) return;
+  window.YZDB.memList().then((rows) => {
+    listEl.innerHTML = '';
+    if (!rows.length) { listEl.innerHTML = '<div class="set-hint">还没有记忆。</div>'; return; }
+    for (const r of rows) {
+      const it = document.createElement('div');
+      it.className = 'mem-item';
+      const t = document.createElement('span');
+      t.className = 'mem-txt';
+      t.textContent = r.text;
+      const x = document.createElement('button');
+      x.className = 'mem-x';
+      x.type = 'button';
+      x.textContent = '×';
+      x.title = '删除这条记忆';
+      x.onclick = async () => { await window.YZDB.memDel(r.id); renderMemPanel(); };
+      it.appendChild(t); it.appendChild(x);
+      listEl.appendChild(it);
+    }
+  }).catch(() => { listEl.innerHTML = '<div class="set-hint">记忆库读取失败。</div>'; });
+}
+$('btnMemManage')?.addEventListener('click', () => {
+  const p = $('memPanel');
+  p.classList.toggle('hidden');
+  if (!p.classList.contains('hidden')) renderMemPanel();
+});
+$('btnMemAdd')?.addEventListener('click', async () => {
+  const inp = $('inpMem');
+  if (await memAddText(inp.value)) { inp.value = ''; renderMemPanel(); }
+});
+$('inpMem')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') $('btnMemAdd').click(); });

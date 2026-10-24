@@ -1,0 +1,66 @@
+{
+  "extId": "gbhbffbejcmdlfdcjffonlmcjjfbdnff",
+  "A_ready": {
+    "version": "(none)",
+    "hasInput": true,
+    "hasSend": true,
+    "title": "Yuze-agent"
+  },
+  "B_base64": {
+    "b64_detected": true,
+    "normal_not": true,
+    "short": true
+  },
+  "C_imgcard": {
+    "toolNode_has_download_btn": true,
+    "toolNode_has_dataurl": true,
+    "gen_has_fetch": true,
+    "gen_has_base64": true
+  },
+  "D_continue": {
+    "has_finish": false,
+    "has_autoCont": false,
+    "has_truncated": false,
+    "autoCont_limit": null,
+    "has_maxTokens": false
+  },
+  "E_singleproc": {
+    "send_calls_runAgent": true,
+    "send_calls_bg": false,
+    "has_offscreen_fn": true
+  },
+  "F_db": {
+    "err": "db 函数不可用",
+    "keys": [
+      "ondblclick",
+      "indexedDB",
+      "YZDB",
+      "feedbackNode",
+      "loadBookmarks"
+    ]
+  },
+  "G_quote": {
+    "hasQuoteWrap": true,
+    "syncAutoQuote": true,
+    "renderQuoteBar": true,
+    "quoteRefsType": "object"
+  },
+  "H_skill": {
+    "hasSkillSearch": true,
+    "builtinCount": 1720,
+    "extraCount": null
+  },
+  "I_status": {
+    "setStatus_ok": true,
+    "has_elapsed": true,
+    "updateLive_delta": true
+  },
+  "J_scroll": {
+    "render_has_scroll": true,
+    "snippet": [
+      "  const fromBottom = chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight;",
+      "    chatEl.scrollTop = chatEl.scrollHeight;",
+      "    chatEl.scrollTop = Math.max(0, chatEl.scrollHeight - chatEl.clientHeight - fromBottom);"
+    ]
+  }
+}

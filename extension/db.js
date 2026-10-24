@@ -1,10 +1,12 @@
 /* IndexedDB 会话库：替代 chrome.storage.local.sessions
-   原因：storage 单条 10MB 上限 + 每次整表覆盖，长思考/图片一多就写失败、消息丢失。 */
+   原因：storage 单条 10MB 上限 + 每次整表覆盖，长思考/图片一多就写失败、消息丢失。
+   v2：新增 memories store（长期记忆模块）。 */
 (function () {
   'use strict';
   const DB_NAME = 'yz_agent';
-  const DB_VER = 1;
+  const DB_VER = 2;
   const STORE = 'sessions';
+  const MSTORE = 'memories'; // 长期记忆：{ id, text, at, hits }
   let dbp = null;
 
   function open() {
@@ -17,6 +19,10 @@
           const st = db.createObjectStore(STORE, { keyPath: 'id' });
           st.createIndex('at', 'at');
         }
+        if (!db.objectStoreNames.contains(MSTORE)) {
+          const m = db.createObjectStore(MSTORE, { keyPath: 'id' });
+          m.createIndex('at', 'at');
+        }
       };
       r.onsuccess = () => res(r.result);
       r.onerror = () => rej(r.error);
@@ -24,10 +30,10 @@
     return dbp;
   }
 
-  function tx(mode, fn) {
+  function tx(mode, fn, store) {
     return open().then((db) => new Promise((res, rej) => {
-      const t = db.transaction(STORE, mode);
-      const st = t.objectStore(STORE);
+      const t = db.transaction(store || STORE, mode);
+      const st = t.objectStore(store || STORE);
       let req;
       try { req = fn(st); } catch (e) { rej(e); return; }
       t.oncomplete = () => res(req ? req.result : undefined);
@@ -49,5 +55,16 @@
   function del(id) { return tx('readwrite', (st) => st.delete(id)); }
   function clear() { return tx('readwrite', (st) => st.clear()); }
 
-  window.YZDB = { list, get, put, putMany, del, clear, _open: open };
+  /* ── 长期记忆 store ── */
+  function memList() {
+    return tx('readonly', (st) => st.getAll(), MSTORE).then((rows) =>
+      (rows || []).sort((a, b) => (b.at || 0) - (a.at || 0))
+    );
+  }
+  function memPut(rec) { return tx('readwrite', (st) => st.put(rec), MSTORE); }
+  function memDel(id) { return tx('readwrite', (st) => st.delete(id), MSTORE); }
+  function memClear() { return tx('readwrite', (st) => st.clear(), MSTORE); }
+
+  window.YZDB = { list, get, put, putMany, del, clear, _open: open,
+    memList, memPut, memDel, memClear };
 })();

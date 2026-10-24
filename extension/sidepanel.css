@@ -1870,3 +1870,23 @@ textarea.sd-code:focus { border-color: rgba(0,122,255,.5); background: #fff; }
 .msg-more button:hover { background: var(--surface-3); }
 .msg-more button.danger { color: #d92b2b; }
 .msg-more button.danger:hover { background: #fdecec; }
+
+/* hover 预览大图（截图/消息图片） */
+.q-img, .tool-img { cursor: zoom-in; }
+.hover-peek {
+  position: fixed; z-index: 99999; pointer-events: none;
+  max-width: min(560px, 92vw); max-height: 78vh;
+  border-radius: 10px; border: 1px solid var(--line);
+  box-shadow: 0 8px 32px rgba(0,0,0,.22);
+  background: #fff; opacity: 0; transform: scale(.97);
+  transition: opacity .12s ease, transform .12s ease;
+}
+.hover-peek.show { opacity: 1; transform: scale(1); }
+
+/* 记忆管理面板 */
+.mem-list { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
+.mem-item { display: flex; align-items: flex-start; gap: 8px; padding: 7px 10px; border: 1px solid var(--line-soft); border-radius: 9px; background: #fafafa; font-size: 12.5px; line-height: 1.45; }
+.mem-item .mem-txt { flex: 1; word-break: break-word; }
+.mem-item .mem-x { flex: none; border: none; background: none; color: #b00; cursor: pointer; font-size: 14px; padding: 0 2px; }
+.mem-add { display: flex; gap: 8px; margin-top: 8px; }
+.mem-add input { flex: 1; }
