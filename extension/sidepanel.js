@@ -409,13 +409,15 @@ async function toolGenerateImage(args) {
   if (!prompt) throw new Error('缺少 prompt');
   const size = String(args.size || '1024x1024');
   const n = Math.min(Math.max(Number(args.n) || 1, 1), 4);
-  const { apiKey, baseUrl, imageModel } = await readConf();
-  if (!apiKey) throw new Error('还没填 API Key，点 ⚙ 配置提供商');
+  const { apiKey, baseUrl, imageModel, imgBaseUrl, imgKey } = await readConf();
+  const gwBase = imgBaseUrl || baseUrl;
+  const gwKey = imgBaseUrl ? (imgKey || apiKey) : apiKey;
+  if (!gwKey) throw new Error('还没填 API Key，点 ⚙ 配置提供商');
   setStatus('生成图片中…（' + imageModel + '，约 15 秒）');
   try {
-    const res = await fetch(String(baseUrl).replace(/\/+$/, '') + '/images/generations', {
+    const res = await fetch(gwBase + '/images/generations', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + apiKey },
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + gwKey },
       body: JSON.stringify({ model: imageModel, prompt, size, n })
     });
     if (!res.ok) {
@@ -560,7 +562,7 @@ async function loadProviders() {
 async function readConf() {
   const { list, active } = await loadProviders();
   const p = list.find((x) => x.id === active) || list[0];
-  const s = await chrome.storage.local.get(['model', 'reasoningEffort', 'imageModel']);
+  const s = await chrome.storage.local.get(['model', 'reasoningEffort', 'imageModel', 'imgBase', 'imgKey']);
   return {
     apiKey: p.apiKey,
     model: p.model || DEFAULT_MODEL,
@@ -568,6 +570,9 @@ async function readConf() {
     // 空串表示「跟随模型默认」，此时不向网关传该字段
     reasoningEffort: String(s.reasoningEffort || ''),
     imageModel: String(s.imageModel || DEFAULT_IMAGE_MODEL),
+    // 生图专属网关/Key：留空则回落聊天网关与聊天 Key
+    imgBaseUrl: String(s.imgBase || '').trim().replace(/\/+$/, ''),
+    imgKey: String(s.imgKey || '').trim(),
     provider: p
   };
 }
@@ -2487,8 +2492,10 @@ async function loadGenSettings(curModel) {
       dl.appendChild(o);
     });
   }
-  const st = await chrome.storage.local.get(['reasoningEffort', 'imageModel']);
+  const st = await chrome.storage.local.get(['reasoningEffort', 'imageModel', 'imgBase', 'imgKey']);
   $('inpImageModel').value = String(st.imageModel || DEFAULT_IMAGE_MODEL);
+  $('inpImgBase').value = String(st.imgBase || '');
+  $('inpImgKey').value = String(st.imgKey || '');
 
   const sel = $('selEffort');
   const saved = String(st.reasoningEffort || '');
@@ -2631,7 +2638,9 @@ $('btnSave').addEventListener('click', async () => {
     activeProvider: provState.active,
     mcp: mcpServers,
     reasoningEffort: $('selEffort').value,
-    imageModel: $('inpImageModel').value.trim() || DEFAULT_IMAGE_MODEL
+    imageModel: $('inpImageModel').value.trim() || DEFAULT_IMAGE_MODEL,
+    imgBase: $('inpImgBase').value.trim(),
+    imgKey: $('inpImgKey').value.trim()
   });
   provState.list = list;
   modelIds = [];

@@ -58,7 +58,15 @@
           <input id="inpImageModel" type="text" list="imageModelPresets" placeholder="hunyuan-image-v3.0">
           <datalist id="imageModelPresets"></datalist>
         </div>
-        <div class="set-hint">网关目前仅支持 hunyuan-image-v3.0，其他模型会明确报错并提示更换。</div>
+        <div class="set-hint">默认用当前聊天网关（仅支持 hunyuan-image-v3.0）。可自定义生图网关与 Key：填入任意 OpenAI images 兼容接口（如 https://api.xxx.com/v1）后，生图模型也能填 dall-e-3、flux、seedream 等。</div>
+        <label for="inpImgBase">生图网关（可选）</label>
+        <div class="model-row">
+          <input id="inpImgBase" type="text" placeholder="留空用聊天网关；或填 https://api.xxx.com/v1">
+        </div>
+        <label for="inpImgKey">生图 API Key（可选）</label>
+        <div class="model-row">
+          <input id="inpImgKey" type="password" placeholder="留空用聊天网关的 Key">
+        </div>
       </div>
       <div class="set-group">
         <button id="btnSkillsManage" class="set-row" type="button">
