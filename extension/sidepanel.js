@@ -442,6 +442,24 @@ async function toolGenerateImage(args) {
     });
     if (!res.ok) {
       const t = await res.text().catch(() => '');
+      // 网关对尺寸有最低要求（如 Seedream「至少 3,686,400 像素」）时，自动升档重试一次
+      const retrySize = sizeRetryFromError(t, size);
+      if (res.status === 400 && retrySize) {
+        setStatus('网关要求更大尺寸，改用 ' + retrySize + ' 重试…');
+        const res2 = await fetch(gwBase + '/images/generations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + gwKey },
+          body: JSON.stringify({ model: imageModel, prompt, size: retrySize, n })
+        });
+        if (!res2.ok) {
+          const t2 = await res2.text().catch(() => '');
+          throw new Error('生图失败（' + imageModel + '）网关 ' + res2.status + '：' + t2.slice(0, 240)
+            + '\n已尝试 ' + retrySize + ' 仍失败。该模型可能不被网关支持，可在设置里换一个生图模型。');
+        }
+        const j2 = await res2.json();
+        j2.__size = retrySize;
+        return await buildImageResult(j2, gwBase);
+      }
       // 网关对不认识的生图模型回 400 + 上游文案，这里补一句可操作提示
       throw new Error('生图失败（' + imageModel + '）网关 ' + res.status + '：' + t.slice(0, 240)
         + (res.status === 400 ? '\n该模型可能不被网关支持，可在设置里换一个生图模型。' : ''));
@@ -450,34 +468,65 @@ async function toolGenerateImage(args) {
     const item = (j.data || [])[0];
     if (!item) throw new Error('网关没有返回图片');
     const mimeOf = (b) => /^\/9j\//.test(b) ? 'image/jpeg' : /^iVBOR/.test(b) ? 'image/png' : /^UklGR/.test(b) ? 'image/webp' : /^R0lGOD/.test(b) ? 'image/gif' : 'image/png';
-    const url = item.url || (item.b64_json ? 'data:' + mimeOf(item.b64_json) + ';base64,' + item.b64_json : '');
-    if (!url) throw new Error('图片地址为空');
-    // 立刻转 dataURL：网关给的多是临时链接，过期后历史会话里就只剩裂图
-    let image = url;
-    const absUrl = /^https?:\/\//.test(url) ? url : (gwBase.replace(/\/+$/, '') + (url.startsWith('/') ? url : '/' + url));
-    if (!/^data:image\//.test(url)) {
-      try {
-        const r2 = await fetch(absUrl);
-        const b = await r2.blob();
-        if (b && b.size <= 3 * 1024 * 1024) {
-          image = await new Promise((res, rej) => {
-            const fr = new FileReader();
-            fr.onload = () => res(String(fr.result));
-            fr.onerror = rej;
-            fr.readAsDataURL(b);
-          });
-        }
-      } catch (_) { /* 取不到就退回原链接 */ }
-    }
-    return {
-      ok: true,
-      image,
-      revised_prompt: item.revised_prompt || '',
-      note: '图片已生成，显示在对话下方；也可用 image 字段引用'
-    };
+    return await buildImageResult(j, gwBase);
   } finally {
     setStatus('');
   }
+}
+
+// 解析生图网关的尺寸报错：返回满足要求的更大尺寸，解析不出返回 null
+function sizeRetryFromError(text, curSize) {
+  const t = String(text || '');
+  const pool = ['1024x1024', '1024x1536', '1536x1024', '2048x1536', '1536x2048', '2048x2048', '2560x1440', '2560x1600', '2048x3072', '3072x2048', '3840x2160'];
+  const px = (s) => { const m = String(s).match(/^(\d+)\s*[xX×]\s*(\d+)$/); return m ? Number(m[1]) * Number(m[2]) : 0; };
+  let minPx = 0;
+  const m1 = t.match(/(?:至少|at least)\s*([\d,，.]+)\s*像素/) || t.match(/([\d,，.]+)\s*pixels?/i);
+  if (m1) minPx = Number(String(m1[1]).replace(/[,,\s]/g, ''));
+  if (!minPx) {
+    const m2 = t.match(/(\d{3,5})\s*[xX×]\s*(\d{3,5})/);
+    if (m2) minPx = Number(m2[1]) * Number(m2[2]);
+  }
+  if (!minPx || minPx <= px(curSize)) return null;
+  // 从错误文本里直接拿到具体 WxH 优先用（确认比当前大）
+  const m3 = t.match(/(\d{3,5})\s*[xX×]\s*(\d{3,5})/);
+  if (m3 && px(m3[1] + 'x' + m3[2]) >= minPx) return m3[1] + 'x' + m3[2];
+  // 否则选总像素 ≥ 要求且最接近要求的档位
+  const cands = pool.filter((s) => px(s) >= minPx && px(s) > px(curSize));
+  if (!cands.length) return null;
+  cands.sort((a, b) => (px(a) - minPx) - (px(b) - minPx));
+  return cands[0];
+}
+
+async function buildImageResult(j, gwBase) {
+  const item = (j.data || [])[0];
+  if (!item) throw new Error('网关没有返回图片');
+  const mimeOf = (b) => /^\/9j\//.test(b) ? 'image/jpeg' : /^iVBOR/.test(b) ? 'image/png' : /^UklGR/.test(b) ? 'image/webp' : /^R0lGOD/.test(b) ? 'image/gif' : 'image/png';
+  const url = item.url || (item.b64_json ? 'data:' + mimeOf(item.b64_json) + ';base64,' + item.b64_json : '');
+  if (!url) throw new Error('图片地址为空');
+  // 立刻转 dataURL：网关给的多是临时链接，过期后历史会话里就只剩裂图
+  let image = url;
+  const absUrl = /^https?:\/\//.test(url) ? url : (gwBase.replace(/\/+$/, '') + (url.startsWith('/') ? url : '/' + url));
+  if (!/^data:image\//.test(url)) {
+    try {
+      const r2 = await fetch(absUrl);
+      const b = await r2.blob();
+      if (b && b.size <= 3 * 1024 * 1024) {
+        image = await new Promise((res, rej) => {
+          const fr = new FileReader();
+          fr.onload = () => res(String(fr.result));
+          fr.onerror = rej;
+          fr.readAsDataURL(b);
+        });
+      }
+    } catch (_) { /* 取不到就退回原链接 */ }
+  }
+  return {
+    ok: true,
+    image,
+    size: j.__size || undefined,
+    revised_prompt: item.revised_prompt || '',
+    note: '图片已生成，显示在对话下方；也可用 image 字段引用'
+  };
 }
 
 const TOOLS = [
@@ -530,7 +579,7 @@ const TOOLS = [
     description: '文生图：根据文字描述生成一张真实图片。当用户要求画图、生成图片、出图、设计海报/插画/头像等视觉素材时调用。生成约需 15 秒。',
     parameters: { type: 'object', properties: {
       prompt: { type: 'string', description: '画面描述：主体、场景、风格、构图、光线、颜色，越具体越好' },
-      size: { type: 'string', enum: ['1024x1024', '1024x1536', '1536x1024'], description: '图片尺寸，默认 1024x1024' },
+      size: { type: 'string', enum: ['1024x1024', '1024x1536', '1536x1024', '2048x1536', '1536x2048', '2048x2048', '2560x1440', '3840x2160'], description: '图片尺寸，默认 1024x1024；部分模型（如 Seedream 5.0）要求更大像素，报错信息提示时会自动升档重试' },
       n: { type: 'number', description: '生成张数，默认 1，最多 4' }
     }, required: ['prompt'] }
   }},

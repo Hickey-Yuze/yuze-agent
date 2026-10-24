@@ -46,6 +46,10 @@ try {
         else if (p.includes('SHAPE_URL')) j = { data: [{ url: 'https://cdn.test/img.png' }] };
         else if (p.includes('SHAPE_REL')) j = { data: [{ url: '/v1/files/rel.png' }] };
         else if (p.includes('SHAPE_ERR')) return new Response('{"error":{"message":"model not found"}}', { status: 400 });
+        else if (p.includes('SHAPE_SIZE')) {
+          if (String(body.size) === '1024x1024') return new Response(JSON.stringify({ error: { message: 'Doubao-Seedream-5.0 要求图片尺寸至少 3,686,400 像素' } }), { status: 400 });
+          return new Response(JSON.stringify({ data: [{ b64_json: PNG1 }] }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
         else return new Response('not json', { status: 500 });
         return new Response(JSON.stringify(j), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
@@ -75,6 +79,14 @@ try {
     let errTxt = '';
     try { await run('SHAPE_ERR'); } catch (e) { errTxt = String(e.message || e); }
     res.err = { mentions400: errTxt.includes('400'), mentionsModelHint: errTxt.includes('换一个生图模型') };
+    const r5 = await run('SHAPE_SIZE'); res.sizeretry = { ok: r5.ok, usedSize: r5.size, isData: r5.image.startsWith('data:image/png') };
+    // sizeRetryFromError 单元：像素数解析与 WxH 直取
+    res.sizeretryParse = {
+      px: sizeRetryFromError('要求图片尺寸至少 3,686,400 像素', '1024x1024') === '2560x1440',
+      wxh: sizeRetryFromError('must be at least 2560x1440', '1024x1024') === '2560x1440',
+      noErr: sizeRetryFromError('model not found', '1024x1024') === null,
+      smallWxh: sizeRetryFromError('1024x1024', '1024x1024') === null
+    };
     // wire strip check: big base64 tool content -> wireMessages strips, render keeps
     messages.length = 0;
     messages.push({ role: 'user', content: 'draw' });
@@ -88,7 +100,7 @@ try {
       wireHasNote: wireTool.content.includes('已生成并显示在对话中'),
       renderStillFull: (render(), [...document.querySelectorAll('img.tool-img')].length === 1 && document.querySelector('img.tool-img').src.length > 15000)
     };
-    res.pass = res.b64png.ok && res.b64png.isData && res.b64jpg.mime.startsWith('image/jpe') && res.url.ok && res.rel.ok && res.err.mentions400 && res.err.mentionsModelHint && res.strip.wireShort && res.strip.wireHasNote && res.strip.renderStillFull;
+    res.pass = res.b64png.ok && res.b64png.isData && res.b64jpg.mime.startsWith('image/jpe') && res.url.ok && res.rel.ok && res.err.mentions400 && res.err.mentionsModelHint && res.strip.wireShort && res.strip.wireHasNote && res.strip.renderStillFull && res.sizeretry.ok && res.sizeretry.usedSize === '2560x1440' && res.sizeretry.isData && res.sizeretryParse.px && res.sizeretryParse.wxh && res.sizeretryParse.noErr && res.sizeretryParse.smallWxh;
     return res;
   })()`, sessionId);
   console.log(JSON.stringify(out, null, 1));
