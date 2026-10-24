@@ -139,13 +139,36 @@ try {
     return { thinks: document.querySelectorAll('.think').length };
   })()`, sessionId);
 
+  // 断言 G：清理闸——多种空形态顶层块渲染后被移除
+  out.G_ghost = await ev(`(() => {
+    const res = {};
+    messages.length = 0;
+    messages.push({ role: 'user', content: 'x' });
+    messages.push({ role: 'assistant', content: '\\n---\\n' });
+    render();
+    res.sepOnlyBotGone = document.querySelectorAll('.msg-bot').length === 0;
+    messages.length = 0;
+    messages.push({ role: 'user', content: 'x' });
+    messages.push({ role: 'assistant', content: 'realbody' });
+    render();
+    const ghost = document.createElement('details');
+    ghost.className = 'tool';
+    ghost.innerHTML = '<summary></summary>';
+    document.getElementById('chat').appendChild(ghost);
+    res.ghostBefore = Math.round(ghost.getBoundingClientRect().height);
+    render();
+    res.ghostAfter = [...document.getElementById('chat').children].some((n) => n === ghost);
+    return res;
+  })()`, sessionId);
+
   out.pass = out.B_hrIsSeparator.noBot
     && out.C_blankOnly.bots === 0
     && out.D_blankContent.bots === 0
     && out.D2_sepOnly.every((n) => n === 0)
     && out.D3_sepMixed.bots === 1 && out.D3_sepMixed.hasHr
     && out.E_normal.bots === 1 && out.E_normal.thinks === 1
-    && out.F_liveBlank.thinks === 0;
+    && out.F_liveBlank.thinks === 0
+    && out.G_ghost.sepOnlyBotGone && out.G_ghost.ghostBefore >= 0 && out.G_ghost.ghostAfter === false;
 
   console.log(JSON.stringify(out, null, 2));
 } finally {

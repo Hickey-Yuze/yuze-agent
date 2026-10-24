@@ -2309,6 +2309,21 @@ function render(forceToBottom) {
     chatEl.scrollTop = Math.max(0, chatEl.scrollHeight - chatEl.clientHeight - fromBottom);
   }
   if (inpFindEl.value.trim()) runFind(inpFindEl.value);
+  pruneGhostBlocks(chatEl);
+}
+
+// 孤线清理闸：渲染后扫一遍消息流，删掉「几乎无高度且无任何文字」的顶层块。
+// 生图轮模型会发多种形态的空消息（纯 --- / 纯空白 / 空 tool 结果），渲染出来都是
+// 一条细线，用户当成杂线 bug；与其逐形态堵，不如渲染后统一清理（live 增量不受影响，
+// 只在整树重建与轮次结束时跑）。
+function pruneGhostBlocks(root) {
+  for (const n of [...root.children]) {
+    if (n.id === 'chat-empty' || n.classList.contains('welcome')) continue;
+    const r = n.getBoundingClientRect();
+    if (r.height > 8) continue;
+    if ((n.textContent || '').trim()) continue;
+    n.remove();
+  }
 }
 
 /* 流式增量更新：只改最后一条消息里的文本，不重建 DOM（避免闪烁） */
@@ -2388,6 +2403,7 @@ function updateLive(msg) {
   }
 
   if (stickBottom) chatEl.scrollTop = chatEl.scrollHeight;
+  pruneGhostBlocks(chatEl);
 }
 
 /* ══ UI ═══════════════════════════════════════════════════ */
