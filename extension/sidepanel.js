@@ -1098,12 +1098,12 @@ async function agentLoop() {
       const calls = msg.tool_calls || [];
       if (!calls.length) {
         // 只回文字说「已生成」但没调工具（模型幻觉）：追一轮，最多一次
-        const claimsDone2 = /(已生成|已经生成|生成好了|已经完成)/.test(String(msg.content || ''));
+        const claimsDone2 = /(已(经)?(重新)?生成|生成(完成|好了|成功|出来)|已经显示|已显示|已经完成)/.test(String(msg.content || ''));
         const lastUserIdx = messages.map((m) => m.role).lastIndexOf('user');
         const hasToolSinceUser = messages.slice(lastUserIdx + 1).some((m) => m.role === 'tool');
         if (autoFix < 3 && claimsDone2 && !hasToolSinceUser) {
           autoFix += 1;
-          messages.push({ role: 'user', content: '（你只回复了文字，没有实际调用任何工具。正文里那些链接是历史结果，不是本次输出）请在本轮直接调用 generate_image 工具（参数 prompt 填完整画面描述）真正生成图片，或调用对应工具完成任务。禁止只写文字说明。' });
+          messages.push({ role: 'user', content: '（你只回复了文字，没有实际调用任何工具。正文里那些链接是历史结果，不是本次输出）请在本轮直接调用 generate_image 工具（参数 prompt 填完整画面描述，size 可填 2560x1440）真正生成图片，或调用对应工具完成任务。禁止只写文字说明——没有工具调用就没有图片。' });
           render();
           continue;
         }
@@ -1925,7 +1925,7 @@ function botNode(msg) {
   if (msg._claimNoTool) {
     const warn = document.createElement('div');
     warn.className = 'think-warn';
-    warn.textContent = '⚠ 模型声称已生成，但没有实际调用工具（可能是模型本轮偷懒）；请回复「重新生成」让它真正调用工具。';
+    warn.textContent = '⚠ 模型声称已生成，但没有实际调用工具——图片并不存在。请回复「重新生成」再试一次；若反复出现，说明当前模型不擅长调用工具，建议在设置里把聊天模型换成 glm-5.3-flash 等能真正执行工具的模型后再试。';
     d.appendChild(warn);
   }
   d.className = 'msg-bot';

@@ -1,5 +1,5 @@
 
-// Full-runAgent reproduction: SSE tool_calls -> big b64_json image -> DOM tool-img?
+// agentLoop E2E: claim-detection (text-only reply) + big b64_json image rendering
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
@@ -8,8 +8,8 @@ import { spawn } from 'node:child_process';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const EXT = join(HERE, 'extension');
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-const PORT = 9711;
-const userDir = mkdtempSync(join(tmpdir(), 'yz-agent-'));
+const PORT = 9712;
+const userDir = mkdtempSync(join(tmpdir(), 'yz-agent2-'));
 const proc = spawn(CHROME, ['--headless=new', `--remote-debugging-port=${PORT}`, `--user-data-dir=${userDir}`,
   '--no-first-run', '--no-default-browser-check', '--disable-gpu', '--window-size=420,900', 'about:blank'], { stdio: 'ignore' });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -29,26 +29,20 @@ try {
   for (let i = 0; i < 100; i++) { const s = await ev(`document.readyState + '|' + (typeof render)`, sessionId); if (s === 'complete|function') break; await sleep(120); }
   await sleep(400);
 
-  await ev(`(async () => {
-    window.__errs = [];
+  const setup = await ev(`(async () => {
+    window.__errs = []; window.__unhandled = [];
     window.addEventListener('error', (e) => window.__errs.push(String(e.message).slice(0, 200)));
-    window.__unhandled = [];
     window.addEventListener('unhandledrejection', (e) => window.__unhandled.push(String(e.reason && e.reason.message || e.reason).slice(0, 200)));
-    const ok = (j) => new Response(JSON.stringify(j), { status: 200, headers: { 'Content-Type': 'application/json' } });
-    const sseTool = () => new Response(
-      'data: ' + JSON.stringify({ choices: [{ delta: { reasoning_content: 'thinking...' } }] }) + '\\n\\n' +
-      'data: ' + JSON.stringify({ choices: [{ delta: { tool_calls: [{ index: 0, id: 'call_1', type: 'function', function: { name: 'generate_image', arguments: '{"prompt":"office","size":"1024x1024"}' } }] } }] }) + '\\n\\n' +
-      'data: ' + JSON.stringify({ choices: [{ delta: {}, finish_reason: 'tool_calls' }] }) + '\\n\\n' +
-      'data: [DONE]\\n\\n',
-      { status: 200, headers: { 'Content-Type': 'text/event-stream' } });
+    window.__SSE_TOOL = "data: {\"choices\": [{\"delta\": {\"reasoning_content\": \"thinking...\"}}]}\n\ndata: {\"choices\": [{\"delta\": {\"tool_calls\": [{\"index\": 0, \"id\": \"call_1\", \"type\": \"function\", \"function\": {\"name\": \"generate_image\", \"arguments\": \"{\\\"prompt\\\": \\\"office\\\", \\\"size\\\": \\\"1024x1024\\\"}\"}}]}}]}\n\ndata: {\"choices\": [{\"delta\": {}, \"finish_reason\": \"tool_calls\"}]}\n\ndata: [DONE]\n\n";
+    window.__SSE_TEXT = "data: {\"choices\": [{\"delta\": {\"reasoning_content\": \"The image was generated successfully.\"}}]}\n\ndata: {\"choices\": [{\"delta\": {\"content\": \"DONE. \\u5df2\\u91cd\\u65b0\\u751f\\u6210\\u5b8c\\u6210\\uff0c\\u65b0\\u7684\\u56fe\\u7247\\u5df2\\u7ecf\\u663e\\u793a\\u5728\\u5bf9\\u8bdd\\u4e2d\\u4e86\\u3002\"}}]}\n\ndata: {\"choices\": [{\"delta\": {}, \"finish_reason\": \"stop\"}]}\n\ndata: [DONE]\n\n";
     window.__realFetch = window.fetch;
     window.fetch = async (u, opt) => {
       const url = String(u || '');
-      if (url.indexOf('/chat/completions') >= 0) return sseTool();
+      if (url.indexOf('/chat/completions') >= 0) {
+        return new Response(window.__SCEN === 'text' ? window.__SSE_TEXT : window.__SSE_TOOL, { status: 200, headers: { 'Content-Type': 'text/event-stream' } });
+      }
       if (url.indexOf('/images/generations') >= 0) {
-        const b = JSON.parse((opt && opt.body) || '{}');
-        window.__IMG_BODY = b;
-                if (!window.__BIGPNG) {
+        if (!window.__BIGPNG) {
           const c = document.createElement('canvas'); c.width = 3000; c.height = 3000;
           const cx = c.getContext('2d');
           const id = cx.createImageData(3000, 3000);
@@ -56,42 +50,47 @@ try {
           cx.putImageData(id, 0, 0);
           window.__BIGPNG = c.toDataURL('image/png');
         }
-        return ok({ data: [{ b64_json: window.__BIGPNG.split(',')[1] }] });
+        return new Response(JSON.stringify({ data: [{ b64_json: window.__BIGPNG.split(',')[1] }] }), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
       return window.__realFetch(u, opt);
     };
     await chrome.storage.local.set({ providers: [{ id: 'p1', name: 'T', baseUrl: 'http://127.0.0.1:7863/v1', apiKey: 'sk', model: 'test-model' }], activeProvider: 'p1', imageModel: 'Doubao-Seedream-5.0' });
-    return true;
-  })()`, sessionId);
+    return 'setup-ok';
+  })()`.replace('"data: {\"choices\": [{\"delta\": {\"reasoning_content\": \"thinking...\"}}]}\n\ndata: {\"choices\": [{\"delta\": {\"tool_calls\": [{\"index\": 0, \"id\": \"call_1\", \"type\": \"function\", \"function\": {\"name\": \"generate_image\", \"arguments\": \"{\\\"prompt\\\": \\\"office\\\", \\\"size\\\": \\\"1024x1024\\\"}\"}}]}}]}\n\ndata: {\"choices\": [{\"delta\": {}, \"finish_reason\": \"tool_calls\"}]}\n\ndata: [DONE]\n\n"', JSON.stringify("data: {\"choices\": [{\"delta\": {\"reasoning_content\": \"thinking...\"}}]}\n\ndata: {\"choices\": [{\"delta\": {\"tool_calls\": [{\"index\": 0, \"id\": \"call_1\", \"type\": \"function\", \"function\": {\"name\": \"generate_image\", \"arguments\": \"{\\\"prompt\\\": \\\"office\\\", \\\"size\\\": \\\"1024x1024\\\"}\"}}]}}]}\n\ndata: {\"choices\": [{\"delta\": {}, \"finish_reason\": \"tool_calls\"}]}\n\ndata: [DONE]\n\n")).replace('"data: {\"choices\": [{\"delta\": {\"reasoning_content\": \"The image was generated successfully.\"}}]}\n\ndata: {\"choices\": [{\"delta\": {\"content\": \"DONE. \\u5df2\\u91cd\\u65b0\\u751f\\u6210\\u5b8c\\u6210\\uff0c\\u65b0\\u7684\\u56fe\\u7247\\u5df2\\u7ecf\\u663e\\u793a\\u5728\\u5bf9\\u8bdd\\u4e2d\\u4e86\\u3002\"}}]}\n\ndata: {\"choices\": [{\"delta\": {}, \"finish_reason\": \"stop\"}]}\n\ndata: [DONE]\n\n"', JSON.stringify("data: {\"choices\": [{\"delta\": {\"reasoning_content\": \"The image was generated successfully.\"}}]}\n\ndata: {\"choices\": [{\"delta\": {\"content\": \"DONE. \\u5df2\\u91cd\\u65b0\\u751f\\u6210\\u5b8c\\u6210\\uff0c\\u65b0\\u7684\\u56fe\\u7247\\u5df2\\u7ecf\\u663e\\u793a\\u5728\\u5bf9\\u8bdd\\u4e2d\\u4e86\\u3002\"}}]}\n\ndata: {\"choices\": [{\"delta\": {}, \"finish_reason\": \"stop\"}]}\n\ndata: [DONE]\n\n")), sessionId);
+  console.log('SETUP:', JSON.stringify(setup));
   await sleep(150);
 
-  const out = await ev(`(async () => {
-    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const claimOut = await ev(`(async () => {
+    window.__SCEN = 'text';
     messages.length = 0;
     messages.push({ role: 'user', content: 'draw office' });
     mode = 'task';
     await agentLoop();
-    await wait(300);
-    const warns = [...document.querySelectorAll('details.tool .think-warn')].map((n) => n.textContent);
-    const toolNodes = [...document.querySelectorAll('details.tool')];
+    const fixNudges = messages.filter((m) => m.role === 'user' && String(m.content).indexOf('没有实际调用任何工具') >= 0).length;
+    const bot = [...messages].reverse().find((m) => m.role === 'assistant');
+    return { fixNudges, claimNoTool: !!(bot && bot._claimNoTool), toolCount: messages.filter((m) => m.role === 'tool').length };
+  })()`, sessionId);
+  console.log('CLAIM:', JSON.stringify(claimOut));
+
+  const out = await ev(`(async () => {
+    window.__SCEN = 'img';
+    messages.length = 0;
+    messages.push({ role: 'user', content: 'draw office' });
+    await agentLoop();
     const imgs = [...document.querySelectorAll('img.tool-img')];
-    const toolMsg = messages.find((m) => m.role === 'tool');
+    await Promise.all(imgs.map((i) => i.decode().catch(() => null)));
+    await new Promise((r) => setTimeout(r, 400));
     return {
-      err: window.__errs.slice(0, 3), unhandled: window.__unhandled.slice(0, 3),
-      toolNodes: toolNodes.length,
-      toolState: toolNodes.map((n) => n.dataset.state),
-      toolOpen: toolNodes.map((n) => n.open),
       toolImgs: imgs.length,
-      imgSrcLen: imgs.map((i) => i.src.length),
+      bigLen: (window.__BIGPNG || '').length,
       imgBlob: imgs.map((i) => i.src.startsWith('blob:')),
       imgDecoded: imgs.map((i) => i.naturalWidth > 0),
-      warns,
-      toolMsgLen: toolMsg ? toolMsg.content.length : -1,
-      msgLens: messages.map((m) => (typeof m.content === 'string' ? m.content.length : 0)),
-      assistantToolCalls: messages.filter((m) => m.role === 'assistant').map((m) => (m.tool_calls || []).map((t) => t.id))
+      err: window.__errs.slice(0, 2), unhandled: window.__unhandled.slice(0, 2)
     };
   })()`, sessionId);
-  console.log(JSON.stringify(out, null, 1));
+  console.log('IMG:', JSON.stringify(out));
+  const pass = !!(setup === 'setup-ok' && claimOut && claimOut.fixNudges >= 1 && out && out.toolImgs >= 1 && out.imgBlob.every(Boolean) && out.imgDecoded.every(Boolean));
+  console.log('PASS:', pass);
 } finally {
   try { ws.close(); } catch (_) {} try { proc.kill(); } catch (_) {}
   try { rmSync(userDir, { recursive: true, force: true, maxRetries: 5 }); } catch (_) {}
