@@ -5614,14 +5614,20 @@ async function memExtractAfterTurn() {
   try {
     const { apiKey, baseUrl, model } = await readConf();
     if (!apiKey) return;
+    // 给最近一轮完整对话（user+assistant），模型才能分清哪些是用户的事实
+    const lastA = [...messages].reverse().find((m) => m.role === 'assistant');
+    const aText = lastA && typeof lastA.content === 'string' ? lastA.content : '';
     const res = await fetch(String(baseUrl).replace(/\/+$/, '') + '/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + apiKey },
       body: JSON.stringify({
         model,
         messages: [
-          { role: 'system', content: '从用户消息中提取值得跨对话长期记住的事实（用户身份/偏好/项目背景/常用路径等）。如果没有值得记住的，只输出 NONE。若有，每行一条简短陈述，不要编号。最多3条。' },
-          { role: 'user', content: String(text).slice(0, 3000) }
+          { role: 'system', content: '从这轮对话中提取值得跨对话长期记住的「用户本人」的事实与偏好：身份、长期目标、偏好习惯、稳定的项目背景。'
+            + '严格禁止：助手说过的话（回复内容/能力说明/客套话）、一次性任务内容、网页内容、临时上下文。'
+            + '只记用户明确表达或反复体现的持久信息；拿不准就不记，宁缺毋滥。'
+            + '没有值得记的就只输出 NONE。有则每行一条简短陈述（以「用户」开头），不要编号，最多3条。' },
+          { role: 'user', content: '[用户] ' + String(text).slice(0, 2000) + (aText ? '\n[助手] ' + String(aText).slice(0, 1000) : '') }
         ],
         max_tokens: 300
       })
@@ -5670,3 +5676,8 @@ $('btnMemAdd')?.addEventListener('click', async () => {
   if (await memAddText(inp.value)) { inp.value = ''; renderMemPanel(); }
 });
 $('inpMem')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') $('btnMemAdd').click(); });
+$('btnMemClear')?.addEventListener('click', async () => {
+  if (!confirm('清空全部记忆？此操作不可恢复。')) return;
+  await window.YZDB.memClear();
+  renderMemPanel();
+});

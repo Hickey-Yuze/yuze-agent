@@ -60,6 +60,10 @@ try {
       inside: r.left >= cardR.left - 1 && r.right <= cardR.right + 1,
       inpVisible: inp.width > 100 && inp.height > 20,
       btnVisible: btn.width > 30,
+      clearBtn: !!document.getElementById('btnMemClear'),
+      // 关键：展开记忆面板后，技炉 / MCP 行仍在 DOM 且位于面板上方（可返回）
+      skillsAbove: (() => { const sk = document.getElementById('btnSkillsManage').getBoundingClientRect(); return sk.bottom <= r.top + 2; })(),
+      mcpAbove: (() => { const mc = document.getElementById('btnMcpManage').getBoundingClientRect(); return mc.bottom <= r.top + 2; })(),
       cardGrew: card.getBoundingClientRect().height >= h0,
       hint: (p.querySelector('.set-hint') || {}).textContent || ''
     };

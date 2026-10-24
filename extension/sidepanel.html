@@ -76,13 +76,14 @@
           <span class="set-row-txt"><b>记忆</b><i>查看和管理跨对话长期记忆</i></span>
           <svg class="set-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
         </button>
-      </div>
-      <div id="memPanel" class="hidden">
-        <div class="set-hint">助手在对话中记住的事实与偏好，会自动注入后续对话。点击 × 删除单条。</div>
-        <div id="memList" class="mem-list"></div>
-        <div class="mem-add">
-          <input id="inpMem" type="text" placeholder="手动添加一条记忆，如：我喜欢简洁的回复">
-          <button id="btnMemAdd" class="btn" type="button">添加</button>
+        <div id="memPanel" class="hidden">
+          <div class="set-hint">助手自动从对话提炼你的事实与偏好（也可手动添加），注入后续对话。点 × 删单条。</div>
+          <div id="memList" class="mem-list"></div>
+          <div class="mem-add">
+            <input id="inpMem" type="text" placeholder="手动添加，如：我喜欢简洁的回复">
+            <button id="btnMemAdd" class="btn" type="button">添加</button>
+            <button id="btnMemClear" class="btn btn-ghost" type="button">清空</button>
+          </div>
         </div>
       </div>
       <div class="set-foot">

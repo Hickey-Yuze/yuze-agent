@@ -1891,9 +1891,11 @@ textarea.sd-code:focus { border-color: rgba(0,122,255,.5); background: #fff; }
 .mem-add { display: flex; gap: 8px; margin-top: 8px; }
 .mem-add input { flex: 1; }
 
-/* 记忆面板独立布局：不用 set-group（灰底 overflow:hidden 会把内容贴边裁掉） */
-#memPanel { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px 14px; overflow: visible; }
+/* 记忆面板：set-group 内的子面板，展开时技炉/MCP 行仍在其上方可见 */
+#memPanel { margin: 4px 8px 10px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px 12px; }
 #memPanel .set-hint { margin: 0 0 8px; }
-#memPanel .mem-list { max-height: 260px; }
-#memPanel .mem-add input { min-width: 0; height: 34px; padding: 0 10px; border: 1px solid var(--line); border-radius: 9px; font-size: 12.5px; }
-#memPanel .mem-add .btn { flex: none; }
+#memPanel .mem-list { max-height: 240px; }
+#memPanel .mem-add input { min-width: 0; flex: 1; height: 34px; padding: 0 10px; border: 1px solid var(--line); border-radius: 9px; font-size: 12.5px; background: #fff; }
+#memPanel .mem-add .btn { flex: none; padding: 8px 14px; font-size: 12.5px; }
+#memPanel .btn-ghost { background: #fff; color: #b00; border: 1px solid var(--line); }
+#memPanel .btn-ghost:hover { background: #fdf0f0; }
