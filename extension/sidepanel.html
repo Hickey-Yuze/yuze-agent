@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Yuze-agent</title>
-  <link rel="stylesheet" href="sidepanel.css?v=13">
+  <link rel="stylesheet" href="sidepanel.css?v=14">
   <style>
     /* 详情页 SKILL.md 区：内联一份，避免外部 CSS 缓存导致不生效 */
     .sd-sec {
@@ -54,10 +54,11 @@
         <div class="set-hint" id="effortHint">当前模型支持的档位在读取模型列表后自动填充。</div>
 
         <label for="inpImageModel">生图模型</label>
-        <div class="model-row">
+        <div class="model-row" style="position:relative">
           <input id="inpImageModel" type="text" list="imageModelPresets" placeholder="hunyuan-image-v3.0">
           <button id="btnFetchImgModels" class="btn" type="button" title="从生图网关拉取可用模型列表">获取</button>
           <datalist id="imageModelPresets"></datalist>
+          <div id="imgModelPop" class="hidden"></div>
         </div>
         <div class="set-hint">默认用当前聊天网关（仅支持 hunyuan-image-v3.0）。可自定义生图网关与 Key：填入任意 OpenAI images 兼容接口（如 https://api.xxx.com/v1）后，生图模型也能填 dall-e-3、flux、seedream 等。</div>
         <label for="inpImgBase">生图网关（可选）</label>

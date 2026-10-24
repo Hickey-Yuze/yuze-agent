@@ -67,10 +67,16 @@ try {
     // 场景5：获取模型按钮——打自定义网关 /models，datalist 填充
     await chrome.storage.local.set({ imgBase: 'https://img.example.com/v1', imgKey: 'IMGKEY' });
     document.querySelector('#btnFetchImgModels').click();
-    await wait(120);
-    const opts = [...document.querySelectorAll('#imageModelPresets option')].map((o) => o.value);
-    out.fetchBtn = { opts };
-    out.pass = out.ui.base && out.ui.key && out.ui.fill && out.fetchBtn.opts.join(',') === 'dall-e-3,flux-pro' && out.s1.url === 'https://chat.example.com/v1/images/generations'
+    await wait(150);
+    const pop = document.querySelector('#imgModelPop');
+    const opts = [...pop.querySelectorAll('.im-opt')].map((o) => o.textContent);
+    const popShown = !pop.classList.contains('hidden');
+    pop.querySelector('.im-opt').click();
+    out.fetchBtn = { opts, popShown, picked: document.querySelector('#inpImageModel').value, closed: pop.classList.contains('hidden') };
+    out.pass = out.ui.base && out.ui.key && out.ui.fill
+      && out.fetchBtn.opts.join(',') === 'dall-e-3,flux-pro'
+      && out.fetchBtn.popShown && out.fetchBtn.picked === 'dall-e-3' && out.fetchBtn.closed
+      && out.s1.url === 'https://chat.example.com/v1/images/generations'
       && out.s1.auth === 'Bearer CHATKEY'
       && out.s2.url === 'https://img.example.com/v1/images/generations'
       && out.s2.auth === 'Bearer IMGKEY'

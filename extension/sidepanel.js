@@ -5712,14 +5712,34 @@ $('btnFetchImgModels')?.addEventListener('click', async () => {
   try {
     const ids = await fetchImgModels();
     b.textContent = ids.length + ' 个';
-    setStatus('已获取 ' + ids.length + ' 个生图模型，下拉可直接选择');
+    // 不依赖 datalist 的隐晦交互：获取后直接弹可点选列表，点击即填入
+    const pop = $('imgModelPop');
+    if (pop) {
+      pop.innerHTML = '';
+      for (const id of ids) {
+        const o = document.createElement('div');
+        o.className = 'im-opt';
+        o.textContent = id;
+        o.title = id;
+        o.onclick = () => { $('inpImageModel').value = id; pop.classList.add('hidden'); };
+        pop.appendChild(o);
+      }
+      pop.classList.toggle('hidden', !ids.length);
+    }
+    setStatus('已获取 ' + ids.length + ' 个生图模型，点击列表直接选择');
   } catch (e) {
     b.textContent = old2;
+    const pop = $('imgModelPop');
+    if (pop) pop.classList.add('hidden');
     setStatus('获取生图模型失败：' + (e.message || e));
   } finally {
     setTimeout(() => { b.textContent = old2; b.disabled = false; }, 1800);
   }
 });
+document.addEventListener('click', (e) => {
+  const pop = document.getElementById('imgModelPop');
+  if (pop && !pop.classList.contains('hidden') && !pop.contains(e.target) && e.target !== document.getElementById('btnFetchImgModels')) pop.classList.add('hidden');
+}, true);
 $('btnMemAdd')?.addEventListener('click', async () => {
   const inp = $('inpMem');
   if (await memAddText(inp.value)) { inp.value = ''; renderMemPanel(); }
