@@ -2064,7 +2064,19 @@ function toolNode(tc, rawResult) {
       const j = typeof rawResult === 'string' ? JSON.parse(rawResult) : rawResult;
       if (j && (j.image || j.url)) shotUrl = String(j.image || j.url);
     } catch (_) {}
-    if (shotUrl && /^(data:image\/|https?:\/\/)/.test(shotUrl)) {
+    // Chrome 挂载超长 dataURL（Seedream 2K 图 base64 可达 5-7MB）会直接解析失败 → 裂图。
+    // 大图转 blob URL 显示（无大小限制）；消息与持久化仍存 dataURL 原文。
+    if (shotUrl.startsWith('data:') && shotUrl.length > 3 * 1024 * 1024) {
+      try {
+        const hi = shotUrl.indexOf(',');
+        const mime = (shotUrl.slice(0, hi).match(/data:([^;]+)/) || [])[1] || 'image/png';
+        const bin = atob(shotUrl.slice(hi + 1));
+        const arr = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+        shotUrl = URL.createObjectURL(new Blob([arr], { type: mime }));
+      } catch (_) { /* 转换失败退回原 dataURL */ }
+    }
+    if (shotUrl && /^(data:image\/|blob:|https?:\/\/)/.test(shotUrl)) {
       const im = document.createElement('img');
       im.className = 'tool-img';
       im.src = shotUrl;
