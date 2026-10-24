@@ -449,13 +449,15 @@ async function toolGenerateImage(args) {
     const j = await res.json();
     const item = (j.data || [])[0];
     if (!item) throw new Error('网关没有返回图片');
-    const url = item.url || (item.b64_json ? 'data:image/png;base64,' + item.b64_json : '');
+    const mimeOf = (b) => /^\/9j\//.test(b) ? 'image/jpeg' : /^iVBOR/.test(b) ? 'image/png' : /^UklGR/.test(b) ? 'image/webp' : /^R0lGOD/.test(b) ? 'image/gif' : 'image/png';
+    const url = item.url || (item.b64_json ? 'data:' + mimeOf(item.b64_json) + ';base64,' + item.b64_json : '');
     if (!url) throw new Error('图片地址为空');
     // 立刻转 dataURL：网关给的多是临时链接，过期后历史会话里就只剩裂图
     let image = url;
+    const absUrl = /^https?:\/\//.test(url) ? url : (gwBase.replace(/\/+$/, '') + (url.startsWith('/') ? url : '/' + url));
     if (!/^data:image\//.test(url)) {
       try {
-        const r2 = await fetch(url);
+        const r2 = await fetch(absUrl);
         const b = await r2.blob();
         if (b && b.size <= 3 * 1024 * 1024) {
           image = await new Promise((res, rej) => {
@@ -603,6 +605,16 @@ function wireMessages() {
     if (m.content != null) out.content = m.content;
     if (m.tool_calls) out.tool_calls = m.tool_calls;
     if (m.tool_call_id) out.tool_call_id = m.tool_call_id;
+    // 生图工具结果里的 base64/dataURL 不发给模型（几 MB 毫无信息量，还撑爆上下文/触发误压缩）；
+    // 渲染与持久化用的主 messages 不动，图照常显示。
+    if (out.role === 'tool' && typeof out.content === 'string' && out.content.length > 4096 && /"(image|b64_json)"\s*:/.test(out.content)) {
+      try {
+        const o = JSON.parse(out.content);
+        if (o && (o.image || o.b64_json)) {
+          out.content = JSON.stringify({ ok: true, image: '（base64 已省略：图片已生成并显示在对话中，约 ' + Math.round(out.content.length / 1024) + 'KB）', revised_prompt: o.revised_prompt || '', note: o.note || '图片已显示在对话中' });
+        }
+      } catch (_) { /* 解析失败原样发 */ }
+    }
     return out;
   });
 }
