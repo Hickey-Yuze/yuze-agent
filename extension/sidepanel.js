@@ -2372,7 +2372,7 @@ function pruneGhostBlocks(root) {
   for (const n of [...root.children]) {
     if (n.id === 'chat-empty' || n.classList.contains('welcome')) continue;
     const r = n.getBoundingClientRect();
-    if (r.height > 24) continue;
+    if (r.height > 30) continue;
     if ((n.textContent || '').trim()) continue;
     n.remove();
   }
@@ -2425,7 +2425,7 @@ function updateLive(msg) {
     streamAppend(body, msg.reasoning);
   }
 
-  if (msg.content && String(msg.content).trim()) {
+  if (msg.content && hasVisibleContent(msg.content)) {
     // 一旦开始出正文，这一轮思考就结束了：自动折叠思考块（省地方，用户想看可点开）
     // 注意：工具轮次正文为空不会走到这里，思考保持展开
     {
