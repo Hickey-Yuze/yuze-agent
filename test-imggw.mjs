@@ -36,6 +36,9 @@ try {
     const realFetch = window.fetch;
     window.fetch = async (input, init) => {
       const url = typeof input === 'string' ? input : input.url;
+      if (url.includes('/models') && !url.includes('/chat/')) {
+        return new Response(JSON.stringify({ data: [{ id: 'dall-e-3' }, { id: 'flux-pro' }] }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
       if (url.includes('/images/generations')) {
         calls.push({ url, auth: (init.headers && init.headers.Authorization) || '' });
         return new Response(JSON.stringify({ data: [{ b64_json: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==' }] }), { status: 200, headers: { 'Content-Type': 'application/json' } });
@@ -61,7 +64,13 @@ try {
     // 场景4：保存后 loadSettings 回填
     await loadSettings();
     out.ui.fill = document.querySelector('#inpImgBase').value === 'https://img.example.com/v1' && document.querySelector('#inpImgKey').value === '';
-    out.pass = out.ui.base && out.ui.key && out.ui.fill && out.s1.url === 'https://chat.example.com/v1/images/generations'
+    // 场景5：获取模型按钮——打自定义网关 /models，datalist 填充
+    await chrome.storage.local.set({ imgBase: 'https://img.example.com/v1', imgKey: 'IMGKEY' });
+    document.querySelector('#btnFetchImgModels').click();
+    await wait(120);
+    const opts = [...document.querySelectorAll('#imageModelPresets option')].map((o) => o.value);
+    out.fetchBtn = { opts };
+    out.pass = out.ui.base && out.ui.key && out.ui.fill && out.fetchBtn.opts.join(',') === 'dall-e-3,flux-pro' && out.s1.url === 'https://chat.example.com/v1/images/generations'
       && out.s1.auth === 'Bearer CHATKEY'
       && out.s2.url === 'https://img.example.com/v1/images/generations'
       && out.s2.auth === 'Bearer IMGKEY'

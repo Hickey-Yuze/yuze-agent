@@ -404,6 +404,26 @@ async function toolScreenshot() {
   return { ok: true, image: lastShot, note: '截图已展示给用户' };
 }
 
+async function fetchImgModels() {
+  const { apiKey, baseUrl, imgBaseUrl, imgKey } = await readConf();
+  const base = (imgBaseUrl || baseUrl).replace(/\/+$/, '');
+  const key = imgBaseUrl ? (imgKey || apiKey) : apiKey;
+  const res = await fetch(base + '/models', { headers: { Authorization: 'Bearer ' + key } });
+  if (!res.ok) throw new Error('获取模型列表失败：' + res.status);
+  const j = await res.json();
+  const ids = (j.data || []).map((m) => m.id).filter(Boolean);
+  const dl = document.getElementById('imageModelPresets');
+  if (dl) {
+    dl.innerHTML = '';
+    for (const id of ids) {
+      const o = document.createElement('option');
+      o.value = id;
+      dl.appendChild(o);
+    }
+  }
+  return ids;
+}
+
 async function toolGenerateImage(args) {
   const prompt = String(args.prompt || '').trim();
   if (!prompt) throw new Error('缺少 prompt');
@@ -2377,8 +2397,12 @@ function pruneGhostBlocks(root) {
   for (const n of [...root.children]) {
     if (n.id === 'chat-empty' || n.classList.contains('welcome')) continue;
     const r = n.getBoundingClientRect();
-    if (r.height > 30) continue;
+    // 判据从「高度」改为「内容」：消息流里任何可见高度但既无文字也无图片/媒体的
+    // 节点都是幽灵（空 hr、空壳容器），无论多高一律清掉；内容节点（含纯图片消息、
+    // 工具卡、状态条）被 text/img 条件保护。流式空消息被删后 updateLive 会自动补回。
+    if (r.height < 1) continue;
     if ((n.textContent || '').trim()) continue;
+    if (n.querySelector('img,video,canvas')) continue;
     n.remove();
   }
 }
@@ -5679,6 +5703,22 @@ $('btnMemManage')?.addEventListener('click', () => {
   const p = $('memPanel');
   p.classList.toggle('hidden');
   if (!p.classList.contains('hidden')) renderMemPanel();
+});
+$('btnFetchImgModels')?.addEventListener('click', async () => {
+  const b = $('btnFetchImgModels');
+  const old2 = b.textContent;
+  b.textContent = '…';
+  b.disabled = true;
+  try {
+    const ids = await fetchImgModels();
+    b.textContent = ids.length + ' 个';
+    setStatus('已获取 ' + ids.length + ' 个生图模型，下拉可直接选择');
+  } catch (e) {
+    b.textContent = old2;
+    setStatus('获取生图模型失败：' + (e.message || e));
+  } finally {
+    setTimeout(() => { b.textContent = old2; b.disabled = false; }, 1800);
+  }
 });
 $('btnMemAdd')?.addEventListener('click', async () => {
   const inp = $('inpMem');
