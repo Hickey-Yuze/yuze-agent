@@ -1774,6 +1774,14 @@ function looksEncoded(s) {
   return b64 / t.length > 0.92;
 }
 
+// 正文是否含有可见内容：纯空白、或只有一条 ---/***/___ 分隔线（生图轮模型常发这种空消息，
+// 渲染出来就是一条孤零零的横线，用户当成杂线 bug）都视为不可见
+function hasVisibleContent(c) {
+  const t = String(c == null ? '' : c);
+  if (!t.trim()) return false;
+  return !t.split('\n').every((line) => /^\s*$/.test(line) || /^\s*(---|\*\*\*|___)\s*$/.test(line));
+}
+
 function botNode(msg) {
   const d = document.createElement('div');
   if (msg._claimNoTool) {
@@ -2278,7 +2286,7 @@ function render(forceToBottom) {
       }
       if (m._err) {
         chatEl.appendChild(errorNode(m.content, m._repeat));
-      } else if (m._live || (m.reasoning && String(m.reasoning).trim()) || (m.content && String(m.content).trim())) {
+      } else if (m._live || (m.reasoning && String(m.reasoning).trim()) || hasVisibleContent(m.content)) {
         const bn = botNode(m);
         if (!m._live) bn.appendChild(msgActions(mi));
         chatEl.appendChild(bn);

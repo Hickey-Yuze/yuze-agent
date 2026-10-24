@@ -77,7 +77,7 @@ try {
     messages.push({ role: 'assistant', content: '\\n---\\n' });
     render();
     const md = document.querySelector('.msg-bot .bot-md');
-    return { isHr: !!md && md.children.length === 1 && md.firstChild.tagName === 'HR', bots: document.querySelectorAll('.msg-bot').length };
+    return { isHr: !!md && md.children.length === 1 && md.firstChild.tagName === 'HR', bots: document.querySelectorAll('.msg-bot').length, noBot: document.querySelectorAll('.msg-bot').length === 0 };
   })()`, sessionId);
 
   // 断言 2：纯空白 reasoning（无 content）不再渲染 bot 空节点
@@ -96,6 +96,28 @@ try {
     messages.push({ role: 'assistant', content: '  \\n  ' });
     render();
     return { bots: document.querySelectorAll('.msg-bot').length };
+  })()`, sessionId);
+
+  // 断言 3b：content 只有 --- / *** / ___ 分隔线（生图轮模型空消息）不渲染 bot
+  out.D2_sepOnly = await ev(`(() => {
+    const cases = ['\\n---\\n', '---', '***', '___', '  \\n---\\n  ', '---\\n\\n***'];
+    return cases.map((c) => {
+      messages.length = 0;
+      messages.push({ role: 'user', content: 'x' });
+      messages.push({ role: 'assistant', content: c });
+      render();
+      return document.querySelectorAll('.msg-bot').length;
+    });
+  })()`, sessionId);
+
+  // 断言 3c：--- 与真实文字混排时照常渲染（分隔线是正常排版，不吞）
+  out.D3_sepMixed = await ev(`(() => {
+    messages.length = 0;
+    messages.push({ role: 'user', content: 'x' });
+    messages.push({ role: 'assistant', content: '第一段\\n\\n---\\n\\n第二段' });
+    render();
+    const hr = document.querySelector('.msg-bot hr');
+    return { bots: document.querySelectorAll('.msg-bot').length, hasHr: !!hr };
   })()`, sessionId);
 
   // 断言 4：有真实 reasoning/content 照常渲染（防误伤）
@@ -117,9 +139,11 @@ try {
     return { thinks: document.querySelectorAll('.think').length };
   })()`, sessionId);
 
-  out.pass = out.B_hrIsSeparator.isHr
+  out.pass = out.B_hrIsSeparator.noBot
     && out.C_blankOnly.bots === 0
     && out.D_blankContent.bots === 0
+    && out.D2_sepOnly.every((n) => n === 0)
+    && out.D3_sepMixed.bots === 1 && out.D3_sepMixed.hasHr
     && out.E_normal.bots === 1 && out.E_normal.thinks === 1
     && out.F_liveBlank.thinks === 0;
 
