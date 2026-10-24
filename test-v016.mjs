@@ -72,7 +72,7 @@ try {
   // B hover 预览
   out.B_peek = {
     css: cssTxt.includes('.hover-peek'),
-    delegate: srcTxt.includes("classList.contains('tool-img')")
+    delegate: srcTxt.includes("classList.contains('tool-img')") && srcTxt.includes("classList.contains('qc-img')")
   };
 
   // C 记忆模块

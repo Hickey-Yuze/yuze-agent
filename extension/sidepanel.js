@@ -5554,14 +5554,14 @@ function fixSkillMdList() {
   function hide() { if (peek) { peek.classList.remove('show'); } }
   document.addEventListener('mouseover', (e) => {
     const t = e.target;
-    if (!(t instanceof HTMLImageElement) || !(t.classList.contains('q-img') || t.classList.contains('tool-img'))) return;
+    if (!(t instanceof HTMLImageElement) || !(t.classList.contains('q-img') || t.classList.contains('tool-img') || t.classList.contains('qc-img'))) return;
     clearTimeout(hideTimer);
     show(t.src, e.clientX, e.clientY);
   });
   document.addEventListener('mousemove', (e) => {
     if (!peek || !peek.classList.contains('show')) return;
     const t = e.target;
-    if (t instanceof HTMLImageElement && (t.classList.contains('q-img') || t.classList.contains('tool-img'))) {
+    if (t instanceof HTMLImageElement && (t.classList.contains('q-img') || t.classList.contains('tool-img') || t.classList.contains('qc-img'))) {
       show(t.src, e.clientX, e.clientY);
     } else {
       // 移出图片稍作延迟再收起，避免快速滑动闪断
