@@ -1890,3 +1890,10 @@ textarea.sd-code:focus { border-color: rgba(0,122,255,.5); background: #fff; }
 .mem-item .mem-x { flex: none; border: none; background: none; color: #b00; cursor: pointer; font-size: 14px; padding: 0 2px; }
 .mem-add { display: flex; gap: 8px; margin-top: 8px; }
 .mem-add input { flex: 1; }
+
+/* 记忆面板独立布局：不用 set-group（灰底 overflow:hidden 会把内容贴边裁掉） */
+#memPanel { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px 14px; overflow: visible; }
+#memPanel .set-hint { margin: 0 0 8px; }
+#memPanel .mem-list { max-height: 260px; }
+#memPanel .mem-add input { min-width: 0; height: 34px; padding: 0 10px; border: 1px solid var(--line); border-radius: 9px; font-size: 12.5px; }
+#memPanel .mem-add .btn { flex: none; }
