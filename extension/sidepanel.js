@@ -2278,7 +2278,7 @@ function render(forceToBottom) {
       }
       if (m._err) {
         chatEl.appendChild(errorNode(m.content, m._repeat));
-      } else if (m._live || m.reasoning || m.content) {
+      } else if (m._live || (m.reasoning && String(m.reasoning).trim()) || (m.content && String(m.content).trim())) {
         const bn = botNode(m);
         if (!m._live) bn.appendChild(msgActions(mi));
         chatEl.appendChild(bn);
