@@ -1619,6 +1619,7 @@ textarea.sd-code:focus { border-color: rgba(0,122,255,.5); background: #fff; }
   padding: 26px 18px; display: flex; align-items: center; justify-content: center;
 }
 .settings.hidden { display: none; }
+.set-card > * { flex-shrink: 0; }
 .set-card {
   width: 100%; max-width: 520px; max-height: 100%; overflow-y: auto;
   background: #fff; border-radius: 20px;

@@ -1856,7 +1856,7 @@ function looksEncoded(s) {
 function hasVisibleContent(c) {
   const t = String(c == null ? '' : c);
   if (!t.trim()) return false;
-  return !t.split('\n').every((line) => /^\s*$/.test(line) || /^\s*(---|\*\*\*|___)\s*$/.test(line));
+  return !t.split('\n').every((line) => /^\s*$/.test(line) || /^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(line));
 }
 
 function botNode(msg) {
@@ -2403,6 +2403,7 @@ function pruneGhostBlocks(root) {
     if (r.height < 1) continue;
     if ((n.textContent || '').trim()) continue;
     if (n.querySelector('img,video,canvas')) continue;
+    // 无文字无媒体即删（hr-only 壳天然满足）；流式空消息被删后 updateLive 会补回
     n.remove();
   }
 }
