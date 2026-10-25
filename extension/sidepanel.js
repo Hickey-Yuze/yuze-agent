@@ -944,6 +944,20 @@ function setSendMode(mode) {
 function stopRun() {
   if (!running) return;
   stopRequested = true;
+  if (bridgeState.enabled && bridgeNow) {
+    // 桥模式：关掉事件流 + 通知 Harness 中止，本地立即复位
+    try { bridgeNow.close(); } catch (_) {}
+    bridgeNow = null;
+    try { HarnessBridge.cancel(bridgeState.url, bridgeState.token, bridgeState.sessionId); } catch (_) {}
+    try { if (bridgeEndTurn) bridgeEndTurn(); } catch (_) {}
+    running = false;
+    backgroundMode = false;
+    setSendMode('send');
+    setDot('idle');
+    setStatus('已停止');
+    render();
+    return;
+  }
   try { abortCtrl?.abort(); } catch (_) {}
   try { chrome.runtime.sendMessage({ type: 'agent:stop', requestId: currentRequestId }); } catch (_) {}
   setStatus('正在停止…');
@@ -1203,6 +1217,145 @@ async function runAgent(userText, imageUrl, meta) {
   persist();
   saveSnap(1, true);
   await agentLoop();
+}
+
+/* ── 桥模式：这一轮交给本地 Harness 跑，侧栏只订阅事件流 ── */
+let bridgeNow = null;        // 当前 SSE 订阅，停止时关掉
+let bridgeEndTurn = null;   // 当前桥回合的收尾函数（停止时唤醒，避免 finally 卡到超时）
+const bridgeSince = {};      // sessionId → 已处理的最大 seq（重连时续上）
+
+async function bridgeSinceOf(sessionId) {
+  if (bridgeSince[sessionId] != null) return bridgeSince[sessionId];
+  let m = {};
+  try {
+    const s = await chrome.storage.local.get('bridgeSeqs');
+    m = (s && s.bridgeSeqs) || {};
+  } catch (_) {}
+  bridgeSince[sessionId] = Number(m[sessionId]) || 0;
+  return bridgeSince[sessionId];
+}
+
+async function bridgeSaveSeq(sessionId) {
+  try {
+    const s = await chrome.storage.local.get('bridgeSeqs');
+    const m = (s && s.bridgeSeqs) || {};
+    m[sessionId] = bridgeSince[sessionId] || 0;
+    await chrome.storage.local.set({ bridgeSeqs: m });
+  } catch (_) {}
+}
+
+async function runViaBridge(userText, imageUrl, meta) {
+  if (running) return;
+  running = true;
+  stopRequested = false;
+  resumeStep = 0;
+  document.querySelectorAll('#chat .feedback').forEach((n) => n.remove());
+  setSendMode('stop');
+  setDot('busy');
+
+  const userContent = imageUrl
+    ? [{ type: 'text', text: userText }, { type: 'image_url', image_url: { url: imageUrl } }]
+    : userText;
+  messages.push({ role: 'user', content: userContent, display: (meta && meta.display) || '', quotes: (meta && meta.quotes) || [] });
+  render(true);
+  persist();
+  saveSnap(1, true);
+
+  const live = { role: 'assistant', content: '', reasoning: '', bridgeTools: [], _live: true };
+  messages.push(live);
+  render();
+
+  let painted = 0;
+  const paint = () => {
+    const now = Date.now();
+    if (now - painted < 70) return;
+    painted = now;
+    updateLive(live);
+  };
+
+  try {
+    if (!bridgeState.token) throw new Error('没填 Harness 令牌（设置 → 本地 Harness）');
+    if (!bridgeState.sessionId) {
+      setStatus('创建 Harness 会话…');
+      bridgeState.sessionId = await HarnessBridge.createSession(bridgeState.url, bridgeState.token, {});
+      await chrome.storage.local.set({ bridgeSession: bridgeState.sessionId });
+    }
+    const sid = bridgeState.sessionId;
+    const since = await bridgeSinceOf(sid);
+    setStatus('等待 Harness 响应…');
+
+    let endTurn = null;
+    const finished = new Promise((res) => { endTurn = res; });
+    bridgeEndTurn = endTurn;
+
+    bridgeNow = HarnessBridge.subscribe(bridgeState.url, bridgeState.token, sid, since, {
+      onEvent(ev) {
+        bridgeSince[sid] = Math.max(bridgeSince[sid] || 0, Number(ev.seq) || 0);
+        if (ev.sessionId && ev.sessionId !== sid) return;
+        const d = ev.data || {};
+        if (ev.type === 'assistant/chunk') {
+          const dl = HarnessBridge.chunkToDelta(d.chunk || d);
+          if (dl && dl.kind === 'reasoning') { live.reasoning += dl.text; paint(); }
+          else if (dl && dl.kind === 'text') { live.content += dl.text; paint(); }
+          else if (dl && dl.kind === 'tool-call' && dl.name) {
+            live.bridgeTools.push({ name: dl.name, state: '运行中' });
+            updateLive(live);
+          }
+        } else if (ev.type === 'assistant/message') {
+          const t = HarnessBridge.messageText(d.message || d);
+          if (t && t.length >= live.content.length) live.content = t;
+          paint();
+        } else if (ev.type === 'tool/call') {
+          live.bridgeTools.push({ name: d.name || '工具', state: '运行中' });
+          updateLive(live);
+        } else if (ev.type === 'tool/result') {
+          const last = live.bridgeTools[live.bridgeTools.length - 1];
+          if (last) {
+            last.state = d.error ? '失败' : '完成';
+            if (d.error) last.ok = false;
+          }
+          updateLive(live);
+        } else if (ev.type === 'turn/end') {
+          if (endTurn) endTurn();
+        } else if (ev.type === 'error' || (d && d.error)) {
+          pushError('Harness：' + String((d && d.error && (d.error.message || d.error)) || ev.type));
+        }
+      },
+      onError() {
+        setStatus('事件流断开，正在重连…');
+      },
+      onReset() {
+        bridgeSince[sid] = 0;
+      }
+    });
+
+    await HarnessBridge.prompt(bridgeState.url, bridgeState.token, {
+      sessionId: sid,
+      text: userText,
+      requestId: 'x_' + Date.now().toString(36)
+    });
+    // 兜底：Harness 卡死时不至于永远转圈
+    await Promise.race([finished, new Promise((res) => setTimeout(res, 600000))]);
+  } catch (e) {
+    pushError('本地 Harness：' + String((e && e.message) || e));
+  } finally {
+    bridgeEndTurn = null;
+    try { if (bridgeNow) bridgeNow.close(); } catch (_) {}
+    bridgeNow = null;
+    delete live._live;
+    if (!live.content && !live.reasoning && !live.bridgeTools.length) {
+      const i = messages.indexOf(live);
+      if (i >= 0) messages.splice(i, 1);
+    }
+    running = false;
+    stopRequested = false;
+    setSendMode('send');
+    setDot('idle');
+    setStatus('');
+    render();
+    persist();
+    if (bridgeState.sessionId) bridgeSaveSeq(bridgeState.sessionId);
+  }
 }
 
 function cleanMsg(m) {
@@ -1920,6 +2073,14 @@ function hasVisibleContent(c) {
   return !t.split('\n').every((line) => /^\s*$/.test(line) || /^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(line));
 }
 
+function bridgeToolsHtml(list) {
+  return (list || []).map((t) => {
+    const nm = String(t.name || '工具').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const st = String(t.state || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return '<span class="bt-chip' + (t.ok === false ? ' bad' : '') + '">' + nm + (st ? ' · ' + st : '') + '</span>';
+  }).join('');
+}
+
 function botNode(msg) {
   const d = document.createElement('div');
   if (msg._claimNoTool) {
@@ -1947,6 +2108,12 @@ function botNode(msg) {
     body.className = 'bot-md';
     body.innerHTML = mdToHtml(msg.content);
     d.appendChild(body);
+  }
+  if (msg.bridgeTools && msg.bridgeTools.length) {
+    const box = document.createElement('div');
+    box.className = 'bridge-tools';
+    box.innerHTML = bridgeToolsHtml(msg.bridgeTools);
+    d.appendChild(box);
   }
   return d;
 }
@@ -2557,6 +2724,17 @@ function updateLive(msg) {
     }
   }
 
+  if (msg.bridgeTools && msg.bridgeTools.length) {
+    const html = bridgeToolsHtml(msg.bridgeTools);
+    let box = node.querySelector('.bridge-tools');
+    if (!box) {
+      box = document.createElement('div');
+      box.className = 'bridge-tools';
+      node.appendChild(box);
+    }
+    if (box.dataset.h !== html) { box.innerHTML = html; box.dataset.h = html; }
+  }
+
   if (stickBottom) chatEl.scrollTop = chatEl.scrollHeight;
   pruneGhostBlocks(chatEl);
 }
@@ -2576,6 +2754,51 @@ async function loadSettings() {
   modelTag.textContent = curModel.replace(/^cn:/, '');
   modelTag.title = curModel;
   await loadGenSettings(curModel);
+  await loadBridgeSettings();
+}
+
+/* ── 本地 Harness 桥（会话跑在 Harness 上，侧栏只做界面）── */
+let bridgeState = { enabled: false, url: '', token: '', sessionId: '' };
+
+async function loadBridgeSettings() {
+  const s = await chrome.storage.local.get(['bridgeEnabled', 'bridgeUrl', 'bridgeToken', 'bridgeSession']);
+  bridgeState = {
+    enabled: !!s.bridgeEnabled,
+    url: s.bridgeUrl || HarnessBridge.DEFAULTS.url,
+    token: s.bridgeToken || '',
+    sessionId: s.bridgeSession || ''
+  };
+  $('chkBridge').checked = bridgeState.enabled;
+  $('inpBridgeUrl').value = bridgeState.url;
+  $('inpBridgeToken').value = bridgeState.token;
+  $('bridgeBox').classList.toggle('hidden', !bridgeState.enabled);
+  if (bridgeState.enabled && bridgeState.token) refreshBridgeSessions().catch(() => {});
+}
+
+// 拉宿主会话列表填进下拉；失败时只留「新会话」，不打断设置页
+async function refreshBridgeSessions() {
+  const url = $('inpBridgeUrl').value.trim() || bridgeState.url;
+  const token = $('inpBridgeToken').value.trim() || bridgeState.token;
+  const sel = $('selBridgeSession');
+  if (!sel) return;
+  const keep = sel.value || bridgeState.sessionId;
+  sel.innerHTML = '<option value="">（新会话）</option>';
+  if (!token) return;
+  const list = await HarnessBridge.sessions(url, token);
+  list.forEach((s) => {
+    const o = document.createElement('option');
+    o.value = s.id;
+    o.textContent = (s.title || '未命名会话') + (s.updatedAt ? ' · ' + new Date(s.updatedAt).toLocaleString() : '');
+    sel.appendChild(o);
+  });
+  if (keep && list.some((s) => s.id === keep)) sel.value = keep;
+}
+
+function setBridgeHint(text, bad) {
+  const el = $('bridgeHint');
+  if (!el) return;
+  el.textContent = text;
+  el.style.color = bad ? '#b00' : '';
 }
 
 /* 生成与思考：档位下拉按当前模型真实支持的档位填充，避免选了不支持的档被静默降级 */
@@ -2721,6 +2944,39 @@ $('btnSettings').addEventListener('click', () => {
 
 /* 获取模型按钮已移进每个提供商卡片 */
 
+/* ── 本地 Harness 桥：设置页交互 ── */
+$('chkBridge').addEventListener('change', () => {
+  const on = $('chkBridge').checked;
+  $('bridgeBox').classList.toggle('hidden', !on);
+  if (on) {
+    if (!$('inpBridgeUrl').value.trim()) $('inpBridgeUrl').value = HarnessBridge.DEFAULTS.url;
+    if (!bridgeState.token) setBridgeHint('填上 Harness 里的令牌（~/.dsh/secrets/ext-bridge.key）再点「测试」。');
+  }
+});
+
+$('btnBridgeTest').addEventListener('click', async () => {
+  const url = $('inpBridgeUrl').value.trim() || HarnessBridge.DEFAULTS.url;
+  const token = $('inpBridgeToken').value.trim();
+  setBridgeHint('正在连接…');
+  try {
+    const p = await HarnessBridge.ping(url);
+    if (!token) {
+      setBridgeHint('服务在线（v' + (p.version || '?') + '），但还没填令牌。', true);
+      return;
+    }
+    const list = await HarnessBridge.sessions(url, token);
+    setBridgeHint('连接正常：' + list.length + ' 个会话可用。');
+    await refreshBridgeSessions();
+  } catch (e) {
+    const msg = String((e && e.message) || e);
+    setBridgeHint(/401/.test(msg) ? '令牌不对（401）' : '连不上：' + msg, true);
+  }
+});
+
+$('btnBridgeRefresh').addEventListener('click', () => {
+  refreshBridgeSessions().catch((e) => setBridgeHint('拉会话失败：' + (e && e.message || e), true));
+});
+
 $('btnSave').addEventListener('click', async () => {
   const cards = [...provList.querySelectorAll('.prov')];
   const list = cards.map((c) => ({
@@ -2731,6 +2987,10 @@ $('btnSave').addEventListener('click', async () => {
     protocol: c.querySelector('[data-f=protocol]').value,
     model: c.querySelector('[data-f=model]').value.trim()
   }));
+  const bridgeOn = $('chkBridge').checked;
+  const bridgeUrl = $('inpBridgeUrl').value.trim() || HarnessBridge.DEFAULTS.url;
+  const bridgeToken = $('inpBridgeToken').value.trim();
+  const bridgeSession = $('selBridgeSession').value || '';
   await chrome.storage.local.set({
     providers: list,
     activeProvider: provState.active,
@@ -2738,14 +2998,36 @@ $('btnSave').addEventListener('click', async () => {
     reasoningEffort: $('selEffort').value,
     imageModel: $('inpImageModel').value.trim() || DEFAULT_IMAGE_MODEL,
     imgBase: $('inpImgBase').value.trim(),
-    imgKey: $('inpImgKey').value.trim()
+    imgKey: $('inpImgKey').value.trim(),
+    bridgeEnabled: bridgeOn,
+    bridgeUrl,
+    bridgeToken,
+    bridgeSession
   });
+  bridgeState = { enabled: bridgeOn, url: bridgeUrl, token: bridgeToken, sessionId: bridgeSession };
   provState.list = list;
   modelIds = [];
   const p = list.find((x) => x.id === provState.active) || list[0];
   const showModel = p.model || DEFAULT_MODEL;
   modelTag.textContent = showModel.replace(/^cn:/, '');
   modelTag.title = showModel;
+  // 桥模式下模型跑在 Harness 上，本地网关 Key 不是必要条件：改成验桥
+  if (bridgeOn) {
+    setStatus('校验桥…');
+    try {
+      await HarnessBridge.ping(bridgeUrl);
+      if (!bridgeToken) throw new Error('没填令牌');
+      const list2 = await HarnessBridge.sessions(bridgeUrl, bridgeToken);
+      setStatus('已保存，Harness 连接正常（' + list2.length + ' 个会话）');
+      settingsEl.classList.add('hidden');
+    } catch (e) {
+      const msg = String((e && e.message) || e);
+      setStatus(/401/.test(msg) ? '令牌不对（401）' : '连不上 Harness');
+      pushError('本地 Harness：' + msg);
+      render();
+    }
+    return;
+  }
   setStatus('校验 Key…');
   try {
     const r = await fetch(p.baseUrl + '/models', { headers: p.apiKey ? { Authorization: 'Bearer ' + p.apiKey } : {} });
@@ -2790,7 +3072,12 @@ function send() {
   inpMsg.value = '';
   inpMsg.style.height = 'auto';
   // 单进程执行：任务跑在侧边栏自身，不再经 offscreen 跨进程同步——消息/状态不会再错位
-  runAgent(((prefix ? prefix + '\n\n' : '') + text).trim(), img, { display: text, quotes });
+  const fullText = ((prefix ? prefix + '\n\n' : '') + text).trim();
+  if (bridgeState.enabled) {
+    runViaBridge(fullText, img, { display: text, quotes });
+    return;
+  }
+  runAgent(fullText, img, { display: text, quotes });
 }
 
 btnSend.addEventListener('click', send);

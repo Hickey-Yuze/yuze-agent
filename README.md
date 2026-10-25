@@ -61,6 +61,17 @@ chrome.debugger → 原生 CDP → 当前标签页
 
 Key 保存在 `chrome.storage.local`，只留在本机浏览器里。
 
+## 本地 Harness 模式（v0.7.27）
+
+侧边栏可以不再自带 agent，而是把整轮对话交给本机的 DeepSeek Harness 执行——模型、工具、技能、记忆、路由全用 Harness 的，本扩展只负责界面。
+
+1. 在 Harness 侧装好桥插件 `dsh-ext-bridge`（已随 desktop profile 启用），它会在同一端口上开一组 loopback 接口：`/ext-bridge/ping|sessions|prompt|cancel|events`。
+2. 宿主启动后自动生成令牌：`~/.dsh/secrets/ext-bridge.key`（0600）。
+3. 侧边栏 ⚙ →「本地 Harness」：勾选启用，填地址（默认 `http://127.0.0.1:43120`）与令牌，点「刷新」拉到会话列表，选一个或留「（新会话）」。
+4. 保存后发送的消息会 `POST /prompt` 给 Harness，回复经 SSE 事件流（`assistant/chunk`、`tool/call`、`turn/end`）实时回到气泡里；工具调用以 chip 形式贴在回答下方，点停止走 `/cancel`。
+
+桥接口用 Bearer 令牌鉴权、只绑 loopback，不走 GUI 的 cookie 登录；关掉勾选即回到扩展自带的 agent。
+
 ## 使用要点
 
 | 功能 | 入口 | 说明 |
@@ -156,6 +167,16 @@ Yuze-agent/
 - 会话存 `chrome.storage.local` 的 `sessions` 键，最多 100 条，300ms 防抖落盘。
 
 ## 更新记录
+
+### v0.7.27 — 接本地 Harness
+
+| 改动 | 说明 |
+|---|---|
+| 桥设置块 | 设置弹窗新增「本地 Harness」：启用勾选、地址、令牌、会话下拉、测试/刷新 |
+| 发送分流 | 勾选启用后 `send()` 走 `runViaBridge`：建会话 → 订阅 SSE → `/prompt` → 按事件增量渲染 |
+| 工具可视化 | `tool/call`、`tool/result`、`tool-call-delta` 渲染为 `.bt-chip`（完成/失败着色） |
+| 停止即中止 | 停止按钮关流并 `/cancel`，同时唤醒回合收尾，不留 `_live` 幽灵消息 |
+| 测试 | `test-extbridge.mjs`：mock 桥服务 + 真加载扩展，覆盖设置、流式、工具 chip、停止四段，连跑 3 轮全绿 |
 
 ### v0.5.5 — 回执语义对齐
 

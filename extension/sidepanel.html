@@ -96,6 +96,32 @@
           </div>
         </div>
       </div>
+      <div class="set-label">本地 Harness</div>
+      <div class="set-form">
+        <label class="sw-row" for="chkBridge">
+          <input id="chkBridge" type="checkbox">
+          <span>连接到本地 Harness（会话在 Harness 上跑）</span>
+        </label>
+        <div id="bridgeBox" class="hidden">
+          <label for="inpBridgeUrl">Harness 地址</label>
+          <div class="model-row">
+            <input id="inpBridgeUrl" type="text" placeholder="http://127.0.0.1:43120">
+            <button id="btnBridgeTest" class="ghost-btn" type="button">测试</button>
+          </div>
+          <label for="inpBridgeToken">访问令牌</label>
+          <div class="model-row">
+            <input id="inpBridgeToken" type="password" placeholder="~/.dsh/secrets/ext-bridge.key 的内容">
+          </div>
+          <label for="inpBridgeSession">会话</label>
+          <div class="model-row">
+            <select id="selBridgeSession">
+              <option value="">（新会话）</option>
+            </select>
+            <button id="btnBridgeRefresh" class="ghost-btn" type="button">刷新</button>
+          </div>
+          <div class="set-hint" id="bridgeHint">先在 Harness 里启用 dsh-ext-bridge 插件，再把令牌填进来。开启后本侧栏只做界面，模型、工具、技能、记忆都由 Harness 执行。</div>
+        </div>
+      </div>
       <div class="set-foot">
         <span class="set-note">更改将在保存后生效</span>
         <button id="btnSave" class="btn">保存并验证</button>
@@ -497,6 +523,7 @@
 
   <script src="db.js?v=1"></script>
   <script src="skills-extra.js?v=12"></script>
-  <script src="sidepanel.js?v=16"></script>
+  <script src="bridge.js?v=1"></script>
+  <script src="sidepanel.js?v=17"></script>
 </body>
 </html>
