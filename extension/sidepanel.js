@@ -1866,8 +1866,15 @@ function mdToHtml(src) {
       .replace(/`([^`]+)`/g, '<code>$1</code>')
       .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
       .replace(/(^|[^*\w])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>')
-      .replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, '<img class="md-img" src="$2" alt="$1">')
-      .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+      .replace(/!\[([^\]]*)\]\(\s*<?([^)>\s]+)>?\s*\)/g, (_m, alt, href) => {
+        const src = bridgeFileUrl(href);
+        return src ? '<img class="md-img" src="' + src.replace(/"/g, '&quot;') + '" alt="' + alt + '">' : _m;
+      })
+      .replace(/\[([^\]]+)\]\(\s*<?([^)>\s]+)>?\s*\)/g, (_m, label, href) => {
+        const url = bridgeFileUrl(href);
+        if (!url) return _m;
+        return '<a href="' + url.replace(/"/g, '&quot;') + '" target="_blank" rel="noopener noreferrer">' + label + '</a>';
+      });
 
   const lines = String(src).replace(/\r\n?/g, '\n').split('\n');
   const isBlockStart = (l) =>
@@ -2114,10 +2121,11 @@ function botNode(msg) {
       d.appendChild(thinkNode(msg.reasoning, !msg._live));
     }
   }
+  const bodyHtml = msg.content ? mdToHtml(msg.content) : '';
   if (msg.content) {
     const body = document.createElement('div');
     body.className = 'bot-md';
-    body.innerHTML = mdToHtml(msg.content);
+    body.innerHTML = bodyHtml;
     d.appendChild(body);
   }
   if (msg.bridgeTools && msg.bridgeTools.length) {
@@ -2126,7 +2134,7 @@ function botNode(msg) {
     box.innerHTML = bridgeToolsHtml(msg.bridgeTools);
     d.appendChild(box);
   }
-  if (Array.isArray(msg.images) && msg.images.length) {
+  if (Array.isArray(msg.images) && msg.images.length && !htmlHasImage(bodyHtml)) {
     const box = document.createElement('div');
     box.className = 'bridge-imgs';
     box.innerHTML = bridgeImagesHtml(msg.images);
@@ -2753,7 +2761,12 @@ function updateLive(msg) {
   }
 
   if (Array.isArray(msg.images) && msg.images.length) {
-    const html = bridgeImagesHtml(msg.images);
+    const html = htmlHasImage(msg.content ? mdToHtml(msg.content) : '') ? '' : bridgeImagesHtml(msg.images);
+    if (!html) {
+      const stale = node.querySelector('.bridge-imgs');
+      if (stale) stale.remove();
+      return;
+    }
     let box = node.querySelector('.bridge-imgs');
     if (!box) {
       box = document.createElement('div');
@@ -2789,6 +2802,27 @@ async function loadSettings() {
 let bridgeState = { enabled: false, url: '', token: '', sessionId: '' };
 
 /* Harness 附件（生图结果）的浏览器可访址：由桥插件代理字节，token 走 query */
+// 模型经常把生成的图以「本地绝对路径」写进 markdown（如 ![](</Users/yuze/dsh-image-gen/x.jpg>)）。
+// 扩展页面读不了 file://，所以统一改走本地桥的 /file 代理。
+function bridgeFileUrl(absPath) {
+  const raw = String(absPath || '').trim()
+    .replace(/^&lt;|&gt;$/g, '')   // inline() 已经把尖括号转成实体
+    .replace(/^<|>$/g, '');
+  if (!raw) return '';
+  if (/^(?:https?|data|blob):/i.test(raw)) return raw;
+  const plain = /^file:\/\//i.test(raw) ? decodeURIComponent(raw.replace(/^file:\/\/*/i, '/')) : raw;
+  if (!plain.startsWith('/')) return raw;
+  const base = String(bridgeState.url || '').replace(/\/+$/, '');
+  if (!base) return '';
+  return base + '/ext-bridge/file?path=' + encodeURIComponent(plain)
+    + '&token=' + encodeURIComponent(bridgeState.token || '');
+}
+
+// 正文里已经画了图就别再追加工具结果图块，避免同一张图出现两次。
+function htmlHasImage(html) {
+  return /<img[^>]+class="md-img"/.test(String(html || '')) || /<div class="bridge-imgs"/.test(String(html || ''));
+}
+
 function bridgeAttachmentUrl(attachmentId) {
   if (!attachmentId) return '';
   const base = String(bridgeState.url || '').replace(/\/+$/, '');

@@ -29,7 +29,7 @@ function ok(name, cond, extra) {
 
 /* ───────── mock /ext-bridge ───────── */
 let seq = 0;
-const log = { cancels: 0, prompts: 0, sseHits: 0, sseClients: new Set() };
+const log = { cancels: 0, prompts: 0, sseHits: 0, sseClients: new Set(), fileHits: [] };
 function emit(type, data, sessionId = 'sess-1') {
   const ev = { id: 'e' + (++seq), type, seq, sessionId, timestamp: new Date().toISOString(), data };
   const line = 'data: ' + JSON.stringify(ev) + '\n\n';
@@ -56,6 +56,13 @@ const mock = createServer((req, res) => {
   if (u.pathname === '/ext-bridge/attachment') {
     const id = u.searchParams.get('id') || '';
     if (id !== ATT_ID) return json(404, { error: 'attachment not found' });
+    res.writeHead(200, { ...cors, 'content-type': 'image/png', 'content-length': String(PNG.length) });
+    return res.end(PNG);
+  }
+  if (u.pathname === '/ext-bridge/file') {
+    const p = u.searchParams.get('path') || '';
+    log.fileHits.push(p);
+    if (!/^\/.*\.(?:png|jpe?g|webp)$/i.test(p)) return json(403, { error: 'not an image file' });
     res.writeHead(200, { ...cors, 'content-type': 'image/png', 'content-length': String(PNG.length) });
     return res.end(PNG);
   }
@@ -260,6 +267,28 @@ try {
   ok('stop_cancels', log.cancels > beforeCancel, { before: beforeCancel, after: log.cancels });
   out.sseHits = log.sseHits;
   ok('sse_closed', log.sseClients.size === 0, log.sseClients.size);
+
+  /* ── 正文 markdown 里的本地路径图：应改写成桥 /file 并真的能加载 ── */
+  const IMG_PATH = '/Users/yuze/dsh-image-gen/mock-test.jpg';
+  const mdHtml = await ev(`mdToHtml('![金毛](${IMG_PATH})')`, sessionId);
+  ok('md_img_rewritten', /\/ext-bridge\/file\?path=/.test(mdHtml), mdHtml);
+  ok('md_img_no_local_src', !mdHtml.includes('src="' + IMG_PATH), mdHtml);
+  const mdAngle = await ev(`mdToHtml('![金毛](<${IMG_PATH}>)')`, sessionId);
+  ok('md_img_angle_rewritten', /\/ext-bridge\/file\?path=/.test(mdAngle), mdAngle);
+  const mdLink = await ev(`mdToHtml('[备用图](<${IMG_PATH}>)')`, sessionId);
+  ok('md_link_rewritten', /<a href="[^"]*\/ext-bridge\/file\?path=/.test(mdLink), mdLink);
+  const loadedPx = await ev(`(async () => {
+    const html = mdToHtml('![金毛](${IMG_PATH})');
+    const host = document.createElement('div');
+    host.innerHTML = html;
+    document.body.appendChild(host);
+    const img = host.querySelector('img');
+    if (!img) return 'no-img';
+    await new Promise((r) => { img.onload = r; img.onerror = r; setTimeout(r, 4000); });
+    return img.complete && img.naturalWidth > 0 ? 'ok:' + img.naturalWidth : 'broken:' + img.src;
+  })()`, sessionId);
+  ok('md_img_loaded', String(loadedPx).startsWith('ok:'), loadedPx);
+  ok('mock_file_hit', log.fileHits.some((x) => x.includes('mock-test.jpg')), log.fileHits);
 } catch (e) {
   out.FATAL = String(e && e.stack || e);
   fail++;
