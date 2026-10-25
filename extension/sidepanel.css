@@ -1650,6 +1650,14 @@ textarea.sd-code:focus { border-color: rgba(0,122,255,.5); background: #fff; }
 
 /* 桥模式：Harness 侧的工具调用小标签（贴在回答下方） */
 .bridge-tools { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0 2px; }
+
+/* 桥模式：Harness 生成的图片（由桥插件 /attachment 代理字节） */
+.bridge-imgs { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 2px; }
+.bridge-imgs img {
+  max-width: 100%; max-height: 340px; display: block;
+  border-radius: 10px; border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.03);
+}
 .bridge-tools .bt-chip {
   display: inline-flex; align-items: center; gap: 4px;
   padding: 2px 8px; border-radius: 999px;

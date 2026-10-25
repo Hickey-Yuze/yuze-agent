@@ -1261,7 +1261,7 @@ async function runViaBridge(userText, imageUrl, meta) {
   persist();
   saveSnap(1, true);
 
-  const live = { role: 'assistant', content: '', reasoning: '', bridgeTools: [], _live: true };
+  const live = { role: 'assistant', content: '', reasoning: '', bridgeTools: [], images: [], _live: true };
   messages.push(live);
   render();
 
@@ -1314,6 +1314,17 @@ async function runViaBridge(userText, imageUrl, meta) {
             last.state = d.error ? '失败' : '完成';
             if (d.error) last.ok = false;
           }
+          // 生图等工具的结果里带 image part：收集附件 id，交给桥代理取字节
+          const parts = Array.isArray(d && d.content) ? d.content : [];
+          for (const part of parts) {
+            const att = part && part.type === 'image' && part.attachment;
+            if (att && att.attachmentId) {
+              live.images = live.images || [];
+              if (!live.images.some((im) => im.id === att.attachmentId)) {
+                live.images.push({ id: att.attachmentId, mediaType: att.mediaType || '', name: att.name || '' });
+              }
+            }
+          }
           updateLive(live);
         } else if (ev.type === 'turn/end') {
           if (endTurn) endTurn();
@@ -1343,7 +1354,7 @@ async function runViaBridge(userText, imageUrl, meta) {
     try { if (bridgeNow) bridgeNow.close(); } catch (_) {}
     bridgeNow = null;
     delete live._live;
-    if (!live.content && !live.reasoning && !live.bridgeTools.length) {
+    if (!live.content && !live.reasoning && !live.bridgeTools.length && !(live.images && live.images.length)) {
       const i = messages.indexOf(live);
       if (i >= 0) messages.splice(i, 1);
     }
@@ -2115,6 +2126,12 @@ function botNode(msg) {
     box.innerHTML = bridgeToolsHtml(msg.bridgeTools);
     d.appendChild(box);
   }
+  if (Array.isArray(msg.images) && msg.images.length) {
+    const box = document.createElement('div');
+    box.className = 'bridge-imgs';
+    box.innerHTML = bridgeImagesHtml(msg.images);
+    d.appendChild(box);
+  }
   return d;
 }
 
@@ -2735,6 +2752,17 @@ function updateLive(msg) {
     if (box.dataset.h !== html) { box.innerHTML = html; box.dataset.h = html; }
   }
 
+  if (Array.isArray(msg.images) && msg.images.length) {
+    const html = bridgeImagesHtml(msg.images);
+    let box = node.querySelector('.bridge-imgs');
+    if (!box) {
+      box = document.createElement('div');
+      box.className = 'bridge-imgs';
+      node.appendChild(box);
+    }
+    if (box.dataset.h !== html) { box.innerHTML = html; box.dataset.h = html; }
+  }
+
   if (stickBottom) chatEl.scrollTop = chatEl.scrollHeight;
   pruneGhostBlocks(chatEl);
 }
@@ -2759,6 +2787,25 @@ async function loadSettings() {
 
 /* ── 本地 Harness 桥（会话跑在 Harness 上，侧栏只做界面）── */
 let bridgeState = { enabled: false, url: '', token: '', sessionId: '' };
+
+/* Harness 附件（生图结果）的浏览器可访址：由桥插件代理字节，token 走 query */
+function bridgeAttachmentUrl(attachmentId) {
+  if (!attachmentId) return '';
+  const base = String(bridgeState.url || '').replace(/\/+$/, '');
+  if (!base) return '';
+  return base + '/ext-bridge/attachment?id=' + encodeURIComponent(attachmentId)
+    + '&token=' + encodeURIComponent(bridgeState.token || '');
+}
+
+function bridgeImagesHtml(images) {
+  if (!Array.isArray(images) || !images.length) return '';
+  const esc = (t) => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  return '<div class="bridge-imgs">' + images.map((im) => {
+    const src = bridgeAttachmentUrl(im && im.id);
+    if (!src) return '';
+    return '<img src="' + esc(src) + '" alt="' + esc((im && im.name) || 'generated-image') + '" loading="lazy">';
+  }).join('') + '</div>';
+}
 
 async function loadBridgeSettings() {
   const s = await chrome.storage.local.get(['bridgeEnabled', 'bridgeUrl', 'bridgeToken', 'bridgeSession']);

@@ -16,6 +16,8 @@ const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const CDP_PORT = 9691;
 const MOCK_PORT = 9788;
 const TOKEN = 'test-token-123';
+const ATT_ID = 'sha256:' + 'b'.repeat(64);
+const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const out = {};
@@ -51,6 +53,12 @@ const mock = createServer((req, res) => {
   if (u.pathname === '/ext-bridge/ping') return json(200, { ok: true, version: 'mock', sessions: 1 });
   if (!authed) return json(401, { error: 'bad token' });
 
+  if (u.pathname === '/ext-bridge/attachment') {
+    const id = u.searchParams.get('id') || '';
+    if (id !== ATT_ID) return json(404, { error: 'attachment not found' });
+    res.writeHead(200, { ...cors, 'content-type': 'image/png', 'content-length': String(PNG.length) });
+    return res.end(PNG);
+  }
   if (u.pathname === '/ext-bridge/sessions' && req.method === 'GET') {
     return json(200, { sessions: [{ id: 'sess-1', title: '测试会话', updatedAt: Date.now() }] });
   }
@@ -84,6 +92,15 @@ const mock = createServer((req, res) => {
         emitS('assistant/chunk', { turn: 1, step: 2, chunk: { type: 'tool-call-delta', index: 0, id: 't1', name: 'read_file', argumentsDelta: '{}' } });
         await sleep(60);
         emitS('tool/result', { name: 'read_file', ok: true });
+        // 复刻 Harness 生图结果结构：content[].type='image' + attachment
+        emitS('tool/result', {
+          name: 'generate_image',
+          ok: true,
+          content: [
+            { type: 'text', text: 'generated image' },
+            { type: 'image', attachment: { attachmentId: ATT_ID, mediaType: 'image/png', width: 1, height: 1, bytes: PNG.length, name: 'generated-image' } }
+          ]
+        });
         emitS('assistant/message', { turn: 1, message: { role: 'assistant', content: '你好，我是 Harness 侧边栏' } });
         if (!slow) emitS('turn/end', { turn: 1 });
       }, 60);
@@ -217,6 +234,20 @@ try {
   ok('tool_chip', out.final.chips.some((c) => /read_file/.test(c)), out.final.chips);
   ok('prompt_payload', out.promptBody && out.promptBody.text === '你好', out.promptBody);
   ok('reasoning_rendered', out.final.hasReasoning === true, out.final.hasReasoning);
+
+  // 4) 生图图片：扩展把 tool/result 的 image part 渲染成真图
+  const img = await ev(`new Promise((res) => {
+    const tick = (n) => {
+      const el = document.querySelector('.bridge-imgs img');
+      if (el && el.complete && el.naturalWidth > 0) return res({ ok: true, src: el.getAttribute('src'), w: el.naturalWidth });
+      if (n <= 0) return res({ ok: false, src: el ? el.getAttribute('src') : null });
+      setTimeout(() => tick(n - 1), 100);
+    };
+    tick(30);
+  })`, sessionId);
+  out.imageNode = img;
+  ok('bridge_image_rendered', img.ok === true && img.w > 0 && /\/ext-bridge\/attachment\?id=/.test(String(img.src)), img);
+  ok('image_persisted', await ev(`(() => { const m = messages[messages.length - 1]; return !!(m && Array.isArray(m.images) && m.images.length); })()`, sessionId));
 
   // 3) 停止 → /cancel
   await ev(`(() => { document.getElementById('inpMsg').value = '慢慢来'; send(); return 1; })()`, sessionId);
